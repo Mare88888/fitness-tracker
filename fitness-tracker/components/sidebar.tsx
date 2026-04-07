@@ -1,7 +1,9 @@
+import Link from "next/link";
+
 const sidebarItems = [
-  { label: "Dashboard", href: "#" },
-  { label: "Workouts", href: "#" },
-  { label: "History", href: "#" },
+  { label: "Dashboard", href: "/" },
+  { label: "Workouts", href: "/workouts/start" },
+  { label: "History", href: "/history" },
 ];
 
 export function Sidebar() {
@@ -14,12 +16,12 @@ export function Sidebar() {
         <ul className="space-y-1">
           {sidebarItems.map((item) => (
             <li key={item.label}>
-              <a
+              <Link
                 href={item.href}
                 className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900"
               >
                 {item.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
