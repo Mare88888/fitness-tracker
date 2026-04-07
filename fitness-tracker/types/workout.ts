@@ -1,15 +1,19 @@
-export type SetEntry = {
-  reps: number;
-  weightKg?: number;
-};
-
-export type ExerciseEntry = {
-  name: string;
-  sets: SetEntry[];
-};
-
-export type WorkoutEntry = {
+export type Set = {
   id: string;
+  reps: number;
+  weight: number;
+  restTime: number;
+};
+
+export type Exercise = {
+  id: string;
+  name: string;
+  sets: Set[];
+};
+
+export type Workout = {
+  id: string;
+  name: string;
   date: string;
-  exercises: ExerciseEntry[];
+  exercises: Exercise[];
 };
