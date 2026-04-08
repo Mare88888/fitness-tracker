@@ -5,6 +5,7 @@ import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function HistoryPage() {
@@ -64,6 +65,12 @@ export default function HistoryPage() {
                       <p className="font-semibold text-zinc-900">{workout.name}</p>
                       <p className="text-zinc-600">Date: {workout.date}</p>
                       <p className="text-zinc-600">Exercises: {workout.exercises.length}</p>
+                      <Link
+                        href={`/history/${workout.id}`}
+                        className="mt-2 inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline"
+                      >
+                        View details
+                      </Link>
                     </li>
                   ))}
                 </ul>
