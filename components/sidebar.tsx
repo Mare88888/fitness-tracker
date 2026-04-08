@@ -2,7 +2,8 @@ import Link from "next/link";
 
 const sidebarItems = [
   { label: "Dashboard", href: "/" },
-  { label: "Auth", href: "/auth" },
+  { label: "Login", href: "/auth/login" },
+  { label: "Register", href: "/auth/register" },
   { label: "Workouts", href: "/workouts/start" },
   { label: "History", href: "/history" },
 ];
