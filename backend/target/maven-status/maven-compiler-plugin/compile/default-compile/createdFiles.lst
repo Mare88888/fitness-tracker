@@ -1,0 +1,10 @@
+com\fitnesstracker\backend\controller\HealthController.class
+com\fitnesstracker\backend\model\Exercise$ExerciseBuilder.class
+com\fitnesstracker\backend\model\Set$SetBuilder.class
+com\fitnesstracker\backend\model\Workout$WorkoutBuilder.class
+com\fitnesstracker\backend\repository\WorkoutRepository.class
+com\fitnesstracker\backend\model\Exercise.class
+com\fitnesstracker\backend\model\Set.class
+com\fitnesstracker\backend\FitnessTrackerBackendApplication.class
+com\fitnesstracker\backend\service\HealthService.class
+com\fitnesstracker\backend\model\Workout.class
