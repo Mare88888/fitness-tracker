@@ -4,6 +4,8 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
+import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
+import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import { useState } from "react";
 
 type WorkoutSet = {
@@ -37,6 +39,11 @@ function createExercise(): WorkoutExercise {
 export default function StartWorkoutPage() {
   const [workoutName, setWorkoutName] = useState("");
   const [exercises, setExercises] = useState<WorkoutExercise[]>([createExercise()]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [loadedWorkouts, setLoadedWorkouts] = useState<Workout[]>([]);
 
   const addExercise = () => {
     setExercises((previous) => [...previous, createExercise()]);
@@ -93,6 +100,62 @@ export default function StartWorkoutPage() {
         };
       })
     );
+  };
+
+  const buildCreateWorkoutPayload = (): CreateWorkoutInput => {
+    return {
+      name: workoutName.trim(),
+      date: new Date().toISOString().slice(0, 10),
+      exercises: exercises.map((exercise) => ({
+        name: exercise.name.trim(),
+        sets: exercise.sets.map((set) => ({
+          reps: Number(set.reps) || 0,
+          weight: Number(set.weight) || 0,
+          restTime: 90,
+        })),
+      })),
+    };
+  };
+
+  const handleCreateWorkout = async () => {
+    setFeedbackMessage(null);
+    setFeedbackError(null);
+
+    if (!workoutName.trim()) {
+      setFeedbackError("Workout name is required.");
+      return;
+    }
+
+    if (exercises.some((exercise) => !exercise.name.trim())) {
+      setFeedbackError("Each exercise must have a name.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = buildCreateWorkoutPayload();
+      const created = await createWorkout(payload);
+      setFeedbackMessage(`Workout created successfully (ID: ${created.id}).`);
+    } catch (error) {
+      setFeedbackError(error instanceof Error ? error.message : "Failed to create workout.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLoadWorkouts = async () => {
+    setFeedbackMessage(null);
+    setFeedbackError(null);
+    setIsLoadingWorkouts(true);
+    try {
+      const workouts = await getWorkouts();
+      setLoadedWorkouts(workouts);
+      setFeedbackMessage(`Loaded ${workouts.length} workout(s) from backend.`);
+    } catch (error) {
+      setFeedbackError(error instanceof Error ? error.message : "Failed to load workouts.");
+    } finally {
+      setIsLoadingWorkouts(false);
+    }
   };
 
   return (
@@ -222,6 +285,49 @@ export default function StartWorkoutPage() {
                   >
                     Add exercise
                   </button>
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCreateWorkout}
+                      disabled={isSaving}
+                      className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSaving ? "Saving..." : "Save workout"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleLoadWorkouts}
+                      disabled={isLoadingWorkouts}
+                      className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isLoadingWorkouts ? "Loading..." : "Load workouts (integration test)"}
+                    </button>
+                  </div>
+
+                  {feedbackMessage && (
+                    <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                      {feedbackMessage}
+                    </p>
+                  )}
+                  {feedbackError && (
+                    <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {feedbackError}
+                    </p>
+                  )}
+
+                  {loadedWorkouts.length > 0 && (
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                      <h2 className="text-sm font-semibold text-zinc-900">Loaded workouts</h2>
+                      <ul className="mt-2 space-y-1 text-sm text-zinc-700">
+                        {loadedWorkouts.map((workout) => (
+                          <li key={workout.id}>
+                            #{workout.id} - {workout.name} ({workout.exercises.length} exercise(s))
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </section>
 

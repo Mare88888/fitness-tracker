@@ -18,4 +18,5 @@ com\fitnesstracker\backend\repository\WorkoutRepository.class
 com\fitnesstracker\backend\model\Set.class
 com\fitnesstracker\backend\FitnessTrackerBackendApplication.class
 com\fitnesstracker\backend\service\HealthService.class
+com\fitnesstracker\backend\config\CorsConfig.class
 com\fitnesstracker\backend\model\Workout.class

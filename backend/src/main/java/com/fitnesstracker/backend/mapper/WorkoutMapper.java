@@ -4,11 +4,12 @@ import com.fitnesstracker.backend.dto.ExerciseDto;
 import com.fitnesstracker.backend.dto.ExerciseSetDto;
 import com.fitnesstracker.backend.dto.WorkoutDto;
 import com.fitnesstracker.backend.model.Exercise;
-import com.fitnesstracker.backend.model.Set;
 import com.fitnesstracker.backend.model.Workout;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,15 +28,15 @@ public class WorkoutMapper {
         Workout workout = Workout.builder()
                 .name(workoutDto.name())
                 .date(workoutDto.date())
-                .exercises(new ArrayList<>())
+                .exercises(new LinkedHashSet<>())
                 .build();
 
-        List<Exercise> exercises = toExercises(workoutDto.exercises(), workout);
+        Set<Exercise> exercises = toExercises(workoutDto.exercises(), workout);
         workout.setExercises(exercises);
         return workout;
     }
 
-    private List<ExerciseDto> toExerciseDtos(List<Exercise> exercises) {
+    private List<ExerciseDto> toExerciseDtos(Collection<Exercise> exercises) {
         if (exercises == null) {
             return Collections.emptyList();
         }
@@ -52,7 +53,7 @@ public class WorkoutMapper {
                 .build();
     }
 
-    private List<ExerciseSetDto> toSetDtos(List<Set> sets) {
+    private List<ExerciseSetDto> toSetDtos(Collection<com.fitnesstracker.backend.model.Set> sets) {
         if (sets == null) {
             return Collections.emptyList();
         }
@@ -61,7 +62,7 @@ public class WorkoutMapper {
                 .toList();
     }
 
-    private ExerciseSetDto toDto(Set set) {
+    private ExerciseSetDto toDto(com.fitnesstracker.backend.model.Set set) {
         return ExerciseSetDto.builder()
                 .id(set.getId())
                 .reps(set.getReps())
@@ -70,38 +71,39 @@ public class WorkoutMapper {
                 .build();
     }
 
-    private List<Exercise> toExercises(List<ExerciseDto> exerciseDtos, Workout workout) {
+    private Set<Exercise> toExercises(List<ExerciseDto> exerciseDtos, Workout workout) {
         if (exerciseDtos == null) {
-            return new ArrayList<>();
+            return new LinkedHashSet<>();
         }
-        return exerciseDtos.stream()
+        return new LinkedHashSet<>(exerciseDtos.stream()
                 .map(exerciseDto -> toExercise(exerciseDto, workout))
-                .toList();
+                .toList());
     }
 
     private Exercise toExercise(ExerciseDto exerciseDto, Workout workout) {
         Exercise exercise = Exercise.builder()
                 .name(exerciseDto.name())
                 .workout(workout)
-                .sets(new ArrayList<>())
+                .sets(new LinkedHashSet<>())
                 .build();
 
-        List<Set> sets = toSets(exerciseDto.sets(), exercise);
+        Set<com.fitnesstracker.backend.model.Set> sets = toSets(exerciseDto.sets(), exercise);
         exercise.setSets(sets);
         return exercise;
     }
 
-    private List<Set> toSets(List<ExerciseSetDto> setDtos, Exercise exercise) {
+    private Set<com.fitnesstracker.backend.model.Set> toSets(
+            List<ExerciseSetDto> setDtos, Exercise exercise) {
         if (setDtos == null) {
-            return new ArrayList<>();
+            return new LinkedHashSet<>();
         }
-        return setDtos.stream()
-                .map(setDto -> Set.builder()
+        return new LinkedHashSet<>(setDtos.stream()
+                .map(setDto -> com.fitnesstracker.backend.model.Set.builder()
                         .reps(setDto.reps())
                         .weight(setDto.weight())
                         .restTime(setDto.restTime())
                         .exercise(exercise)
                         .build())
-                .toList();
+                .toList());
     }
 }

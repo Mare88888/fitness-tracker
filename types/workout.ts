@@ -1,19 +1,36 @@
 export type Set = {
-  id: string;
+  id: number;
   reps: number;
   weight: number;
   restTime: number;
 };
 
 export type Exercise = {
-  id: string;
+  id: number;
   name: string;
   sets: Set[];
 };
 
 export type Workout = {
-  id: string;
+  id: number;
   name: string;
   date: string;
   exercises: Exercise[];
+};
+
+export type CreateSetInput = {
+  reps: number;
+  weight: number;
+  restTime: number;
+};
+
+export type CreateExerciseInput = {
+  name: string;
+  sets: CreateSetInput[];
+};
+
+export type CreateWorkoutInput = {
+  name: string;
+  date: string;
+  exercises: CreateExerciseInput[];
 };
