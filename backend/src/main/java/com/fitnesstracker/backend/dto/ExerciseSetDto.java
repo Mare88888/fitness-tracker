@@ -6,7 +6,6 @@ import lombok.Builder;
 public record ExerciseSetDto(
         Long id,
         Integer reps,
-        Double weight,
-        Integer restTime
+        Double weight
 ) {
 }

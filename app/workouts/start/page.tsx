@@ -111,23 +111,43 @@ export default function StartWorkoutPage() {
         sets: exercise.sets.map((set) => ({
           reps: Number(set.reps) || 0,
           weight: Number(set.weight) || 0,
-          restTime: 90,
         })),
       })),
     };
+  };
+
+  const getValidationError = (): string | null => {
+    if (!workoutName.trim()) {
+      return "Workout name is required.";
+    }
+
+    if (exercises.some((exercise) => !exercise.name.trim())) {
+      return "Each exercise must have a name.";
+    }
+
+    const invalidSet = exercises.some((exercise) =>
+      exercise.sets.some((set) => {
+        const reps = Number(set.reps);
+        const weight = Number(set.weight);
+
+        return Number.isNaN(reps) || Number.isNaN(weight) || reps <= 0 || weight < 0;
+      })
+    );
+
+    if (invalidSet) {
+      return "Each set needs valid values: reps > 0 and weight >= 0.";
+    }
+
+    return null;
   };
 
   const handleCreateWorkout = async () => {
     setFeedbackMessage(null);
     setFeedbackError(null);
 
-    if (!workoutName.trim()) {
-      setFeedbackError("Workout name is required.");
-      return;
-    }
-
-    if (exercises.some((exercise) => !exercise.name.trim())) {
-      setFeedbackError("Each exercise must have a name.");
+    const validationError = getValidationError();
+    if (validationError) {
+      setFeedbackError(validationError);
       return;
     }
 

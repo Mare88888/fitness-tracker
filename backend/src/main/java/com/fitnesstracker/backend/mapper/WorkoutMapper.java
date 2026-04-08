@@ -67,7 +67,6 @@ public class WorkoutMapper {
                 .id(set.getId())
                 .reps(set.getReps())
                 .weight(set.getWeight())
-                .restTime(set.getRestTime())
                 .build();
     }
 
@@ -101,7 +100,6 @@ public class WorkoutMapper {
                 .map(setDto -> com.fitnesstracker.backend.model.Set.builder()
                         .reps(setDto.reps())
                         .weight(setDto.weight())
-                        .restTime(setDto.restTime())
                         .exercise(exercise)
                         .build())
                 .toList());
