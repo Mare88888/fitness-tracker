@@ -3,10 +3,13 @@
 import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getWorkoutById } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type WorkoutDetailsPageProps = {
   params: Promise<{
@@ -35,7 +38,9 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
         const data = await getWorkoutById(workoutId);
         setWorkout(data);
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Failed to load workout.");
+        const message = loadError instanceof Error ? loadError.message : "Failed to load workout.";
+        setError(message);
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
@@ -45,21 +50,28 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
   }, [params]);
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
               <Link
                 href="/history"
-                className="mb-4 inline-block text-sm font-medium text-zinc-700 underline-offset-4 hover:underline"
+                className="mb-4 inline-block text-sm font-medium text-zinc-700 underline-offset-4 hover:underline dark:text-zinc-300"
               >
                 Back to history
               </Link>
 
-              {isLoading && <p className="text-sm text-zinc-600">Loading workout details...</p>}
+              {isLoading && (
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-1/3" />
+                  <Skeleton className="h-5 w-1/4" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              )}
 
               {error && (
                 <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -68,33 +80,43 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
               )}
 
               {!isLoading && !error && !workout && (
-                <p className="text-sm text-zinc-600">Workout not found.</p>
+                <EmptyState
+                  title="Workout not found"
+                  description="The workout may have been deleted or the URL is incorrect."
+                  actionLabel="Back to history"
+                  actionHref="/history"
+                />
               )}
 
               {!isLoading && !error && workout && (
                 <div className="space-y-4">
                   <header>
-                    <h1 className="text-2xl font-semibold text-zinc-900">{workout.name}</h1>
-                    <p className="mt-1 text-sm text-zinc-600">Date: {workout.date}</p>
+                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                      {workout.name}
+                    </h1>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
                   </header>
 
                   {workout.exercises.length === 0 ? (
-                    <p className="text-sm text-zinc-600">No exercises in this workout.</p>
+                    <EmptyState
+                      title="No exercises in this workout"
+                      description="Add exercises while creating workouts to see details here."
+                    />
                   ) : (
                     <div className="space-y-3">
                       {workout.exercises.map((exercise, exerciseIndex) => (
                         <article
                           key={exercise.id}
-                          className="rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+                          className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
                         >
-                          <h2 className="font-semibold text-zinc-900">
+                          <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
                             {exerciseIndex + 1}. {exercise.name}
                           </h2>
 
                           {exercise.sets.length === 0 ? (
-                            <p className="mt-2 text-sm text-zinc-600">No sets logged.</p>
+                            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No sets logged.</p>
                           ) : (
-                            <ul className="mt-2 space-y-1 text-sm text-zinc-700">
+                            <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                               {exercise.sets.map((set, setIndex) => (
                                 <li key={set.id}>
                                   Set {setIndex + 1}: {set.reps} reps, weight: {set.weight} kg

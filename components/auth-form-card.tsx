@@ -5,6 +5,7 @@ import type { AuthRequest } from "@/types/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type AuthFormCardProps = {
   mode: "login" | "register";
@@ -34,18 +35,23 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
     try {
       const authResponse = isLogin ? await login(payload) : await register(payload);
       setSuccess(`Welcome, ${authResponse.username}. Redirecting...`);
+      toast.success(`Welcome, ${authResponse.username}`);
       router.push("/workouts/start");
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : "Authentication failed.");
+      const message = authError instanceof Error ? authError.message : "Authentication failed.";
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <section className="mx-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-zinc-900">{isLogin ? "Login" : "Register"}</h1>
-      <p className="mt-2 text-sm text-zinc-600">
+    <section className="mx-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+        {isLogin ? "Login" : "Register"}
+      </h1>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         {isLogin
           ? "Sign in to access protected workout endpoints."
           : "Create an account to start tracking workouts securely."}
@@ -53,7 +59,10 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
 
       <div className="mt-6 space-y-4">
         <div>
-          <label htmlFor="auth-username" className="mb-2 block text-sm font-medium text-zinc-700">
+          <label
+            htmlFor="auth-username"
+            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
             Username
           </label>
           <input
@@ -61,12 +70,15 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             type="text"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
           />
         </div>
 
         <div>
-          <label htmlFor="auth-password" className="mb-2 block text-sm font-medium text-zinc-700">
+          <label
+            htmlFor="auth-password"
+            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
             Password
           </label>
           <input
@@ -74,7 +86,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
           />
         </div>
 
@@ -82,7 +94,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
           type="button"
           disabled={isSubmitting}
           onClick={handleSubmit}
-          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
         >
           {isSubmitting ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
@@ -98,11 +110,11 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
           </p>
         )}
 
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
           {isLogin ? "No account yet?" : "Already have an account?"}{" "}
           <Link
             href={isLogin ? "/auth/register" : "/auth/login"}
-            className="font-medium text-zinc-900 underline-offset-4 hover:underline"
+            className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
           >
             {isLogin ? "Create one" : "Login"}
           </Link>

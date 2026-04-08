@@ -4,9 +4,11 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type WorkoutSet = {
   id: string;
@@ -148,6 +150,7 @@ export default function StartWorkoutPage() {
     const validationError = getValidationError();
     if (validationError) {
       setFeedbackError(validationError);
+      toast.error(validationError);
       return;
     }
 
@@ -156,8 +159,11 @@ export default function StartWorkoutPage() {
       const payload = buildCreateWorkoutPayload();
       const created = await createWorkout(payload);
       setFeedbackMessage(`Workout created successfully (ID: ${created.id}).`);
+      toast.success(`Workout saved (ID: ${created.id})`);
     } catch (error) {
-      setFeedbackError(error instanceof Error ? error.message : "Failed to create workout.");
+      const message = error instanceof Error ? error.message : "Failed to create workout.";
+      setFeedbackError(message);
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }
@@ -171,25 +177,28 @@ export default function StartWorkoutPage() {
       const workouts = await getWorkouts();
       setLoadedWorkouts(workouts);
       setFeedbackMessage(`Loaded ${workouts.length} workout(s) from backend.`);
+      toast.success(`Loaded ${workouts.length} workout(s)`);
     } catch (error) {
-      setFeedbackError(error instanceof Error ? error.message : "Failed to load workouts.");
+      const message = error instanceof Error ? error.message : "Failed to load workouts.";
+      setFeedbackError(message);
+      toast.error(message);
     } finally {
       setIsLoadingWorkouts(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
                 <div className="mb-6">
-                  <h1 className="text-2xl font-semibold text-zinc-900">Start Workout</h1>
-                  <p className="mt-2 text-sm text-zinc-600">
+                  <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Start Workout</h1>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                     Add exercises and log your sets with reps and weight.
                   </p>
                 </div>
@@ -198,7 +207,7 @@ export default function StartWorkoutPage() {
                   <div>
                     <label
                       htmlFor="workout-name"
-                      className="mb-2 block text-sm font-medium text-zinc-700"
+                      className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
                     >
                       Workout name
                     </label>
@@ -208,7 +217,7 @@ export default function StartWorkoutPage() {
                       value={workoutName}
                       onChange={(event) => setWorkoutName(event.target.value)}
                       placeholder="e.g. Push Day"
-                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                     />
                   </div>
 
@@ -216,11 +225,11 @@ export default function StartWorkoutPage() {
                     {exercises.map((exercise, exerciseIndex) => (
                       <article
                         key={exercise.id}
-                        className="rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+                        className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
                       >
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="w-full">
-                            <label className="mb-2 block text-sm font-medium text-zinc-700">
+                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                               Exercise {exerciseIndex + 1}
                             </label>
                             <input
@@ -230,14 +239,14 @@ export default function StartWorkoutPage() {
                                 updateExerciseName(exercise.id, event.target.value)
                               }
                               placeholder="e.g. Bench Press"
-                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                             />
                           </div>
                           <button
                             type="button"
                             onClick={() => removeExercise(exercise.id)}
                             disabled={exercises.length === 1}
-                            className="self-start rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="self-start rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                           >
                             Remove exercise
                           </button>
@@ -247,9 +256,9 @@ export default function StartWorkoutPage() {
                           {exercise.sets.map((set, setIndex) => (
                             <div
                               key={set.id}
-                              className="grid grid-cols-1 gap-3 rounded-md border border-zinc-200 bg-white p-3 sm:grid-cols-[auto_1fr_1fr_auto]"
+                              className="grid grid-cols-1 gap-3 rounded-md border border-zinc-200 bg-white p-3 sm:grid-cols-[auto_1fr_1fr_auto] dark:border-zinc-700 dark:bg-zinc-900"
                             >
-                              <div className="flex items-center text-sm font-medium text-zinc-700">
+                              <div className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 Set {setIndex + 1}
                               </div>
                               <input
@@ -261,7 +270,7 @@ export default function StartWorkoutPage() {
                                 onChange={(event) =>
                                   updateSetField(exercise.id, set.id, "reps", event.target.value)
                                 }
-                                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                               />
                               <input
                                 type="number"
@@ -273,13 +282,13 @@ export default function StartWorkoutPage() {
                                 onChange={(event) =>
                                   updateSetField(exercise.id, set.id, "weight", event.target.value)
                                 }
-                                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                               />
                               <button
                                 type="button"
                                 onClick={() => removeSet(exercise.id, set.id)}
                                 disabled={exercise.sets.length === 1}
-                                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                               >
                                 Remove
                               </button>
@@ -290,7 +299,7 @@ export default function StartWorkoutPage() {
                         <button
                           type="button"
                           onClick={() => addSet(exercise.id)}
-                          className="mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+                          className="mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
                         >
                           Add set
                         </button>
@@ -301,7 +310,7 @@ export default function StartWorkoutPage() {
                   <button
                     type="button"
                     onClick={addExercise}
-                    className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100"
+                    className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   >
                     Add exercise
                   </button>
@@ -311,7 +320,7 @@ export default function StartWorkoutPage() {
                       type="button"
                       onClick={handleCreateWorkout}
                       disabled={isSaving}
-                      className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
                     >
                       {isSaving ? "Saving..." : "Save workout"}
                     </button>
@@ -319,7 +328,7 @@ export default function StartWorkoutPage() {
                       type="button"
                       onClick={handleLoadWorkouts}
                       disabled={isLoadingWorkouts}
-                      className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     >
                       {isLoadingWorkouts ? "Loading..." : "Load workouts (integration test)"}
                     </button>
@@ -336,10 +345,12 @@ export default function StartWorkoutPage() {
                     </p>
                   )}
 
-                  {loadedWorkouts.length > 0 && (
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-                      <h2 className="text-sm font-semibold text-zinc-900">Loaded workouts</h2>
-                      <ul className="mt-2 space-y-1 text-sm text-zinc-700">
+                  {loadedWorkouts.length > 0 ? (
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        Loaded workouts
+                      </h2>
+                      <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                         {loadedWorkouts.map((workout) => (
                           <li key={workout.id}>
                             #{workout.id} - {workout.name} ({workout.exercises.length} exercise(s))
@@ -347,6 +358,11 @@ export default function StartWorkoutPage() {
                         ))}
                       </ul>
                     </div>
+                  ) : (
+                    <EmptyState
+                      title="No workouts loaded"
+                      description="Use 'Load workouts' to fetch your saved workouts from the backend."
+                    />
                   )}
                 </div>
               </section>
