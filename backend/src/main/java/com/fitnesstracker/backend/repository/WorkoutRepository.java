@@ -1,5 +1,6 @@
 package com.fitnesstracker.backend.repository;
 
+import com.fitnesstracker.backend.model.AppUser;
 import com.fitnesstracker.backend.model.Workout;
 import java.util.List;
 import java.util.Optional;
@@ -11,8 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface WorkoutRepository extends JpaRepository<Workout, Long> {
 
     @EntityGraph(attributePaths = {"exercises", "exercises.sets"})
-    List<Workout> findAllWithDetailsBy();
+    List<Workout> findAllWithDetailsByOwner(AppUser owner);
 
     @EntityGraph(attributePaths = {"exercises", "exercises.sets"})
-    Optional<Workout> findWithDetailsById(Long id);
+    Optional<Workout> findWithDetailsByIdAndOwner(Long id, AppUser owner);
 }

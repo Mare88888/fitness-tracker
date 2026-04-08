@@ -1,0 +1,27 @@
+TODO:
+
+Validation + error contracts
+
+Add backend bean validation (@Valid, @NotBlank, min values).
+Add consistent error JSON format and frontend-friendly messages.
+Token lifecycle
+
+Add refresh tokens + token expiry handling (silent refresh).
+Move auth to HttpOnly cookies for stronger security (instead of localStorage).
+Core product features
+
+Edit/update workout and exercise sets.
+Search/filter/sort history, date range, pagination.
+Delete confirmation modals and undo toasts.
+Testing
+
+Backend: controller/service integration tests (auth + workouts).
+Frontend: component tests + E2E happy paths (login, create, history, details).
+Production readiness
+
+Add migration tool (Flyway/Liquibase) instead of relying on ddl-auto=update.
+Add Docker profile/envs for prod, secure secrets, health checks and monitoring.
+UX polish
+
+Active nav highlight, better mobile sidebar (drawer), keyboard accessibility audit.
+Form-level inline validation and disabled states tied to validity.
