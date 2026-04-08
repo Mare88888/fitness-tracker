@@ -1,5 +1,5 @@
 import type { AuthRequest, AuthResponse } from "@/types/auth";
-import { setAuthToken } from "@/lib/auth/token";
+import { setAuthToken, setAuthUsername } from "@/lib/auth/token";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,6 +28,7 @@ export async function register(payload: AuthRequest): Promise<AuthResponse> {
   });
   const data = await parseAuthResponse(response);
   setAuthToken(data.token);
+  setAuthUsername(data.username);
   return data;
 }
 
@@ -41,5 +42,6 @@ export async function login(payload: AuthRequest): Promise<AuthResponse> {
   });
   const data = await parseAuthResponse(response);
   setAuthToken(data.token);
+  setAuthUsername(data.username);
   return data;
 }
