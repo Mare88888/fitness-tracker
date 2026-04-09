@@ -1,11 +1,6 @@
 TODO:
 
 
-Token lifecycle
-
-Add refresh tokens + token expiry handling (silent refresh).
-Move auth to HttpOnly cookies for stronger security (instead of localStorage).
-
 Core product features
 
 Edit/update workout and exercise sets.

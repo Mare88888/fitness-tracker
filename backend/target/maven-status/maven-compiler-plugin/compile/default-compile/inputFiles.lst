@@ -25,8 +25,10 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\SetRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WorkoutRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\AppUserDetailsService.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\CsrfCookieFilter.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\JwtAuthenticationFilter.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\JwtService.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\SpaCsrfTokenRequestHandler.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\AuthService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\HealthService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\RefreshTokenService.java

@@ -52,6 +52,17 @@ async function fetchWithSilentRefresh(input: string, init: RequestInit = {}): Pr
   };
 
   let response = await fetch(input, requestInit);
+  if (response.status === 403 && requiresCsrf) {
+    const refreshedCsrfToken = await ensureCsrfToken();
+    response = await fetch(input, {
+      ...requestInit,
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": refreshedCsrfToken,
+        ...(init.headers ?? {}),
+      },
+    });
+  }
   if (response.status !== 401) {
     return response;
   }

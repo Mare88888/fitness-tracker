@@ -23,6 +23,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     const loadWorkout = async () => {
@@ -55,11 +56,9 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
     if (!workout) {
       return;
     }
-    if (!window.confirm(`Delete "${workout.name}"?`)) {
-      return;
-    }
     try {
       await deleteWorkout(workout.id);
+      setIsDeleteModalOpen(false);
       toast.success("Workout deleted.", {
         action: {
           label: "Undo",
@@ -145,7 +144,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                       </Link>
                       <button
                         type="button"
-                        onClick={handleDelete}
+                        onClick={() => setIsDeleteModalOpen(true)}
                         className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
                       >
                         Delete workout
@@ -190,6 +189,32 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
           </PageContainer>
         </div>
       </div>
+      {isDeleteModalOpen && workout && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Delete workout?</h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+              This will delete <span className="font-semibold">{workout.name}</span>. You can still undo from the toast.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

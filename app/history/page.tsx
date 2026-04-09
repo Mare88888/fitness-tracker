@@ -17,7 +17,10 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState<Workout | null>(null);
   const pageSize = 5;
 
   useEffect(() => {
@@ -42,6 +45,15 @@ export default function HistoryPage() {
   const visibleWorkouts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = workouts.filter((workout) => {
+      const workoutDate = new Date(workout.date);
+      const fromDate = dateFrom ? new Date(dateFrom) : null;
+      const toDate = dateTo ? new Date(dateTo) : null;
+      if (fromDate && workoutDate < fromDate) {
+        return false;
+      }
+      if (toDate && workoutDate > toDate) {
+        return false;
+      }
       if (!normalizedQuery) {
         return true;
       }
@@ -58,14 +70,14 @@ export default function HistoryPage() {
     });
 
     return sorted;
-  }, [query, sortOrder, workouts]);
+  }, [dateFrom, dateTo, query, sortOrder, workouts]);
 
   const pageCount = Math.max(1, Math.ceil(visibleWorkouts.length / pageSize));
   const paginatedWorkouts = visibleWorkouts.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
     setPage(1);
-  }, [query, sortOrder]);
+  }, [dateFrom, dateTo, query, sortOrder]);
 
   useEffect(() => {
     if (page > pageCount) {
@@ -73,14 +85,16 @@ export default function HistoryPage() {
     }
   }, [page, pageCount]);
 
-  const handleDelete = async (workout: Workout) => {
-    if (!window.confirm(`Delete "${workout.name}"?`)) {
+  const handleDelete = async () => {
+    if (!pendingDelete) {
       return;
     }
+    const workout = pendingDelete;
 
     try {
       await deleteWorkout(workout.id);
       setWorkouts((previous) => previous.filter((item) => item.id !== workout.id));
+      setPendingDelete(null);
       toast.success("Workout deleted.", {
         action: {
           label: "Undo",
@@ -127,13 +141,25 @@ export default function HistoryPage() {
                 Review previously saved workouts from your backend.
               </p>
               {!isLoading && !error && workouts.length > 0 && (
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
                   <input
                     type="search"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search by workout or exercise name"
                     className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                  />
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(event) => setDateFrom(event.target.value)}
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                  />
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(event) => setDateTo(event.target.value)}
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                   />
                   <select
                     value={sortOrder}
@@ -195,7 +221,7 @@ export default function HistoryPage() {
                         </Link>
                         <button
                           type="button"
-                          onClick={() => handleDelete(workout)}
+                          onClick={() => setPendingDelete(workout)}
                           className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
                         >
                           Delete
@@ -242,6 +268,32 @@ export default function HistoryPage() {
           </PageContainer>
         </div>
       </div>
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Delete workout?</h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+              This will delete <span className="font-semibold">{pendingDelete.name}</span>. You can still undo from the toast.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

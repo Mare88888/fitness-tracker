@@ -31,9 +31,13 @@ export async function ensureCsrfToken(): Promise<string> {
     throw new Error("Failed to initialize CSRF token.");
   }
 
+  const payload = (await response.json()) as { token?: string };
   const token = readCookie("XSRF-TOKEN");
-  if (!token) {
-    throw new Error("CSRF token cookie is missing.");
+  if (token) {
+    return token;
   }
-  return token;
+  if (payload.token) {
+    return payload.token;
+  }
+  throw new Error("CSRF token cookie is missing.");
 }

@@ -60,6 +60,23 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
     if (!payload || workoutId == null) {
       return;
     }
+    if (!payload.name.trim()) {
+      setError("Workout name is required.");
+      return;
+    }
+    if (payload.exercises.some((exercise) => !exercise.name.trim())) {
+      setError("Each exercise must have a name.");
+      return;
+    }
+    if (
+      payload.exercises.some((exercise) =>
+        exercise.sets.some((set) => Number.isNaN(set.reps) || Number.isNaN(set.weight) || set.reps <= 0 || set.weight < 0)
+      )
+    ) {
+      setError("Each set needs valid values: reps > 0 and weight >= 0.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
     try {
@@ -73,6 +90,63 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const addExercise = () => {
+    setPayload((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      return {
+        ...previous,
+        exercises: [...previous.exercises, { name: "", sets: [{ reps: 1, weight: 0 }] }],
+      };
+    });
+  };
+
+  const removeExercise = (exerciseIndex: number) => {
+    setPayload((previous) => {
+      if (!previous || previous.exercises.length === 1) {
+        return previous;
+      }
+      return {
+        ...previous,
+        exercises: previous.exercises.filter((_, index) => index !== exerciseIndex),
+      };
+    });
+  };
+
+  const addSet = (exerciseIndex: number) => {
+    setPayload((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      const nextExercises = [...previous.exercises];
+      const currentExercise = nextExercises[exerciseIndex];
+      nextExercises[exerciseIndex] = {
+        ...currentExercise,
+        sets: [...currentExercise.sets, { reps: 1, weight: 0 }],
+      };
+      return { ...previous, exercises: nextExercises };
+    });
+  };
+
+  const removeSet = (exerciseIndex: number, setIndex: number) => {
+    setPayload((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      const nextExercises = [...previous.exercises];
+      const currentExercise = nextExercises[exerciseIndex];
+      if (currentExercise.sets.length === 1) {
+        return previous;
+      }
+      nextExercises[exerciseIndex] = {
+        ...currentExercise,
+        sets: currentExercise.sets.filter((_, index) => index !== setIndex),
+      };
+      return { ...previous, exercises: nextExercises };
+    });
   };
 
   return (
@@ -113,24 +187,115 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                       className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                     />
                   </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      Workout date
+                    </label>
+                    <input
+                      type="date"
+                      value={payload.date}
+                      onChange={(event) => setPayload((prev) => (prev ? { ...prev, date: event.target.value } : prev))}
+                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                    />
+                  </div>
                   {payload.exercises.map((exercise, exerciseIndex) => (
                     <article key={`exercise-${exerciseIndex}`} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                      <input
-                        value={exercise.name}
-                        onChange={(event) =>
-                          setPayload((prev) => {
-                            if (!prev) {
-                              return prev;
-                            }
-                            const next = { ...prev };
-                            next.exercises[exerciseIndex] = { ...next.exercises[exerciseIndex], name: event.target.value };
-                            return next;
-                          })
-                        }
-                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
-                      />
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <input
+                          value={exercise.name}
+                          onChange={(event) =>
+                            setPayload((prev) => {
+                              if (!prev) {
+                                return prev;
+                              }
+                              const next = { ...prev };
+                              next.exercises[exerciseIndex] = { ...next.exercises[exerciseIndex], name: event.target.value };
+                              return next;
+                            })
+                          }
+                          placeholder={`Exercise ${exerciseIndex + 1}`}
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExercise(exerciseIndex)}
+                          disabled={payload.exercises.length === 1}
+                          className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        {exercise.sets.map((set, setIndex) => (
+                          <div key={`set-${exerciseIndex}-${setIndex}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                            <input
+                              type="number"
+                              min={1}
+                              value={set.reps}
+                              onChange={(event) =>
+                                setPayload((prev) => {
+                                  if (!prev) {
+                                    return prev;
+                                  }
+                                  const next = { ...prev };
+                                  next.exercises[exerciseIndex].sets[setIndex] = {
+                                    ...next.exercises[exerciseIndex].sets[setIndex],
+                                    reps: Number(event.target.value),
+                                  };
+                                  return next;
+                                })
+                              }
+                              placeholder="Reps"
+                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                            />
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.5"
+                              value={set.weight}
+                              onChange={(event) =>
+                                setPayload((prev) => {
+                                  if (!prev) {
+                                    return prev;
+                                  }
+                                  const next = { ...prev };
+                                  next.exercises[exerciseIndex].sets[setIndex] = {
+                                    ...next.exercises[exerciseIndex].sets[setIndex],
+                                    weight: Number(event.target.value),
+                                  };
+                                  return next;
+                                })
+                              }
+                              placeholder="Weight (kg)"
+                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeSet(exerciseIndex, setIndex)}
+                              disabled={exercise.sets.length === 1}
+                              className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addSet(exerciseIndex)}
+                        className="mt-3 rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        Add set
+                      </button>
                     </article>
                   ))}
+                  <button
+                    type="button"
+                    onClick={addExercise}
+                    className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Add exercise
+                  </button>
                   <button
                     type="button"
                     onClick={handleSave}
