@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EXERCISE_LIBRARY, resolveExerciseMuscle } from "@/lib/exercise-library";
 import { getWorkoutById, updateWorkout } from "@/lib/services/workout-service";
 import type { CreateWorkoutInput } from "@/types/workout";
 import Link from "next/link";
@@ -16,6 +17,7 @@ type EditWorkoutPageProps = {
     id: string;
   }>;
 };
+const EXERCISE_DATALIST_ID = "exercise-library-options-edit";
 
 export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const router = useRouter();
@@ -239,6 +241,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                               return next;
                             })
                           }
+                          list={EXERCISE_DATALIST_ID}
                           placeholder={`Exercise ${exerciseIndex + 1}`}
                           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                         />
@@ -252,6 +255,11 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                         </button>
                       </div>
                       <div className="space-y-2">
+                        {exercise.name.trim() && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Muscle: {resolveExerciseMuscle(exercise.name)}
+                          </p>
+                        )}
                         {exercise.sets.map((set, setIndex) => (
                           <div key={`set-${exerciseIndex}-${setIndex}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
                             <input
@@ -339,6 +347,13 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
           </PageContainer>
         </div>
       </div>
+      <datalist id={EXERCISE_DATALIST_ID}>
+        {EXERCISE_LIBRARY.map((exercise) => (
+          <option key={`${exercise.name}-${exercise.muscle}`} value={exercise.name}>
+            {exercise.muscle}
+          </option>
+        ))}
+      </datalist>
     </div>
   );
 }

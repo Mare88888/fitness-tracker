@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { APP_NAME } from "@/lib/constants";
+import { resolveExerciseMuscle } from "@/lib/exercise-library";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
@@ -23,6 +24,9 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
+type Timeframe = "7d" | "30d" | "90d" | "all";
+type TrendMetric = "volume" | "estimated1rm";
+
 type PersonalRecord = {
   exercise: string;
   maxWeight: number;
@@ -33,6 +37,7 @@ type PersonalRecord = {
 type VolumePoint = {
   date: string;
   totalVolume: number;
+  estimatedOneRepMax: number;
   shortDate: string;
 };
 
@@ -50,18 +55,6 @@ function estimateOneRepMax(weight: number, reps: number): number {
     return 0;
   }
   return weight * (1 + reps / 30);
-}
-
-function mapExerciseToMuscleGroup(exerciseName: string): string {
-  const name = exerciseName.toLowerCase();
-  if (/(bench|chest|incline|fly|pec|push up)/.test(name)) return "Chest";
-  if (/(row|pull up|lat|deadlift|back|pulldown)/.test(name)) return "Back";
-  if (/(squat|lunge|leg press|hamstring|quad|calf)/.test(name)) return "Legs";
-  if (/(press|shoulder|lateral raise|rear delt|overhead)/.test(name)) return "Shoulders";
-  if (/(curl|bicep)/.test(name)) return "Biceps";
-  if (/(tricep|skull|dip|pushdown)/.test(name)) return "Triceps";
-  if (/(core|abs|plank|crunch)/.test(name)) return "Core";
-  return "Other";
 }
 
 function getCurrentStreakDays(workouts: Workout[]): number {
@@ -88,6 +81,9 @@ function getCurrentStreakDays(workouts: Workout[]): number {
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState<Timeframe>("30d");
+  const [trendMetric, setTrendMetric] = useState<TrendMetric>("volume");
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -105,11 +101,23 @@ export default function Home() {
     void load();
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const syncTheme = () => setIsDarkMode(root.classList.contains("dark"));
+    syncTheme();
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
   const analytics = useMemo(() => {
     let totalVolume = 0;
     let totalSets = 0;
     const prByExercise = new Map<string, PersonalRecord>();
     const volumeByDate = new Map<string, number>();
+    const oneRepMaxByDate = new Map<string, number>();
     const volumeByMuscleGroup = new Map<string, number>();
 
     for (const workout of workouts) {
@@ -117,7 +125,7 @@ export default function Home() {
       for (const exercise of workout.exercises) {
         const normalizedName = normalizeExerciseName(exercise.name);
         const displayName = exercise.name.trim() || "Unnamed exercise";
-        const group = mapExerciseToMuscleGroup(displayName);
+        const group = resolveExerciseMuscle(displayName);
 
         for (const set of exercise.sets) {
           const volume = Math.max(0, set.weight) * Math.max(0, set.reps);
@@ -127,6 +135,7 @@ export default function Home() {
           volumeByMuscleGroup.set(group, (volumeByMuscleGroup.get(group) ?? 0) + volume);
 
           const oneRepMax = estimateOneRepMax(set.weight, set.reps);
+          oneRepMaxByDate.set(workoutDate, Math.max(oneRepMaxByDate.get(workoutDate) ?? 0, oneRepMax));
           const currentPr = prByExercise.get(normalizedName);
           if (!currentPr || oneRepMax > currentPr.maxEstimatedOneRepMax) {
             prByExercise.set(normalizedName, {
@@ -144,23 +153,41 @@ export default function Home() {
       .map(([date, volume]) => ({
         date,
         totalVolume: volume,
+        estimatedOneRepMax: oneRepMaxByDate.get(date) ?? 0,
         shortDate: date.slice(5),
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    const latestVolumePoints = sortedVolumeTrend.slice(-10);
+    const latestDate = sortedVolumeTrend.at(-1)?.date;
+    const latestDateObj = latestDate ? new Date(latestDate) : null;
+    const timeframeDays: Record<Exclude<Timeframe, "all">, number> = {
+      "7d": 7,
+      "30d": 30,
+      "90d": 90,
+    };
+    const filteredByTimeframe = sortedVolumeTrend.filter((point) => {
+      if (timeframe === "all" || !latestDateObj) {
+        return true;
+      }
+      const pointDate = new Date(point.date);
+      const diffMs = latestDateObj.getTime() - pointDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      return diffDays <= timeframeDays[timeframe];
+    });
+    const latestVolumePoints = filteredByTimeframe.slice(-10);
 
     const previousWindow = latestVolumePoints.slice(0, Math.max(0, latestVolumePoints.length - 5));
     const recentWindow = latestVolumePoints.slice(-5);
 
+    const metricKey = trendMetric === "volume" ? "totalVolume" : "estimatedOneRepMax";
     const previousAvg =
       previousWindow.length === 0
         ? 0
-        : previousWindow.reduce((sum, point) => sum + point.totalVolume, 0) / previousWindow.length;
+        : previousWindow.reduce((sum, point) => sum + point[metricKey], 0) / previousWindow.length;
     const recentAvg =
       recentWindow.length === 0
         ? 0
-        : recentWindow.reduce((sum, point) => sum + point.totalVolume, 0) / recentWindow.length;
+        : recentWindow.reduce((sum, point) => sum + point[metricKey], 0) / recentWindow.length;
     const trendPct = previousAvg === 0 ? 0 : ((recentAvg - previousAvg) / previousAvg) * 100;
 
     const topPrs = [...prByExercise.values()]
@@ -184,7 +211,20 @@ export default function Home() {
       muscleSummary,
       latestVolumePoints,
     };
-  }, [workouts]);
+  }, [timeframe, trendMetric, workouts]);
+
+  const chartTheme = useMemo(
+    () => ({
+      grid: isDarkMode ? "#3f3f46" : "#d4d4d8",
+      axis: isDarkMode ? "#a1a1aa" : "#71717a",
+      tooltipBg: isDarkMode ? "#18181b" : "#ffffff",
+      tooltipBorder: isDarkMode ? "#3f3f46" : "#d4d4d8",
+      line: isDarkMode ? "#4ade80" : "#16a34a",
+      bar: isDarkMode ? "#60a5fa" : "#2563eb",
+      text: isDarkMode ? "#e4e4e7" : "#18181b",
+    }),
+    [isDarkMode]
+  );
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -244,7 +284,9 @@ export default function Home() {
                         {analytics.trendPct >= 0 ? "+" : ""}
                         {analytics.trendPct.toFixed(1)}%
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Recent 5 sessions vs previous</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Recent 5 sessions vs previous ({trendMetric === "volume" ? "volume" : "estimated 1RM"})
+                      </p>
                     </div>
                   </div>
 
@@ -286,14 +328,26 @@ export default function Home() {
                               }))}
                               margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
                             >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
-                              <XAxis dataKey="group" tick={{ fill: "#71717a", fontSize: 12 }} interval={0} angle={-20} textAnchor="end" height={50} />
-                              <YAxis tick={{ fill: "#71717a", fontSize: 12 }} />
+                              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                              <XAxis
+                                dataKey="group"
+                                tick={{ fill: chartTheme.axis, fontSize: 12 }}
+                                interval={0}
+                                angle={-20}
+                                textAnchor="end"
+                                height={50}
+                              />
+                              <YAxis tick={{ fill: chartTheme.axis, fontSize: 12 }} />
                               <Tooltip
-                                contentStyle={{ borderRadius: 8, border: "1px solid #d4d4d8" }}
+                                contentStyle={{
+                                  borderRadius: 8,
+                                  border: `1px solid ${chartTheme.tooltipBorder}`,
+                                  backgroundColor: chartTheme.tooltipBg,
+                                  color: chartTheme.text,
+                                }}
                                 formatter={(value: number) => [`${value.toLocaleString()} volume`, "Volume"]}
                               />
-                              <Bar dataKey="volumeRounded" name="Volume" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                              <Bar dataKey="volumeRounded" name="Volume" fill={chartTheme.bar} radius={[6, 6, 0, 0]} />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>
@@ -302,7 +356,47 @@ export default function Home() {
                   </div>
 
                   <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
-                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Volume over time</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
+                      </h2>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={timeframe}
+                          onChange={(event) => setTimeframe(event.target.value as Timeframe)}
+                          className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        >
+                          <option value="7d">7d</option>
+                          <option value="30d">30d</option>
+                          <option value="90d">90d</option>
+                          <option value="all">All</option>
+                        </select>
+                        <div className="flex overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
+                          <button
+                            type="button"
+                            onClick={() => setTrendMetric("volume")}
+                            className={`px-2 py-1 text-xs ${
+                              trendMetric === "volume"
+                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                                : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            Volume
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTrendMetric("estimated1rm")}
+                            className={`px-2 py-1 text-xs ${
+                              trendMetric === "estimated1rm"
+                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                                : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                            }`}
+                          >
+                            Est. 1RM
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                     {analytics.latestVolumePoints.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No volume trend yet.</p>
                     ) : (
@@ -312,21 +406,32 @@ export default function Home() {
                             data={analytics.latestVolumePoints.map((point) => ({
                               ...point,
                               totalVolumeRounded: Math.round(point.totalVolume),
+                              estimatedOneRepMaxRounded: Number(point.estimatedOneRepMax.toFixed(1)),
                             }))}
                             margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
-                            <XAxis dataKey="shortDate" tick={{ fill: "#71717a", fontSize: 12 }} />
-                            <YAxis tick={{ fill: "#71717a", fontSize: 12 }} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                            <XAxis dataKey="shortDate" tick={{ fill: chartTheme.axis, fontSize: 12 }} />
+                            <YAxis tick={{ fill: chartTheme.axis, fontSize: 12 }} />
                             <Tooltip
                               labelFormatter={(_, payload) => payload?.[0]?.payload?.date ?? ""}
-                              contentStyle={{ borderRadius: 8, border: "1px solid #d4d4d8" }}
-                              formatter={(value: number) => [`${value.toLocaleString()} volume`, "Volume"]}
+                              contentStyle={{
+                                borderRadius: 8,
+                                border: `1px solid ${chartTheme.tooltipBorder}`,
+                                backgroundColor: chartTheme.tooltipBg,
+                                color: chartTheme.text,
+                              }}
+                              formatter={(value: number) => [
+                                trendMetric === "volume"
+                                  ? `${value.toLocaleString()} volume`
+                                  : `${value.toLocaleString()} est. 1RM`,
+                                trendMetric === "volume" ? "Volume" : "Estimated 1RM",
+                              ]}
                             />
                             <Line
                               type="monotone"
-                              dataKey="totalVolumeRounded"
-                              stroke="#16a34a"
+                              dataKey={trendMetric === "volume" ? "totalVolumeRounded" : "estimatedOneRepMaxRounded"}
+                              stroke={chartTheme.line}
                               strokeWidth={2}
                               dot={{ r: 3 }}
                               activeDot={{ r: 5 }}

@@ -6,6 +6,7 @@ import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
+import { EXERCISE_LIBRARY, resolveExerciseMuscle } from "@/lib/exercise-library";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
 import {
@@ -55,6 +56,7 @@ const TRAINING_DAYS = [
   { dayOfWeek: 6, label: "Saturday" },
   { dayOfWeek: 7, label: "Sunday" },
 ];
+const EXERCISE_DATALIST_ID = "exercise-library-options";
 
 function getDraftStorageKey(): string {
   const username = getAuthUsername() ?? "anonymous";
@@ -597,9 +599,15 @@ export default function StartWorkoutPage() {
                               onChange={(event) =>
                                 updateExerciseName(exercise.id, event.target.value)
                               }
+                              list={EXERCISE_DATALIST_ID}
                               placeholder="e.g. Bench Press"
                               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                             />
+                            {exercise.name.trim() && (
+                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                Muscle: {resolveExerciseMuscle(exercise.name)}
+                              </p>
+                            )}
                             {exerciseNameErrors[exercise.id] && (
                               <p className="mt-1 text-xs text-red-600">{exerciseNameErrors[exercise.id]}</p>
                             )}
@@ -826,6 +834,13 @@ export default function StartWorkoutPage() {
           </PageContainer>
         </div>
       </div>
+      <datalist id={EXERCISE_DATALIST_ID}>
+        {EXERCISE_LIBRARY.map((exercise) => (
+          <option key={`${exercise.name}-${exercise.muscle}`} value={exercise.name}>
+            {exercise.muscle}
+          </option>
+        ))}
+      </datalist>
     </div>
   );
 }
