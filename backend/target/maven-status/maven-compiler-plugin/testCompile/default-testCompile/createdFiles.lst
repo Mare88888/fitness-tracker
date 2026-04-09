@@ -1,0 +1,3 @@
+com\fitnesstracker\backend\service\WorkoutServiceIntegrationTest.class
+com\fitnesstracker\backend\controller\AuthControllerIntegrationTest.class
+com\fitnesstracker\backend\controller\WorkoutControllerIntegrationTest.class
