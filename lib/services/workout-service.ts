@@ -1,6 +1,7 @@
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import { clearAuthToken } from "@/lib/auth/token";
 import { parseApiRequestError } from "@/lib/services/api-error";
+import { ensureCsrfToken } from "@/lib/services/csrf";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -25,19 +26,27 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 }
 
 async function refreshAccessToken(): Promise<boolean> {
+  const csrfToken = await ensureCsrfToken();
   const response = await fetch(buildUrl("/auth/refresh"), {
     method: "POST",
     credentials: "include",
+    headers: {
+      "X-XSRF-TOKEN": csrfToken,
+    },
   });
   return response.ok;
 }
 
 async function fetchWithSilentRefresh(input: string, init: RequestInit = {}): Promise<Response> {
+  const method = (init.method ?? "GET").toUpperCase();
+  const requiresCsrf = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+  const csrfToken = requiresCsrf ? await ensureCsrfToken() : null;
   const requestInit: RequestInit = {
     ...init,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {}),
       ...(init.headers ?? {}),
     },
   };

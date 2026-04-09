@@ -1,6 +1,7 @@
 import type { AuthRequest, AuthResponse } from "@/types/auth";
 import { clearAuthToken, setAuthUsername } from "@/lib/auth/token";
 import { parseApiRequestError } from "@/lib/services/api-error";
+import { ensureCsrfToken } from "@/lib/services/csrf";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,11 +20,13 @@ async function parseAuthResponse(response: Response): Promise<AuthResponse> {
 }
 
 export async function register(payload: AuthRequest): Promise<AuthResponse> {
+  const csrfToken = await ensureCsrfToken();
   const response = await fetch(buildUrl("/auth/register"), {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": csrfToken,
     },
     body: JSON.stringify(payload),
   });
@@ -33,11 +36,13 @@ export async function register(payload: AuthRequest): Promise<AuthResponse> {
 }
 
 export async function login(payload: AuthRequest): Promise<AuthResponse> {
+  const csrfToken = await ensureCsrfToken();
   const response = await fetch(buildUrl("/auth/login"), {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": csrfToken,
     },
     body: JSON.stringify(payload),
   });
@@ -47,9 +52,13 @@ export async function login(payload: AuthRequest): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
+  const csrfToken = await ensureCsrfToken();
   const response = await fetch(buildUrl("/auth/logout"), {
     method: "POST",
     credentials: "include",
+    headers: {
+      "X-XSRF-TOKEN": csrfToken,
+    },
   });
   if (!response.ok) {
     await parseApiRequestError(response, "Logout failed.");

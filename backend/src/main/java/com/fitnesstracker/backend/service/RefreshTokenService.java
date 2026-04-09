@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,12 @@ public class RefreshTokenService {
     @Transactional
     public void revokeByUser(AppUser user) {
         refreshTokenRepository.deleteByUser(user);
+    }
+
+    @Scheduled(fixedDelayString = "${app.auth.refresh-cleanup-ms}")
+    @Transactional
+    public void cleanupExpiredAndRevokedTokens() {
+        refreshTokenRepository.deleteByRevokedTrueOrExpiresAtBefore(Instant.now());
     }
 
     private String hash(String value) {

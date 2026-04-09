@@ -9,11 +9,17 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.time.Duration;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +39,10 @@ public class AuthController {
     private long accessExpirationMs;
     @Value("${app.jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
+    @Value("${app.auth.cookie-secure}")
+    private boolean secureCookies;
+    @Value("${app.auth.cookie-same-site}")
+    private String sameSite;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
@@ -78,26 +88,34 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/csrf")
+    public ResponseEntity<Map<String, String>> csrf(CsrfToken csrfToken) {
+        return ResponseEntity.ok(Map.of("token", csrfToken.getToken()));
+    }
+
     private void attachAuthCookies(HttpServletResponse response, AppUser user) {
         String accessToken = authService.issueAccessToken(user);
         String refreshToken = authService.issueRefreshToken(user);
 
-        response.addCookie(buildCookie(accessCookieName, accessToken, (int) (accessExpirationMs / 1000)));
-        response.addCookie(buildCookie(refreshCookieName, refreshToken, (int) (refreshExpirationMs / 1000)));
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(accessCookieName, accessToken, accessExpirationMs));
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(refreshCookieName, refreshToken, refreshExpirationMs));
     }
 
     private void clearAuthCookies(HttpServletResponse response) {
-        response.addCookie(buildCookie(accessCookieName, "", 0));
-        response.addCookie(buildCookie(refreshCookieName, "", 0));
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(accessCookieName, "", 0));
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(refreshCookieName, "", 0));
     }
 
-    private Cookie buildCookie(String name, String value, int maxAgeSeconds) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAgeSeconds);
-        return cookie;
+    private String buildCookie(String name, String value, long maxAgeMillis) {
+        long maxAgeSeconds = Math.max(0, maxAgeMillis / 1000);
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(secureCookies)
+                .sameSite(sameSite)
+                .path("/")
+                .maxAge(Duration.ofSeconds(maxAgeSeconds))
+                .build()
+                .toString();
     }
 
     private String readCookie(HttpServletRequest request, String cookieName) {
