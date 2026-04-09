@@ -7,6 +7,7 @@ const sidebarItems = [
   { label: "Dashboard", href: "/" },
   { label: "Workouts", href: "/workouts/start" },
   { label: "History", href: "/history" },
+  { label: "Routines", href: "/routines" },
 ];
 
 export function Sidebar() {

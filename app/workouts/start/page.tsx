@@ -8,8 +8,16 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
+import {
+  assignWeeklyPlan,
+  createTemplate,
+  getTemplates,
+  getWeeklyPlan,
+} from "@/lib/services/template-service";
 import type { ApiFieldValidationError } from "@/types/api-error";
+import type { WorkoutTemplate } from "@/types/template";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
+import type { WeeklyPlan } from "@/types/weekly-plan";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +45,16 @@ type WorkoutDraft = {
 };
 
 type DraftSaveStatus = "idle" | "saving" | "saved";
+
+const TRAINING_DAYS = [
+  { dayOfWeek: 1, label: "Monday" },
+  { dayOfWeek: 2, label: "Tuesday" },
+  { dayOfWeek: 3, label: "Wednesday" },
+  { dayOfWeek: 4, label: "Thursday" },
+  { dayOfWeek: 5, label: "Friday" },
+  { dayOfWeek: 6, label: "Saturday" },
+  { dayOfWeek: 7, label: "Sunday" },
+];
 
 function getDraftStorageKey(): string {
   const username = getAuthUsername() ?? "anonymous";
@@ -74,6 +92,13 @@ export default function StartWorkoutPage() {
   const [hasRecoveredDraft, setHasRecoveredDraft] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState<number | null>(null);
   const [draftSaveStatus, setDraftSaveStatus] = useState<DraftSaveStatus>("idle");
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+  const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [isUpdatingPlanDay, setIsUpdatingPlanDay] = useState<number | null>(null);
+  const [isStartingTodaysPlan, setIsStartingTodaysPlan] = useState(false);
   const autosaveTimeoutRef = useRef<number | null>(null);
 
   const addExercise = () => {
@@ -217,6 +242,23 @@ export default function StartWorkoutPage() {
   }, []);
 
   useEffect(() => {
+    const loadTemplateData = async () => {
+      setIsLoadingTemplates(true);
+      try {
+        const [templateData, weeklyPlanData] = await Promise.all([getTemplates(), getWeeklyPlan()]);
+        setTemplates(templateData);
+        setWeeklyPlan(weeklyPlanData);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load templates.";
+        toast.error(message);
+      } finally {
+        setIsLoadingTemplates(false);
+      }
+    };
+    void loadTemplateData();
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -294,6 +336,105 @@ export default function StartWorkoutPage() {
     setExercises([createExercise()]);
     setHasRecoveredDraft(false);
     toast.success("Draft discarded.");
+  };
+
+  const applyTemplateById = (templateId: number, options?: { forceWorkoutName?: boolean }) => {
+    const template = templates.find((item) => item.id === templateId);
+    if (!template) {
+      return false;
+    }
+    setWorkoutName((previous) => (options?.forceWorkoutName ? template.name : previous || template.name));
+    setExercises(
+      template.exercises.map((exercise) => ({
+        id: crypto.randomUUID(),
+        name: exercise.name,
+        sets: exercise.sets.map((set) => ({
+          id: crypto.randomUUID(),
+          reps: String(set.reps),
+          weight: String(set.weight),
+        })),
+      }))
+    );
+    toast.success(`Template "${template.name}" applied.`);
+    return true;
+  };
+
+  const applyTemplate = () => {
+    const parsedTemplateId = Number(selectedTemplateId);
+    if (!parsedTemplateId) {
+      return;
+    }
+    applyTemplateById(parsedTemplateId);
+  };
+
+  const handleStartTodaysPlannedWorkout = () => {
+    setIsStartingTodaysPlan(true);
+    try {
+      const jsDay = new Date().getDay();
+      const dayOfWeek = ((jsDay + 6) % 7) + 1;
+      const todayPlan = weeklyPlan.find((plan) => plan.dayOfWeek === dayOfWeek);
+      if (!todayPlan) {
+        const dayLabel = TRAINING_DAYS.find((day) => day.dayOfWeek === dayOfWeek)?.label ?? "today";
+        toast.error(`No template assigned for ${dayLabel}.`);
+        return;
+      }
+      const applied = applyTemplateById(todayPlan.templateId, { forceWorkoutName: true });
+      if (!applied) {
+        toast.error("Assigned template was not found. Refresh templates and try again.");
+        return;
+      }
+      setSelectedTemplateId(String(todayPlan.templateId));
+    } finally {
+      setIsStartingTodaysPlan(false);
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    const validationError = getValidationError();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    const suggestedName = workoutName.trim() ? `${workoutName.trim()} Template` : "New Template";
+    const templateName = window.prompt("Template name", suggestedName);
+    if (!templateName) {
+      return;
+    }
+    setIsSavingTemplate(true);
+    try {
+      const payload = buildCreateWorkoutPayload();
+      const createdTemplate = await createTemplate({
+        name: templateName.trim(),
+        exercises: payload.exercises,
+      });
+      setTemplates((previous) => [...previous, createdTemplate].sort((a, b) => a.name.localeCompare(b.name)));
+      toast.success(`Template "${createdTemplate.name}" saved.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save template.";
+      toast.error(message);
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  const handleAssignPlanDay = async (dayOfWeek: number, templateId: number) => {
+    if (!templateId) {
+      return;
+    }
+    setIsUpdatingPlanDay(dayOfWeek);
+    try {
+      const updated = await assignWeeklyPlan(dayOfWeek, templateId);
+      setWeeklyPlan((previous) => {
+        const withoutCurrentDay = previous.filter((item) => item.dayOfWeek !== dayOfWeek);
+        return [...withoutCurrentDay, updated].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+      });
+      toast.success("Weekly plan updated.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update weekly plan.";
+      toast.error(message);
+    } finally {
+      setIsUpdatingPlanDay(null);
+    }
   };
 
   const handleCreateWorkout = async () => {
@@ -565,6 +706,80 @@ export default function StartWorkoutPage() {
                       {formValidationError}
                     </p>
                   )}
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Templates</h2>
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                      Save reusable workout structures and quickly apply them.
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                      <select
+                        value={selectedTemplateId}
+                        onChange={(event) => setSelectedTemplateId(event.target.value)}
+                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                      >
+                        <option value="">Select template</option>
+                        {templates.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={applyTemplate}
+                        disabled={!selectedTemplateId || isLoadingTemplates}
+                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        Start from template
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSaveTemplate}
+                        disabled={isSavingTemplate}
+                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        {isSavingTemplate ? "Saving template..." : "Save as template"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                      Assign templates to training days.
+                    </p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {TRAINING_DAYS.map((day) => {
+                        const dayPlan = weeklyPlan.find((item) => item.dayOfWeek === day.dayOfWeek);
+                        return (
+                          <label key={day.dayOfWeek} className="flex items-center gap-2 text-sm">
+                            <span className="w-24 text-zinc-700 dark:text-zinc-300">{day.label}</span>
+                            <select
+                              value={dayPlan?.templateId ?? ""}
+                              onChange={(event) => handleAssignPlanDay(day.dayOfWeek, Number(event.target.value))}
+                              disabled={isUpdatingPlanDay === day.dayOfWeek}
+                              className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                            >
+                              <option value="">No template</option>
+                              {templates.map((template) => (
+                                <option key={template.id} value={template.id}>
+                                  {template.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleStartTodaysPlannedWorkout}
+                      disabled={isStartingTodaysPlan || isLoadingTemplates}
+                      className="mt-3 rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      {isStartingTodaysPlan ? "Starting..." : "Start today's planned workout"}
+                    </button>
+                  </div>
 
                   {feedbackMessage && (
                     <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
