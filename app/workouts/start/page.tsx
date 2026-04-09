@@ -36,6 +36,8 @@ type WorkoutDraft = {
   updatedAt: number;
 };
 
+type DraftSaveStatus = "idle" | "saving" | "saved";
+
 function getDraftStorageKey(): string {
   const username = getAuthUsername() ?? "anonymous";
   return `fitness_workout_draft_${username}`;
@@ -71,6 +73,7 @@ export default function StartWorkoutPage() {
   const [loadedWorkouts, setLoadedWorkouts] = useState<Workout[]>([]);
   const [hasRecoveredDraft, setHasRecoveredDraft] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState<number | null>(null);
+  const [draftSaveStatus, setDraftSaveStatus] = useState<DraftSaveStatus>("idle");
   const autosaveTimeoutRef = useRef<number | null>(null);
 
   const addExercise = () => {
@@ -225,6 +228,12 @@ export default function StartWorkoutPage() {
       window.clearTimeout(autosaveTimeoutRef.current);
     }
 
+    if (hasAnyFormContent) {
+      setDraftSaveStatus("saving");
+    } else {
+      setDraftSaveStatus("idle");
+    }
+
     autosaveTimeoutRef.current = window.setTimeout(() => {
       const draftStorageKey = getDraftStorageKey();
       if (!hasAnyFormContent) {
@@ -238,6 +247,7 @@ export default function StartWorkoutPage() {
       };
       window.localStorage.setItem(draftStorageKey, JSON.stringify(draft));
       setDraftTimestamp(draft.updatedAt);
+      setDraftSaveStatus("saved");
     }, 400);
 
     return () => {
@@ -253,6 +263,29 @@ export default function StartWorkoutPage() {
     }
     window.localStorage.removeItem(getDraftStorageKey());
     setDraftTimestamp(null);
+    setDraftSaveStatus("idle");
+  };
+
+  const getDraftStatusLabel = (): string | null => {
+    if (draftSaveStatus === "idle") {
+      return null;
+    }
+    if (draftSaveStatus === "saving") {
+      return "Saving draft...";
+    }
+    if (!draftTimestamp) {
+      return "Saved just now";
+    }
+
+    const secondsAgo = Math.max(0, Math.floor((Date.now() - draftTimestamp) / 1000));
+    if (secondsAgo < 5) {
+      return "Saved just now";
+    }
+    if (secondsAgo < 60) {
+      return `Saved ${secondsAgo}s ago`;
+    }
+    const minutesAgo = Math.floor(secondsAgo / 60);
+    return `Saved ${minutesAgo}m ago`;
   };
 
   const discardRecoveredDraft = () => {
@@ -370,6 +403,9 @@ export default function StartWorkoutPage() {
                 </div>
 
                 <div className="space-y-6">
+                  {getDraftStatusLabel() && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{getDraftStatusLabel()}</p>
+                  )}
                   {hasRecoveredDraft && (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                       <p>
