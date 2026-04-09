@@ -5,16 +5,20 @@ import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getWorkouts } from "@/lib/services/workout-service";
-import type { Workout } from "@/types/workout";
+import { createWorkout, deleteWorkout, getWorkouts } from "@/lib/services/workout-service";
+import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function HistoryPage() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
   useEffect(() => {
     const loadWorkouts = async () => {
@@ -35,6 +39,81 @@ export default function HistoryPage() {
     void loadWorkouts();
   }, []);
 
+  const visibleWorkouts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const filtered = workouts.filter((workout) => {
+      if (!normalizedQuery) {
+        return true;
+      }
+      return (
+        workout.name.toLowerCase().includes(normalizedQuery) ||
+        workout.exercises.some((exercise) => exercise.name.toLowerCase().includes(normalizedQuery))
+      );
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+    });
+
+    return sorted;
+  }, [query, sortOrder, workouts]);
+
+  const pageCount = Math.max(1, Math.ceil(visibleWorkouts.length / pageSize));
+  const paginatedWorkouts = visibleWorkouts.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, sortOrder]);
+
+  useEffect(() => {
+    if (page > pageCount) {
+      setPage(pageCount);
+    }
+  }, [page, pageCount]);
+
+  const handleDelete = async (workout: Workout) => {
+    if (!window.confirm(`Delete "${workout.name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteWorkout(workout.id);
+      setWorkouts((previous) => previous.filter((item) => item.id !== workout.id));
+      toast.success("Workout deleted.", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            const payload: CreateWorkoutInput = {
+              name: workout.name,
+              date: workout.date,
+              exercises: workout.exercises.map((exercise) => ({
+                name: exercise.name,
+                sets: exercise.sets.map((set) => ({
+                  reps: set.reps,
+                  weight: set.weight,
+                })),
+              })),
+            };
+            try {
+              const restored = await createWorkout(payload);
+              setWorkouts((previous) => [restored, ...previous]);
+              toast.success("Workout restored.");
+            } catch (restoreError) {
+              const message =
+                restoreError instanceof Error ? restoreError.message : "Failed to restore workout.";
+              toast.error(message);
+            }
+          },
+        },
+      });
+    } catch (deleteError) {
+      const message = deleteError instanceof Error ? deleteError.message : "Failed to delete workout.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
@@ -47,6 +126,25 @@ export default function HistoryPage() {
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                 Review previously saved workouts from your backend.
               </p>
+              {!isLoading && !error && workouts.length > 0 && (
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search by workout or exercise name"
+                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                  />
+                  <select
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value as "desc" | "asc")}
+                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                  >
+                    <option value="desc">Newest first</option>
+                    <option value="asc">Oldest first</option>
+                  </select>
+                </div>
+              )}
 
               {isLoading && (
                 <div className="mt-4 space-y-3">
@@ -75,22 +173,70 @@ export default function HistoryPage() {
 
               {!isLoading && !error && workouts.length > 0 && (
                 <ul className="mt-4 space-y-3">
-                  {workouts.map((workout) => (
+                  {paginatedWorkouts.map((workout) => (
                     <li key={workout.id} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-800/60">
                       <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
                       <p className="text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
                       <p className="text-zinc-600 dark:text-zinc-400">
                         Exercises: {workout.exercises.length}
                       </p>
-                      <Link
-                        href={`/history/${workout.id}`}
-                        className="mt-2 inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-                      >
-                        View details
-                      </Link>
+                      <div className="mt-2 flex gap-3">
+                        <Link
+                          href={`/history/${workout.id}`}
+                          className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                        >
+                          View details
+                        </Link>
+                        <Link
+                          href={`/workouts/${workout.id}/edit`}
+                          className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(workout)}
+                          className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
+              )}
+              {!isLoading && !error && workouts.length > 0 && visibleWorkouts.length === 0 && (
+                <div className="mt-4">
+                  <EmptyState
+                    title="No matching workouts"
+                    description="Try a different search term."
+                  />
+                </div>
+              )}
+              {!isLoading && !error && visibleWorkouts.length > 0 && (
+                <div className="mt-4 flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-300">
+                  <p>
+                    Page {page} of {pageCount}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => setPage((previous) => Math.max(1, previous - 1))}
+                      className="rounded border border-zinc-300 px-3 py-1 disabled:opacity-50 dark:border-zinc-700"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      disabled={page >= pageCount}
+                      onClick={() => setPage((previous) => Math.min(pageCount, previous + 1))}
+                      className="rounded border border-zinc-300 px-3 py-1 disabled:opacity-50 dark:border-zinc-700"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
               )}
             </section>
           </PageContainer>

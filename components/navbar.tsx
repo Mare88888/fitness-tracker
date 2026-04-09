@@ -1,6 +1,7 @@
 "use client";
 
-import { clearAuthToken, getAuthToken, getAuthUsername } from "@/lib/auth/token";
+import { clearAuthToken, getAuthUsername } from "@/lib/auth/token";
+import { logout } from "@/lib/services/auth-service";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,8 +39,8 @@ export function Navbar() {
 
   useEffect(() => {
     const syncAuthState = () => {
-      setIsAuthenticated(Boolean(getAuthToken()));
       const username = getAuthUsername();
+      setIsAuthenticated(Boolean(username));
       setProfileInitial(username?.trim().charAt(0).toUpperCase() || "P");
     };
 
@@ -82,8 +83,10 @@ export function Navbar() {
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuthToken();
+  const handleLogout = async () => {
+    await logout().catch(() => {
+      clearAuthToken();
+    });
     setIsAuthenticated(false);
     setProfileInitial("P");
     setIsMenuOpen(false);

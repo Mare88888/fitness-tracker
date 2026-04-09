@@ -16,10 +16,12 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\mapper\WorkoutMapper.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\AppUser.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\Exercise.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\RefreshToken.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\Set.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\Workout.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\AppUserRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\ExerciseRepository.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\RefreshTokenRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\SetRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WorkoutRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\AppUserDetailsService.java
@@ -27,4 +29,5 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\JwtService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\AuthService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\HealthService.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\RefreshTokenService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\WorkoutService.java

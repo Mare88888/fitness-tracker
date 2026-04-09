@@ -21,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponse register(RegisterRequest request) {
         String username = request.username().trim();
@@ -37,8 +38,7 @@ public class AuthService {
                 .build();
         appUserRepository.save(user);
 
-        String token = jwtService.generateToken(username);
-        return new AuthResponse(token, username);
+        return new AuthResponse(username);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -46,7 +46,27 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
         String username = authentication.getName();
-        String token = jwtService.generateToken(username);
-        return new AuthResponse(token, username);
+        return new AuthResponse(username);
+    }
+
+    public AppUser getUserByUsername(String username) {
+        return appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+    }
+
+    public String issueAccessToken(AppUser user) {
+        return jwtService.generateToken(user.getUsername());
+    }
+
+    public String issueRefreshToken(AppUser user) {
+        return refreshTokenService.issueTokenForUser(user);
+    }
+
+    public AppUser validateRefreshTokenAndGetUser(String refreshToken) {
+        return refreshTokenService.validateAndGetUser(refreshToken);
+    }
+
+    public void revokeRefreshTokensForUser(AppUser user) {
+        refreshTokenService.revokeByUser(user);
     }
 }

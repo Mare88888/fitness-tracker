@@ -1,5 +1,5 @@
 import type { AuthRequest, AuthResponse } from "@/types/auth";
-import { setAuthToken, setAuthUsername } from "@/lib/auth/token";
+import { clearAuthToken, setAuthUsername } from "@/lib/auth/token";
 import { parseApiRequestError } from "@/lib/services/api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -21,13 +21,13 @@ async function parseAuthResponse(response: Response): Promise<AuthResponse> {
 export async function register(payload: AuthRequest): Promise<AuthResponse> {
   const response = await fetch(buildUrl("/auth/register"), {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
   const data = await parseAuthResponse(response);
-  setAuthToken(data.token);
   setAuthUsername(data.username);
   return data;
 }
@@ -35,13 +35,24 @@ export async function register(payload: AuthRequest): Promise<AuthResponse> {
 export async function login(payload: AuthRequest): Promise<AuthResponse> {
   const response = await fetch(buildUrl("/auth/login"), {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
   const data = await parseAuthResponse(response);
-  setAuthToken(data.token);
   setAuthUsername(data.username);
   return data;
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch(buildUrl("/auth/logout"), {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    await parseApiRequestError(response, "Logout failed.");
+  }
+  clearAuthToken();
 }

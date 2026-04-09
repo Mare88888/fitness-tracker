@@ -18,9 +18,28 @@ public class JwtService {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    @Value("${app.jwt.refresh-expiration-ms}")
+    private long refreshTokenExpirationMs;
+
     public String generateToken(String username) {
+        return generateToken(username, jwtExpirationMs);
+    }
+
+    public String generateRefreshToken(String username) {
+        return generateToken(username, refreshTokenExpirationMs);
+    }
+
+    public long getAccessTokenExpirationMs() {
+        return jwtExpirationMs;
+    }
+
+    public long getRefreshTokenExpirationMs() {
+        return refreshTokenExpirationMs;
+    }
+
+    private String generateToken(String username, long expirationMs) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(username)

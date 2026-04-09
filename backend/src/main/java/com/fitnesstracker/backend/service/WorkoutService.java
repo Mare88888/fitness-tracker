@@ -45,6 +45,29 @@ public class WorkoutService {
     }
 
     @Transactional
+    public Optional<WorkoutDto> updateWorkout(Long id, WorkoutDto workoutDto, String username) {
+        AppUser currentUser = getCurrentUser(username);
+        Optional<Workout> existingWorkoutOptional = workoutRepository.findWithDetailsByIdAndOwner(id, currentUser);
+        if (existingWorkoutOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Workout existingWorkout = existingWorkoutOptional.get();
+        Workout mappedWorkout = workoutMapper.toEntity(workoutDto);
+
+        existingWorkout.setName(mappedWorkout.getName());
+        existingWorkout.setDate(mappedWorkout.getDate());
+        existingWorkout.getExercises().clear();
+        mappedWorkout.getExercises().forEach(exercise -> {
+            exercise.setWorkout(existingWorkout);
+            existingWorkout.getExercises().add(exercise);
+        });
+
+        Workout savedWorkout = workoutRepository.save(existingWorkout);
+        return Optional.of(workoutMapper.toDto(savedWorkout));
+    }
+
+    @Transactional
     public boolean deleteWorkoutById(Long id, String username) {
         AppUser currentUser = getCurrentUser(username);
         Optional<Workout> workout = workoutRepository.findWithDetailsByIdAndOwner(id, currentUser);

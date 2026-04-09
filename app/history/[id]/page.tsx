@@ -5,9 +5,10 @@ import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getWorkoutById } from "@/lib/services/workout-service";
+import { createWorkout, deleteWorkout, getWorkoutById } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -18,6 +19,7 @@ type WorkoutDetailsPageProps = {
 };
 
 export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) {
+  const router = useRouter();
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,45 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
 
     void loadWorkout();
   }, [params]);
+
+  const handleDelete = async () => {
+    if (!workout) {
+      return;
+    }
+    if (!window.confirm(`Delete "${workout.name}"?`)) {
+      return;
+    }
+    try {
+      await deleteWorkout(workout.id);
+      toast.success("Workout deleted.", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+              await createWorkout({
+                name: workout.name,
+                date: workout.date,
+                exercises: workout.exercises.map((exercise) => ({
+                  name: exercise.name,
+                  sets: exercise.sets.map((set) => ({
+                    reps: set.reps,
+                    weight: set.weight,
+                  })),
+                })),
+              });
+              toast.success("Workout restored.");
+              router.push("/history");
+            } catch {
+              toast.error("Failed to restore workout.");
+            }
+          },
+        },
+      });
+      router.push("/history");
+    } catch (deleteError) {
+      toast.error(deleteError instanceof Error ? deleteError.message : "Failed to delete workout.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -95,6 +136,21 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                       {workout.name}
                     </h1>
                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
+                    <div className="mt-3 flex gap-3">
+                      <Link
+                        href={`/workouts/${workout.id}/edit`}
+                        className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                      >
+                        Edit workout
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
+                      >
+                        Delete workout
+                      </button>
+                    </div>
                   </header>
 
                   {workout.exercises.length === 0 ? (

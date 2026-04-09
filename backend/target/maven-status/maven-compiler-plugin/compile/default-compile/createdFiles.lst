@@ -2,7 +2,10 @@ com\fitnesstracker\backend\security\JwtAuthenticationFilter.class
 com\fitnesstracker\backend\dto\ExerciseSetDto.class
 com\fitnesstracker\backend\model\AppUser.class
 com\fitnesstracker\backend\repository\SetRepository.class
+com\fitnesstracker\backend\model\RefreshToken$RefreshTokenBuilder.class
+com\fitnesstracker\backend\service\RefreshTokenService.class
 com\fitnesstracker\backend\service\AuthService.class
+com\fitnesstracker\backend\model\RefreshToken.class
 com\fitnesstracker\backend\model\AppUser$AppUserBuilder.class
 com\fitnesstracker\backend\dto\ExerciseDto$ExerciseDtoBuilder.class
 com\fitnesstracker\backend\dto\AuthResponse.class
@@ -11,6 +14,7 @@ com\fitnesstracker\backend\exception\ApiErrorResponse.class
 com\fitnesstracker\backend\repository\WorkoutRepository.class
 com\fitnesstracker\backend\exception\GlobalExceptionHandler.class
 com\fitnesstracker\backend\model\Set.class
+com\fitnesstracker\backend\repository\RefreshTokenRepository.class
 com\fitnesstracker\backend\controller\AuthController.class
 com\fitnesstracker\backend\model\Workout.class
 com\fitnesstracker\backend\controller\HealthController.class
