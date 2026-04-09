@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
 import { EXERCISE_LIBRARY, resolveExerciseMuscle } from "@/lib/exercise-library";
+import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
 import {
@@ -19,6 +20,7 @@ import type { ApiFieldValidationError } from "@/types/api-error";
 import type { WorkoutTemplate } from "@/types/template";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import type { WeeklyPlan } from "@/types/weekly-plan";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -57,6 +59,7 @@ const TRAINING_DAYS = [
   { dayOfWeek: 7, label: "Sunday" },
 ];
 const EXERCISE_DATALIST_ID = "exercise-library-options";
+const START_WORKOUT_BOOTSTRAP_KEY = "fitness_start_workout_bootstrap";
 
 function getDraftStorageKey(): string {
   const username = getAuthUsername() ?? "anonymous";
@@ -222,24 +225,98 @@ export default function StartWorkoutPage() {
     if (typeof window === "undefined") {
       return;
     }
-    const draftStorageKey = getDraftStorageKey();
-    const rawDraft = window.localStorage.getItem(draftStorageKey);
-    if (!rawDraft) {
+
+    const bootstrapRaw = sessionStorage.getItem(START_WORKOUT_BOOTSTRAP_KEY);
+    if (bootstrapRaw) {
+      try {
+        const parsed = JSON.parse(bootstrapRaw) as {
+          workoutName?: string;
+          exercises?: WorkoutExercise[];
+          hasRecoveredDraft?: boolean;
+          draftTimestamp?: number | null;
+        };
+        setWorkoutName(parsed.workoutName ?? "");
+        setExercises(parsed.exercises?.length ? parsed.exercises : [createExercise()]);
+        if (parsed.hasRecoveredDraft) {
+          setHasRecoveredDraft(true);
+        }
+        if (parsed.draftTimestamp != null) {
+          setDraftTimestamp(parsed.draftTimestamp);
+        }
+      } catch {
+        /* ignore */
+      }
+      sessionStorage.removeItem(START_WORKOUT_BOOTSTRAP_KEY);
       return;
     }
 
-    try {
-      const parsed = JSON.parse(rawDraft) as WorkoutDraft;
-      if (!parsed.workoutName && (!parsed.exercises || parsed.exercises.length === 0)) {
-        return;
+    const draftStorageKey = getDraftStorageKey();
+    const rawDraft = window.localStorage.getItem(draftStorageKey);
+    const pendingNames = takePendingExercisesForStartWorkout();
+
+    let initialName = "";
+    let initialExercises: WorkoutExercise[] = [createExercise()];
+    let recoveredDraft = false;
+    let draftTs: number | null = null;
+
+    if (rawDraft) {
+      try {
+        const parsed = JSON.parse(rawDraft) as WorkoutDraft;
+        if (parsed.workoutName || (parsed.exercises && parsed.exercises.length > 0)) {
+          initialName = parsed.workoutName ?? "";
+          initialExercises = parsed.exercises?.length ? parsed.exercises : [createExercise()];
+          recoveredDraft = true;
+          draftTs = parsed.updatedAt ?? null;
+        }
+      } catch {
+        window.localStorage.removeItem(draftStorageKey);
       }
-      setWorkoutName(parsed.workoutName ?? "");
-      setExercises(parsed.exercises?.length ? parsed.exercises : [createExercise()]);
+    }
+
+    if (pendingNames.length > 0) {
+      const rows: WorkoutExercise[] = pendingNames.map((name) => ({
+        id: crypto.randomUUID(),
+        name,
+        sets: [createSet()],
+      }));
+      const onlyOne = initialExercises.length === 1;
+      const first = initialExercises[0];
+      const firstSet = first?.sets[0];
+      const singleEmptyStarter =
+        onlyOne &&
+        !first.name.trim() &&
+        first.sets.length === 1 &&
+        !(firstSet?.reps ?? "").trim() &&
+        !(firstSet?.weight ?? "").trim();
+      if (singleEmptyStarter && !recoveredDraft) {
+        initialExercises = rows;
+      } else {
+        initialExercises = [...initialExercises, ...rows];
+      }
+      toast.success(`Added ${pendingNames.length} exercise(s) from the library.`);
+    }
+
+    if (recoveredDraft || pendingNames.length > 0) {
+      sessionStorage.setItem(
+        START_WORKOUT_BOOTSTRAP_KEY,
+        JSON.stringify({
+          workoutName: initialName,
+          exercises: initialExercises,
+          hasRecoveredDraft: recoveredDraft,
+          draftTimestamp: draftTs,
+        })
+      );
+    }
+
+    if (recoveredDraft) {
+      setWorkoutName(initialName);
+      setExercises(initialExercises);
       setHasRecoveredDraft(true);
-      setDraftTimestamp(parsed.updatedAt ?? null);
+      setDraftTimestamp(draftTs);
       toast.info("Recovered your unsaved workout draft.");
-    } catch {
-      window.localStorage.removeItem(draftStorageKey);
+    } else if (pendingNames.length > 0) {
+      setWorkoutName(initialName);
+      setExercises(initialExercises);
     }
   }, []);
 
@@ -683,13 +760,21 @@ export default function StartWorkoutPage() {
                     ))}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={addExercise}
-                    className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Add exercise
-                  </button>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={addExercise}
+                      className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Add exercise
+                    </button>
+                    <Link
+                      href="/exercises"
+                      className="inline-flex w-full items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Exercise Library
+                    </Link>
+                  </div>
 
                   <div className="flex flex-wrap gap-3">
                     <button

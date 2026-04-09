@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 const navItems = [
   { label: "Dashboard", href: "/" },
   { label: "Workouts", href: "/workouts/start" },
+  { label: "Exercise Library", href: "/exercises" },
   { label: "History", href: "/history" },
   { label: "Routines", href: "/routines" },
 ];

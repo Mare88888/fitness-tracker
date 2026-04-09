@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const sidebarItems = [
   { label: "Dashboard", href: "/" },
   { label: "Workouts", href: "/workouts/start" },
+  { label: "Exercise Library", href: "/exercises" },
   { label: "History", href: "/history" },
   { label: "Routines", href: "/routines" },
 ];

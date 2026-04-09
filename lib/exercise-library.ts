@@ -38,6 +38,10 @@ export const EXERCISE_LIBRARY: ExerciseDefinition[] = [
   { name: "Plank", muscle: "Core" },
 ];
 
+export const EXERCISE_MUSCLE_GROUPS: string[] = [...new Set(EXERCISE_LIBRARY.map((e) => e.muscle))].sort(
+  (a, b) => a.localeCompare(b)
+);
+
 function normalize(input: string): string {
   return input.trim().toLowerCase().replace(/\s+/g, " ");
 }
