@@ -24,6 +24,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
   const router = useRouter();
 
   const isLogin = mode === "login";
+  const isFormValid = username.trim().length >= 3 && password.trim().length >= 6;
 
   const handleSubmit = async () => {
     setError(null);
@@ -108,12 +109,17 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
 
         <button
           type="button"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isFormValid}
           onClick={handleSubmit}
           className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
         >
           {isSubmitting ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
+        {!isFormValid && (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Username must be at least 3 characters and password at least 6 characters.
+          </p>
+        )}
 
         {success && (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">

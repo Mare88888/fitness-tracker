@@ -25,6 +25,32 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getValidationError = (currentPayload: CreateWorkoutInput | null): string | null => {
+    if (!currentPayload) {
+      return "Workout data is not loaded.";
+    }
+    if (!currentPayload.name.trim()) {
+      return "Workout name is required.";
+    }
+    if (!currentPayload.date) {
+      return "Workout date is required.";
+    }
+    if (currentPayload.exercises.some((exercise) => !exercise.name.trim())) {
+      return "Each exercise must have a name.";
+    }
+    if (
+      currentPayload.exercises.some((exercise) =>
+        exercise.sets.some((set) => Number.isNaN(set.reps) || Number.isNaN(set.weight) || set.reps <= 0 || set.weight < 0)
+      )
+    ) {
+      return "Each set needs valid values: reps > 0 and weight >= 0.";
+    }
+    return null;
+  };
+
+  const formValidationError = getValidationError(payload);
+  const canSave = !isSaving && !formValidationError;
+
   useEffect(() => {
     const loadWorkout = async () => {
       setError(null);
@@ -299,11 +325,14 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                   <button
                     type="button"
                     onClick={handleSave}
-                    disabled={isSaving}
+                    disabled={!canSave}
                     className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
                   >
                     {isSaving ? "Saving..." : "Save changes"}
                   </button>
+                  {formValidationError && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{formValidationError}</p>
+                  )}
                 </div>
               )}
             </section>

@@ -5,11 +5,12 @@ import { PageContainer } from "@/components/page-container";
 import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getAuthUsername } from "@/lib/auth/token";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
 import type { ApiFieldValidationError } from "@/types/api-error";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type WorkoutSet = {
@@ -28,6 +29,17 @@ type SetFieldError = {
   reps?: string;
   weight?: string;
 };
+
+type WorkoutDraft = {
+  workoutName: string;
+  exercises: WorkoutExercise[];
+  updatedAt: number;
+};
+
+function getDraftStorageKey(): string {
+  const username = getAuthUsername() ?? "anonymous";
+  return `fitness_workout_draft_${username}`;
+}
 
 function createSet(): WorkoutSet {
   return {
@@ -57,6 +69,9 @@ export default function StartWorkoutPage() {
   const [setFieldErrors, setSetFieldErrors] = useState<Record<string, SetFieldError>>({});
   const [validationMessages, setValidationMessages] = useState<string[]>([]);
   const [loadedWorkouts, setLoadedWorkouts] = useState<Workout[]>([]);
+  const [hasRecoveredDraft, setHasRecoveredDraft] = useState(false);
+  const [draftTimestamp, setDraftTimestamp] = useState<number | null>(null);
+  const autosaveTimeoutRef = useRef<number | null>(null);
 
   const addExercise = () => {
     setExercises((previous) => [...previous, createExercise()]);
@@ -170,6 +185,84 @@ export default function StartWorkoutPage() {
     return null;
   };
 
+  const formValidationError = getValidationError();
+  const canSaveWorkout = !isSaving && !formValidationError;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const draftStorageKey = getDraftStorageKey();
+    const rawDraft = window.localStorage.getItem(draftStorageKey);
+    if (!rawDraft) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(rawDraft) as WorkoutDraft;
+      if (!parsed.workoutName && (!parsed.exercises || parsed.exercises.length === 0)) {
+        return;
+      }
+      setWorkoutName(parsed.workoutName ?? "");
+      setExercises(parsed.exercises?.length ? parsed.exercises : [createExercise()]);
+      setHasRecoveredDraft(true);
+      setDraftTimestamp(parsed.updatedAt ?? null);
+      toast.info("Recovered your unsaved workout draft.");
+    } catch {
+      window.localStorage.removeItem(draftStorageKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const hasAnyFormContent =
+      workoutName.trim().length > 0 ||
+      exercises.some((exercise) => exercise.name.trim().length > 0 || exercise.sets.some((set) => set.reps || set.weight));
+
+    if (autosaveTimeoutRef.current) {
+      window.clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    autosaveTimeoutRef.current = window.setTimeout(() => {
+      const draftStorageKey = getDraftStorageKey();
+      if (!hasAnyFormContent) {
+        window.localStorage.removeItem(draftStorageKey);
+        return;
+      }
+      const draft: WorkoutDraft = {
+        workoutName,
+        exercises,
+        updatedAt: Date.now(),
+      };
+      window.localStorage.setItem(draftStorageKey, JSON.stringify(draft));
+      setDraftTimestamp(draft.updatedAt);
+    }, 400);
+
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        window.clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, [exercises, workoutName]);
+
+  const clearDraft = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.removeItem(getDraftStorageKey());
+    setDraftTimestamp(null);
+  };
+
+  const discardRecoveredDraft = () => {
+    clearDraft();
+    setWorkoutName("");
+    setExercises([createExercise()]);
+    setHasRecoveredDraft(false);
+    toast.success("Draft discarded.");
+  };
+
   const handleCreateWorkout = async () => {
     setFeedbackMessage(null);
     setFeedbackError(null);
@@ -191,6 +284,8 @@ export default function StartWorkoutPage() {
       const created = await createWorkout(payload);
       setFeedbackMessage(`Workout created successfully (ID: ${created.id}).`);
       toast.success(`Workout saved (ID: ${created.id})`);
+      clearDraft();
+      setHasRecoveredDraft(false);
     } catch (error) {
       if (error instanceof ApiRequestError) {
         mapValidationErrors(error.validationErrors);
@@ -275,6 +370,21 @@ export default function StartWorkoutPage() {
                 </div>
 
                 <div className="space-y-6">
+                  {hasRecoveredDraft && (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                      <p>
+                        Recovered draft
+                        {draftTimestamp ? ` from ${new Date(draftTimestamp).toLocaleString()}` : ""}.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={discardRecoveredDraft}
+                        className="mt-2 text-xs font-medium underline underline-offset-2"
+                      >
+                        Discard draft
+                      </button>
+                    </div>
+                  )}
                   <div>
                     <label
                       htmlFor="workout-name"
@@ -400,7 +510,7 @@ export default function StartWorkoutPage() {
                     <button
                       type="button"
                       onClick={handleCreateWorkout}
-                      disabled={isSaving}
+                      disabled={!canSaveWorkout}
                       className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
                     >
                       {isSaving ? "Saving..." : "Save workout"}
@@ -414,6 +524,11 @@ export default function StartWorkoutPage() {
                       {isLoadingWorkouts ? "Loading..." : "Load workouts (integration test)"}
                     </button>
                   </div>
+                  {formValidationError && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {formValidationError}
+                    </p>
+                  )}
 
                   {feedbackMessage && (
                     <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">

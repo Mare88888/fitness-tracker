@@ -1,23 +1,71 @@
 TODO:
 
+Highest impact next additions:
 
-Core product features
+Workout analytics
 
-Edit/update workout and exercise sets.
-Search/filter/sort history, date range, pagination.
-Delete confirmation modals and undo toasts.
+PR tracking, volume over time, streaks, muscle-group summaries.
 
-Testing
+Templates / routines
+Save a workout as template, start from template, weekly plans.
 
-Backend: controller/service integration tests (auth + workouts).
-Frontend: component tests + E2E happy paths (login, create, history, details).
+Exercise library
+Autocomplete, categories, favorite exercises, consistent naming.
 
-Production readiness
+Progressive overload helpers
+Suggest next weight/reps from last session history.
 
-Add migration tool (Flyway/Liquibase) instead of relying on ddl-auto=update.
-Add Docker profile/envs for prod, secure secrets, health checks and monitoring.
+Calendar + goals
 
-UX polish
+Weekly target sessions, completion score, reminders.
 
-Active nav highlight, better mobile sidebar (drawer), keyboard accessibility audit.
-Form-level inline validation and disabled states tied to validity.
+
+Reliability and data safety
+
+Autosave draft workouts
+Prevent losing in-progress workouts on refresh/navigation.
+
+Soft delete / archive
+Better than hard delete for user mistakes.
+
+Import/export
+CSV/JSON export for ownership/portability.
+
+Conflict-safe edits
+If same workout edited in two tabs/devices, surface merge warning.
+
+
+
+Security and account maturity
+
+Email verification + password reset
+
+Session management UI
+“Logged in devices”, revoke session.
+
+Rate limiting / brute-force protection
+Especially on auth endpoints.
+
+Audit logs (admin/internal)
+Security events and critical actions.
+
+
+UX polish that users feel immediately
+
+Onboarding flow
+First workout wizard, sample template, guided empty states.
+
+Keyboard-first forms
+Enter-to-add set, quick focus movement.
+
+Offline-first behavior
+Queue writes, sync when online.
+
+PWA install
+Mobile-friendly app icon and standalone mode.
+
+
+If I had to pick the next 3
+Autosave + crash recovery draft
+Templates/routines
+Analytics dashboard (volume + trends)

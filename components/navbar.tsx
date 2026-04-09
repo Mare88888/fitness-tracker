@@ -4,7 +4,7 @@ import { clearAuthToken, getAuthUsername } from "@/lib/auth/token";
 import { logout } from "@/lib/services/auth-service";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
   { label: "Dashboard", href: "/" },
@@ -14,11 +14,14 @@ const navItems = [
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [profileInitial, setProfileInitial] = useState("P");
   const [isDarkApplied, setIsDarkApplied] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const applyThemeToDom = (mode: "light" | "dark" | "system") => {
     if (typeof window === "undefined") {
@@ -48,6 +51,16 @@ export function Navbar() {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
+        setIsDrawerOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+        setIsDrawerOpen(false);
+      }
     };
 
     const initialSyncTimeout = window.setTimeout(syncAuthState, 0);
@@ -71,6 +84,7 @@ export function Navbar() {
     mediaQuery.addEventListener("change", handleSystemThemeChange);
 
     window.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleEscape);
     window.addEventListener("storage", syncAuthState);
     window.addEventListener("fitness-auth-changed", syncAuthState);
     return () => {
@@ -78,6 +92,7 @@ export function Navbar() {
       window.clearTimeout(initialThemeTimeout);
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
       window.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleEscape);
       window.removeEventListener("storage", syncAuthState);
       window.removeEventListener("fitness-auth-changed", syncAuthState);
     };
@@ -90,35 +105,47 @@ export function Navbar() {
     setIsAuthenticated(false);
     setProfileInitial("P");
     setIsMenuOpen(false);
+    setIsDrawerOpen(false);
     router.push("/auth/login");
   };
 
   return (
     <header className="relative z-40 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
       <nav className="flex items-center justify-between px-4 py-4 sm:px-6">
-        <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 md:hidden">
+        <div className="flex items-center gap-3 md:hidden">
+          <button
+            type="button"
+            onClick={() => setIsDrawerOpen((previous) => !previous)}
+            className="rounded-md border border-zinc-300 px-2 py-1 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isDrawerOpen}
+            aria-controls="mobile-nav-drawer"
+          >
+            Menu
+          </button>
+          <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Fitness Tracker
+          </div>
+        </div>
+        <div className="hidden text-lg font-semibold text-zinc-900 dark:text-zinc-100 md:block">
           Fitness Tracker
         </div>
-        <ul className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400 sm:gap-6 md:hidden">
-          {navItems.map((item) => (
-            <li key={item.label}>
-              <Link className="transition hover:text-zinc-900 dark:hover:text-zinc-100" href={item.href}>
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
         <div className="relative ml-auto" ref={menuRef}>
           <button
             type="button"
             onClick={() => setIsMenuOpen((previous) => !previous)}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
             aria-label="Open profile menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="profile-menu"
           >
             {profileInitial}
           </button>
           {isMenuOpen && (
-            <div className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+            <div
+              id="profile-menu"
+              className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+            >
               <button
                 type="button"
                 onClick={() => applyTheme(isDarkApplied ? "light" : "dark")}
@@ -161,6 +188,30 @@ export function Navbar() {
           )}
         </div>
       </nav>
+      {isDrawerOpen && (
+        <div className="border-t border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 md:hidden">
+          <nav id="mobile-nav-drawer" ref={drawerRef} aria-label="Mobile navigation">
+            <ul className="space-y-1">
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsDrawerOpen(false)}
+                    aria-current={pathname === item.href ? "page" : undefined}
+                    className={`block rounded-md px-3 py-2 text-sm font-medium transition ${
+                      pathname === item.href
+                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                        : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
