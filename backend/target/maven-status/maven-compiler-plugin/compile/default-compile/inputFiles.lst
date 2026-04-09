@@ -9,6 +9,9 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\LoginRequest.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\RegisterRequest.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WorkoutDto.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\ApiErrorResponse.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\FieldValidationError.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\GlobalExceptionHandler.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\FitnessTrackerBackendApplication.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\mapper\WorkoutMapper.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\AppUser.java

@@ -7,7 +7,9 @@ com\fitnesstracker\backend\model\AppUser$AppUserBuilder.class
 com\fitnesstracker\backend\dto\ExerciseDto$ExerciseDtoBuilder.class
 com\fitnesstracker\backend\dto\AuthResponse.class
 com\fitnesstracker\backend\mapper\WorkoutMapper.class
+com\fitnesstracker\backend\exception\ApiErrorResponse.class
 com\fitnesstracker\backend\repository\WorkoutRepository.class
+com\fitnesstracker\backend\exception\GlobalExceptionHandler.class
 com\fitnesstracker\backend\model\Set.class
 com\fitnesstracker\backend\controller\AuthController.class
 com\fitnesstracker\backend\model\Workout.class
@@ -26,6 +28,7 @@ com\fitnesstracker\backend\dto\WorkoutDto.class
 com\fitnesstracker\backend\dto\ExerciseDto.class
 com\fitnesstracker\backend\dto\WorkoutDto$WorkoutDtoBuilder.class
 com\fitnesstracker\backend\dto\ExerciseSetDto$ExerciseSetDtoBuilder.class
+com\fitnesstracker\backend\exception\FieldValidationError.class
 com\fitnesstracker\backend\controller\WorkoutController.class
 com\fitnesstracker\backend\dto\LoginRequest.class
 com\fitnesstracker\backend\FitnessTrackerBackendApplication.class

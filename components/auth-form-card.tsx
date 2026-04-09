@@ -1,6 +1,7 @@
 "use client";
 
 import { login, register } from "@/lib/services/auth-service";
+import { ApiRequestError } from "@/lib/services/api-error";
 import type { AuthRequest } from "@/types/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,9 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [validationMessages, setValidationMessages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -24,6 +28,9 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
   const handleSubmit = async () => {
     setError(null);
     setSuccess(null);
+    setUsernameError(null);
+    setPasswordError(null);
+    setValidationMessages([]);
 
     if (!username.trim() || !password.trim()) {
       setError("Username and password are required.");
@@ -38,6 +45,13 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
       toast.success(`Welcome, ${authResponse.username}`);
       router.push("/workouts/start");
     } catch (authError) {
+      if (authError instanceof ApiRequestError) {
+        const usernameValidation = authError.validationErrors.find((errorItem) => errorItem.field === "username");
+        const passwordValidation = authError.validationErrors.find((errorItem) => errorItem.field === "password");
+        setUsernameError(usernameValidation?.message ?? null);
+        setPasswordError(passwordValidation?.message ?? null);
+        setValidationMessages(authError.validationErrors.map((errorItem) => errorItem.message));
+      }
       const message = authError instanceof Error ? authError.message : "Authentication failed.";
       setError(message);
       toast.error(message);
@@ -72,6 +86,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             onChange={(event) => setUsername(event.target.value)}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
           />
+          {usernameError && <p className="mt-1 text-xs text-red-600">{usernameError}</p>}
         </div>
 
         <div>
@@ -88,6 +103,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             onChange={(event) => setPassword(event.target.value)}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
           />
+          {passwordError && <p className="mt-1 text-xs text-red-600">{passwordError}</p>}
         </div>
 
         <button
@@ -108,6 +124,13 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
+        )}
+        {validationMessages.length > 0 && (
+          <ul className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {validationMessages.map((message) => (
+              <li key={message}>- {message}</li>
+            ))}
+          </ul>
         )}
 
         <p className="text-sm text-zinc-600 dark:text-zinc-400">

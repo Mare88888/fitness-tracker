@@ -5,7 +5,9 @@ import { PageContainer } from "@/components/page-container";
 import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ApiRequestError } from "@/lib/services/api-error";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
+import type { ApiFieldValidationError } from "@/types/api-error";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +22,11 @@ type WorkoutExercise = {
   id: string;
   name: string;
   sets: WorkoutSet[];
+};
+
+type SetFieldError = {
+  reps?: string;
+  weight?: string;
 };
 
 function createSet(): WorkoutSet {
@@ -45,6 +52,10 @@ export default function StartWorkoutPage() {
   const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [workoutNameError, setWorkoutNameError] = useState<string | null>(null);
+  const [exerciseNameErrors, setExerciseNameErrors] = useState<Record<string, string>>({});
+  const [setFieldErrors, setSetFieldErrors] = useState<Record<string, SetFieldError>>({});
+  const [validationMessages, setValidationMessages] = useState<string[]>([]);
   const [loadedWorkouts, setLoadedWorkouts] = useState<Workout[]>([]);
 
   const addExercise = () => {
@@ -56,6 +67,14 @@ export default function StartWorkoutPage() {
   };
 
   const updateExerciseName = (exerciseId: string, name: string) => {
+    setExerciseNameErrors((previous) => {
+      if (!previous[exerciseId]) {
+        return previous;
+      }
+      const next = { ...previous };
+      delete next[exerciseId];
+      return next;
+    });
     setExercises((previous) =>
       previous.map((exercise) => (exercise.id === exerciseId ? { ...exercise, name } : exercise))
     );
@@ -90,6 +109,14 @@ export default function StartWorkoutPage() {
     field: "reps" | "weight",
     value: string
   ) => {
+    setSetFieldErrors((previous) => {
+      const current = previous[setId];
+      if (!current || !current[field]) {
+        return previous;
+      }
+      const nextForSet = { ...current, [field]: undefined };
+      return { ...previous, [setId]: nextForSet };
+    });
     setExercises((previous) =>
       previous.map((exercise) => {
         if (exercise.id !== exerciseId) {
@@ -146,6 +173,10 @@ export default function StartWorkoutPage() {
   const handleCreateWorkout = async () => {
     setFeedbackMessage(null);
     setFeedbackError(null);
+    setWorkoutNameError(null);
+    setExerciseNameErrors({});
+    setSetFieldErrors({});
+    setValidationMessages([]);
 
     const validationError = getValidationError();
     if (validationError) {
@@ -161,12 +192,52 @@ export default function StartWorkoutPage() {
       setFeedbackMessage(`Workout created successfully (ID: ${created.id}).`);
       toast.success(`Workout saved (ID: ${created.id})`);
     } catch (error) {
+      if (error instanceof ApiRequestError) {
+        mapValidationErrors(error.validationErrors);
+        const workoutNameValidation = error.validationErrors.find((errorItem) => errorItem.field === "name");
+        setWorkoutNameError(workoutNameValidation?.message ?? null);
+        setValidationMessages(error.validationErrors.map((errorItem) => `${errorItem.field}: ${errorItem.message}`));
+      }
       const message = error instanceof Error ? error.message : "Failed to create workout.";
       setFeedbackError(message);
       toast.error(message);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const mapValidationErrors = (fieldErrors: ApiFieldValidationError[]) => {
+    const nextExerciseNameErrors: Record<string, string> = {};
+    const nextSetFieldErrors: Record<string, SetFieldError> = {};
+
+    fieldErrors.forEach((errorItem) => {
+      const exerciseNameMatch = errorItem.field.match(/^exercises\[(\d+)\]\.name$/);
+      if (exerciseNameMatch) {
+        const exerciseIndex = Number(exerciseNameMatch[1]);
+        const exercise = exercises[exerciseIndex];
+        if (exercise) {
+          nextExerciseNameErrors[exercise.id] = errorItem.message;
+        }
+        return;
+      }
+
+      const setFieldMatch = errorItem.field.match(/^exercises\[(\d+)\]\.sets\[(\d+)\]\.(reps|weight)$/);
+      if (setFieldMatch) {
+        const exerciseIndex = Number(setFieldMatch[1]);
+        const setIndex = Number(setFieldMatch[2]);
+        const field = setFieldMatch[3] as "reps" | "weight";
+        const set = exercises[exerciseIndex]?.sets[setIndex];
+        if (set) {
+          nextSetFieldErrors[set.id] = {
+            ...(nextSetFieldErrors[set.id] ?? {}),
+            [field]: errorItem.message,
+          };
+        }
+      }
+    });
+
+    setExerciseNameErrors(nextExerciseNameErrors);
+    setSetFieldErrors(nextSetFieldErrors);
   };
 
   const handleLoadWorkouts = async () => {
@@ -219,6 +290,7 @@ export default function StartWorkoutPage() {
                       placeholder="e.g. Push Day"
                       className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                     />
+                    {workoutNameError && <p className="mt-1 text-xs text-red-600">{workoutNameError}</p>}
                   </div>
 
                   <div className="space-y-4">
@@ -241,6 +313,9 @@ export default function StartWorkoutPage() {
                               placeholder="e.g. Bench Press"
                               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                             />
+                            {exerciseNameErrors[exercise.id] && (
+                              <p className="mt-1 text-xs text-red-600">{exerciseNameErrors[exercise.id]}</p>
+                            )}
                           </div>
                           <button
                             type="button"
@@ -272,6 +347,9 @@ export default function StartWorkoutPage() {
                                 }
                                 className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                               />
+                              {setFieldErrors[set.id]?.reps && (
+                                <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
+                              )}
                               <input
                                 type="number"
                                 min={0}
@@ -284,6 +362,9 @@ export default function StartWorkoutPage() {
                                 }
                                 className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                               />
+                              {setFieldErrors[set.id]?.weight && (
+                                <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.weight}</p>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => removeSet(exercise.id, set.id)}
@@ -343,6 +424,13 @@ export default function StartWorkoutPage() {
                     <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                       {feedbackError}
                     </p>
+                  )}
+                  {validationMessages.length > 0 && (
+                    <ul className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {validationMessages.map((message) => (
+                        <li key={message}>- {message}</li>
+                      ))}
+                    </ul>
                   )}
 
                   {loadedWorkouts.length > 0 ? (

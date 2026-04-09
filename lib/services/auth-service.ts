@@ -1,5 +1,6 @@
 import type { AuthRequest, AuthResponse } from "@/types/auth";
 import { setAuthToken, setAuthUsername } from "@/lib/auth/token";
+import { parseApiRequestError } from "@/lib/services/api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -12,8 +13,7 @@ function buildUrl(path: string): string {
 
 async function parseAuthResponse(response: Response): Promise<AuthResponse> {
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Auth request failed (${response.status}): ${errorBody}`);
+    return parseApiRequestError(response, "Authentication failed.");
   }
   return (await response.json()) as AuthResponse;
 }

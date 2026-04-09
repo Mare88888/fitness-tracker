@@ -1,5 +1,6 @@
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import { clearAuthToken, getAuthToken } from "@/lib/auth/token";
+import { parseApiRequestError } from "@/lib/services/api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -21,8 +22,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
   }
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`API request failed (${response.status}): ${errorBody}`);
+    return parseApiRequestError(response, "Request failed.");
   }
 
   return (await response.json()) as T;

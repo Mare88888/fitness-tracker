@@ -2,6 +2,7 @@ package com.fitnesstracker.backend.controller;
 
 import com.fitnesstracker.backend.dto.WorkoutDto;
 import com.fitnesstracker.backend.service.WorkoutService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class WorkoutController {
 
     @PostMapping
     public ResponseEntity<WorkoutDto> createWorkout(
-            @RequestBody WorkoutDto workoutDto, Authentication authentication) {
+            @Valid @RequestBody WorkoutDto workoutDto, Authentication authentication) {
         WorkoutDto createdWorkout = workoutService.createWorkout(workoutDto, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdWorkout);
     }
