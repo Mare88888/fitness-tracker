@@ -11,6 +11,7 @@ import {
   writeExerciseCatalogCache,
 } from "@/lib/exercise-catalog-cache";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
+import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preferences";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
@@ -120,6 +121,7 @@ export default function Home() {
   const [trendMetric, setTrendMetric] = useState<TrendMetric>("volume");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [catalogMuscleByName, setCatalogMuscleByName] = useState<Record<string, string>>({});
+  const [weeklyGoalTarget, setWeeklyGoalTarget] = useState<number>(() => getWeeklyGoal());
 
   useEffect(() => {
     const load = async () => {
@@ -170,6 +172,12 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    return subscribeWeeklyGoalChanges(() => {
+      queueMicrotask(() => setWeeklyGoalTarget(getWeeklyGoal()));
+    });
   }, []);
 
   const analytics = useMemo(() => {
@@ -341,7 +349,7 @@ export default function Home() {
       .sort((a, b) => b.sessionsWithoutPr - a.sessionsWithoutPr)
       .slice(0, 6);
 
-    const weeklyTarget = 4;
+    const weeklyTarget = weeklyGoalTarget;
     const now = new Date();
     const weekStart = getStartOfWeek(now);
     const weekEnd = new Date(weekStart);
@@ -384,7 +392,7 @@ export default function Home() {
       adherenceScore,
       weeksHitTarget,
     };
-  }, [catalogMuscleByName, timeframe, trendMetric, workouts]);
+  }, [catalogMuscleByName, timeframe, trendMetric, weeklyGoalTarget, workouts]);
 
   const chartTheme = useMemo(
     () => ({
@@ -598,8 +606,8 @@ export default function Home() {
                             type="button"
                             onClick={() => setTrendMetric("volume")}
                             className={`px-2 py-1 text-xs ${trendMetric === "volume"
-                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                                : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                              : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                           >
                             Volume
@@ -608,8 +616,8 @@ export default function Home() {
                             type="button"
                             onClick={() => setTrendMetric("estimated1rm")}
                             className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm"
-                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                                : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                              : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                           >
                             Est. 1RM
