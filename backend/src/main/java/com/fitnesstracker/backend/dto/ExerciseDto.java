@@ -9,8 +9,10 @@ import lombok.Builder;
 @Builder
 public record ExerciseDto(
         Long id,
+        Long catalogId,
         @NotBlank(message = "Exercise name is required.")
         String name,
+        String muscleGroup,
         @NotEmpty(message = "Exercise must include at least one set.")
         List<@Valid ExerciseSetDto> sets
 ) {

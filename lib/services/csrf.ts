@@ -17,9 +17,9 @@ function readCookie(name: string): string | null {
   return matched ? decodeURIComponent(matched.slice(prefix.length)) : null;
 }
 
-export async function ensureCsrfToken(): Promise<string> {
+export async function ensureCsrfToken(forceRefresh = false): Promise<string> {
   const existing = readCookie("XSRF-TOKEN");
-  if (existing) {
+  if (existing && !forceRefresh) {
     return existing;
   }
 

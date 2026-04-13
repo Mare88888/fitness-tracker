@@ -19,6 +19,7 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutMapper workoutMapper;
     private final AppUserRepository appUserRepository;
+    private final ExerciseCatalogService exerciseCatalogService;
 
     @Transactional(readOnly = true)
     public List<WorkoutDto> getAllWorkouts(String username) {
@@ -39,6 +40,7 @@ public class WorkoutService {
     public WorkoutDto createWorkout(WorkoutDto workoutDto, String username) {
         AppUser currentUser = getCurrentUser(username);
         Workout workout = workoutMapper.toEntity(workoutDto);
+        exerciseCatalogService.attachCatalogToExercises(workout.getExercises());
         workout.setOwner(currentUser);
         Workout savedWorkout = workoutRepository.save(workout);
         return workoutMapper.toDto(savedWorkout);
@@ -54,6 +56,7 @@ public class WorkoutService {
 
         Workout existingWorkout = existingWorkoutOptional.get();
         Workout mappedWorkout = workoutMapper.toEntity(workoutDto);
+        exerciseCatalogService.attachCatalogToExercises(mappedWorkout.getExercises());
 
         existingWorkout.setName(mappedWorkout.getName());
         existingWorkout.setDate(mappedWorkout.getDate());

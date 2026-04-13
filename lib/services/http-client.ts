@@ -51,7 +51,7 @@ export async function fetchWithSilentRefresh(input: string, init: RequestInit = 
 
   let response = await fetch(input, requestInit);
   if (response.status === 403 && requiresCsrf) {
-    const refreshedCsrfToken = await ensureCsrfToken();
+    const refreshedCsrfToken = await ensureCsrfToken(true);
     response = await fetch(input, {
       ...requestInit,
       headers: {
@@ -61,7 +61,8 @@ export async function fetchWithSilentRefresh(input: string, init: RequestInit = 
       },
     });
   }
-  if (response.status !== 401) {
+  const needsAuthRefresh = response.status === 401 || response.status === 403;
+  if (!needsAuthRefresh) {
     return response;
   }
 

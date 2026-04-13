@@ -31,6 +31,10 @@ public class Exercise {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "catalog_id")
+    private ExerciseCatalog catalog;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workout_id", nullable = false)
     private Workout workout;
 

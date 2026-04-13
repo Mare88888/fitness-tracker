@@ -1,71 +1,17 @@
-TODO:
+Data durability & trust
+Real backup/restore (export/import JSON+CSV, scheduled DB backups) and soft-delete archive for workouts/templates.
 
-Highest impact next additions:
+Account maturity
+Password reset, email verification, and “active sessions/devices” management with revoke.
 
-Workout analytics
+Observability
+Error tracking (Sentry), structured logs, and basic dashboards/alerts for auth failures, API latency, and DB health.
 
-PR tracking, volume over time, streaks, muscle-group summaries.
+Progression intelligence
+“Next best set” suggestions (progressive overload), plateau detection, and weekly goal adherence score.
 
-Templates / routines
-Save a workout as template, start from template, weekly plans.
+Exercise model upgrade
+First-class Exercise catalog in backend DB (id, aliases, primary muscle, secondary muscles), not just frontend constants.
 
-Exercise library
-Autocomplete, categories, favorite exercises, consistent naming.
-
-Progressive overload helpers
-Suggest next weight/reps from last session history.
-
-Calendar + goals
-
-Weekly target sessions, completion score, reminders.
-
-
-Reliability and data safety
-
-Autosave draft workouts
-Prevent losing in-progress workouts on refresh/navigation.
-
-Soft delete / archive
-Better than hard delete for user mistakes.
-
-Import/export
-CSV/JSON export for ownership/portability.
-
-Conflict-safe edits
-If same workout edited in two tabs/devices, surface merge warning.
-
-
-
-Security and account maturity
-
-Email verification + password reset
-
-Session management UI
-“Logged in devices”, revoke session.
-
-Rate limiting / brute-force protection
-Especially on auth endpoints.
-
-Audit logs (admin/internal)
-Security events and critical actions.
-
-
-UX polish that users feel immediately
-
-Onboarding flow
-First workout wizard, sample template, guided empty states.
-
-Keyboard-first forms
-Enter-to-add set, quick focus movement.
-
-Offline-first behavior
-Queue writes, sync when online.
-
-PWA install
-Mobile-friendly app icon and standalone mode.
-
-
-If I had to pick the next 3
-Autosave + crash recovery draft
-Templates/routines
-Analytics dashboard (volume + trends)
+Conflict-safe editing
+Optimistic locking/versioning so concurrent edits don’t silently overwrite data across devices/tabs.

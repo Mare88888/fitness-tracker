@@ -48,7 +48,9 @@ public class WorkoutMapper {
     private ExerciseDto toDto(Exercise exercise) {
         return ExerciseDto.builder()
                 .id(exercise.getId())
+                .catalogId(exercise.getCatalog() != null ? exercise.getCatalog().getId() : null)
                 .name(exercise.getName())
+                .muscleGroup(exercise.getCatalog() != null ? exercise.getCatalog().getMuscleGroup() : null)
                 .sets(toSetDtos(exercise.getSets()))
                 .build();
     }
