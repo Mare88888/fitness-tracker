@@ -50,6 +50,28 @@ type MuscleGroupVolume = {
   volume: number;
 };
 
+type ExerciseSessionSnapshot = {
+  date: string;
+  weight: number;
+  reps: number;
+  estimatedOneRepMax: number;
+};
+
+type NextBestSetSuggestion = {
+  exercise: string;
+  suggestedWeight: number;
+  suggestedReps: number;
+  basedOnWeight: number;
+  basedOnReps: number;
+  rationale: string;
+};
+
+type PlateauAlert = {
+  exercise: string;
+  sessionsWithoutPr: number;
+  currentBest: number;
+};
+
 function normalizeExerciseName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -80,6 +102,15 @@ function getCurrentStreakDays(workouts: Workout[]): number {
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
+}
+
+function getStartOfWeek(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
 }
 
 export default function Home() {
@@ -145,6 +176,7 @@ export default function Home() {
     let totalVolume = 0;
     let totalSets = 0;
     const prByExercise = new Map<string, PersonalRecord>();
+    const sessionHistoryByExercise = new Map<string, ExerciseSessionSnapshot[]>();
     const volumeByDate = new Map<string, number>();
     const oneRepMaxByDate = new Map<string, number>();
     const volumeByMuscleGroup = new Map<string, number>();
@@ -169,6 +201,16 @@ export default function Home() {
 
           const oneRepMax = estimateOneRepMax(set.weight, set.reps);
           oneRepMaxByDate.set(workoutDate, Math.max(oneRepMaxByDate.get(workoutDate) ?? 0, oneRepMax));
+
+          const history = sessionHistoryByExercise.get(normalizedName) ?? [];
+          history.push({
+            date: workoutDate,
+            weight: set.weight,
+            reps: set.reps,
+            estimatedOneRepMax: oneRepMax,
+          });
+          sessionHistoryByExercise.set(normalizedName, history);
+
           const currentPr = prByExercise.get(normalizedName);
           if (!currentPr || oneRepMax > currentPr.maxEstimatedOneRepMax) {
             prByExercise.set(normalizedName, {
@@ -231,6 +273,98 @@ export default function Home() {
       .map(([group, volume]) => ({ group, volume }))
       .sort((a, b) => b.volume - a.volume);
 
+    const nextBestSetSuggestions: NextBestSetSuggestion[] = [...sessionHistoryByExercise.entries()]
+      .map(([key, sessions]) => {
+        const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date));
+        const latest = sorted.at(-1);
+        if (!latest) {
+          return null;
+        }
+        const exerciseName = prByExercise.get(key)?.exercise ?? key;
+        let suggestedWeight = latest.weight;
+        let suggestedReps = latest.reps;
+        let rationale = "Keep the same load and add one rep to drive progression.";
+
+        if (latest.reps >= 12) {
+          suggestedWeight = latest.weight + 2.5;
+          suggestedReps = 8;
+          rationale = "High reps achieved; increase weight and restart in lower rep range.";
+        } else if (latest.reps >= 8) {
+          suggestedWeight = latest.weight + 1.25;
+          suggestedReps = latest.reps;
+          rationale = "Solid performance; small load increase for progressive overload.";
+        } else if (latest.reps <= 5) {
+          suggestedWeight = latest.weight;
+          suggestedReps = latest.reps + 1;
+          rationale = "Keep load and build reps before adding more weight.";
+        }
+
+        return {
+          exercise: exerciseName,
+          suggestedWeight: Number(suggestedWeight.toFixed(2)),
+          suggestedReps,
+          basedOnWeight: latest.weight,
+          basedOnReps: latest.reps,
+          rationale,
+        };
+      })
+      .filter((item): item is NextBestSetSuggestion => Boolean(item))
+      .sort((a, b) => a.exercise.localeCompare(b.exercise))
+      .slice(0, 8);
+
+    const plateauAlerts: PlateauAlert[] = [...sessionHistoryByExercise.entries()]
+      .map(([key, sessions]) => {
+        const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date));
+        if (sorted.length < 5) {
+          return null;
+        }
+        let best = 0;
+        let sessionsWithoutPr = 0;
+        for (const session of sorted) {
+          if (session.estimatedOneRepMax > best + 0.05) {
+            best = session.estimatedOneRepMax;
+            sessionsWithoutPr = 0;
+          } else {
+            sessionsWithoutPr += 1;
+          }
+        }
+        if (sessionsWithoutPr < 5) {
+          return null;
+        }
+        return {
+          exercise: prByExercise.get(key)?.exercise ?? key,
+          sessionsWithoutPr,
+          currentBest: best,
+        };
+      })
+      .filter((item): item is PlateauAlert => Boolean(item))
+      .sort((a, b) => b.sessionsWithoutPr - a.sessionsWithoutPr)
+      .slice(0, 6);
+
+    const weeklyTarget = 4;
+    const now = new Date();
+    const weekStart = getStartOfWeek(now);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const workoutsThisWeek = workouts.filter((workout) => {
+      const d = new Date(workout.date);
+      return d >= weekStart && d < weekEnd;
+    }).length;
+    const adherenceScore = Math.round(Math.min(100, (workoutsThisWeek / weeklyTarget) * 100));
+
+    const lastFourWeeks = Array.from({ length: 4 }, (_, i) => {
+      const start = new Date(weekStart);
+      start.setDate(start.getDate() - i * 7);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      const count = workouts.filter((workout) => {
+        const d = new Date(workout.date);
+        return d >= start && d < end;
+      }).length;
+      return { start, count };
+    });
+    const weeksHitTarget = lastFourWeeks.filter((week) => week.count >= weeklyTarget).length;
+
     const currentStreak = getCurrentStreakDays(workouts);
     const avgVolumePerWorkout = workouts.length === 0 ? 0 : totalVolume / workouts.length;
 
@@ -243,6 +377,12 @@ export default function Home() {
       topPrs,
       muscleSummary,
       latestVolumePoints,
+      nextBestSetSuggestions,
+      plateauAlerts,
+      weeklyTarget,
+      workoutsThisWeek,
+      adherenceScore,
+      weeksHitTarget,
     };
   }, [catalogMuscleByName, timeframe, trendMetric, workouts]);
 
@@ -312,13 +452,62 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Volume trend</p>
+                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Weekly adherence</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                        {analytics.trendPct >= 0 ? "+" : ""}
-                        {analytics.trendPct.toFixed(1)}%
+                        {analytics.adherenceScore}%
                       </p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Recent 5 sessions vs previous ({trendMetric === "volume" ? "volume" : "estimated 1RM"})
+                        {analytics.workoutsThisWeek}/{analytics.weeklyTarget} workouts this week
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Next best set suggestions</h2>
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Auto-suggested overload targets from your latest top sets.
+                      </p>
+                      {analytics.nextBestSetSuggestions.length === 0 ? (
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">Not enough data yet.</p>
+                      ) : (
+                        <ul className="mt-2 space-y-2 text-sm">
+                          {analytics.nextBestSetSuggestions.map((item) => (
+                            <li key={item.exercise} className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                              <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
+                              <p className="text-zinc-600 dark:text-zinc-400">
+                                Last: {item.basedOnWeight} kg x {item.basedOnReps} reps {"->"} Next: {item.suggestedWeight} kg x {item.suggestedReps} reps
+                              </p>
+                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{item.rationale}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Plateau detection</h2>
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        Flags exercises with no estimated 1RM PR in 5+ sessions.
+                      </p>
+                      {analytics.plateauAlerts.length === 0 ? (
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          No current plateau alerts. Great momentum.
+                        </p>
+                      ) : (
+                        <ul className="mt-2 space-y-2 text-sm">
+                          {analytics.plateauAlerts.map((item) => (
+                            <li key={item.exercise} className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+                              <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
+                              <p className="text-zinc-600 dark:text-zinc-400">
+                                {item.sessionsWithoutPr} sessions without PR (best est. 1RM {item.currentBest.toFixed(1)})
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                        Weekly target hit in {analytics.weeksHitTarget}/4 recent weeks.
                       </p>
                     </div>
                   </div>
@@ -378,7 +567,7 @@ export default function Home() {
                                   backgroundColor: chartTheme.tooltipBg,
                                   color: chartTheme.text,
                                 }}
-                                formatter={(value: number) => [`${value.toLocaleString()} volume`, "Volume"]}
+                                formatter={(value) => [`${Number(value ?? 0).toLocaleString()} volume`, "Volume"]}
                               />
                               <Bar dataKey="volumeRounded" name="Volume" fill={chartTheme.bar} radius={[6, 6, 0, 0]} />
                             </BarChart>
@@ -408,22 +597,20 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => setTrendMetric("volume")}
-                            className={`px-2 py-1 text-xs ${
-                              trendMetric === "volume"
+                            className={`px-2 py-1 text-xs ${trendMetric === "volume"
                                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                                 : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
+                              }`}
                           >
                             Volume
                           </button>
                           <button
                             type="button"
                             onClick={() => setTrendMetric("estimated1rm")}
-                            className={`px-2 py-1 text-xs ${
-                              trendMetric === "estimated1rm"
+                            className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm"
                                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                                 : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                            }`}
+                              }`}
                           >
                             Est. 1RM
                           </button>
@@ -454,10 +641,10 @@ export default function Home() {
                                 backgroundColor: chartTheme.tooltipBg,
                                 color: chartTheme.text,
                               }}
-                              formatter={(value: number) => [
+                              formatter={(value) => [
                                 trendMetric === "volume"
-                                  ? `${value.toLocaleString()} volume`
-                                  : `${value.toLocaleString()} est. 1RM`,
+                                  ? `${Number(value ?? 0).toLocaleString()} volume`
+                                  : `${Number(value ?? 0).toLocaleString()} est. 1RM`,
                                 trendMetric === "volume" ? "Volume" : "Estimated 1RM",
                               ]}
                             />
