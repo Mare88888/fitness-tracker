@@ -6,6 +6,7 @@ import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
+import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
@@ -334,6 +335,7 @@ export default function StartWorkoutPage() {
       try {
         const items = await getExerciseCatalog({ limit: 300 });
         if (!cancelled) {
+          writeExerciseCatalogCache(items);
           setCatalogItems(items);
         }
       } catch {

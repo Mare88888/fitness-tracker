@@ -9,6 +9,7 @@ import {
   subscribeExerciseFavorites,
   toggleExerciseFavorite,
 } from "@/lib/exercise-favorites";
+import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { queueExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import {
   getExerciseCatalog,
@@ -68,6 +69,7 @@ export default function ExerciseLibraryPage() {
           limit: 300,
         });
         if (!cancelled) {
+          writeExerciseCatalogCache(items);
           setCatalogItems(items);
         }
       } catch (error) {

@@ -6,7 +6,11 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { APP_NAME } from "@/lib/constants";
-import { resolveExerciseMuscle } from "@/lib/exercise-library";
+import {
+  resolveMuscleFromCatalogCache,
+  writeExerciseCatalogCache,
+} from "@/lib/exercise-catalog-cache";
+import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
@@ -84,6 +88,7 @@ export default function Home() {
   const [timeframe, setTimeframe] = useState<Timeframe>("30d");
   const [trendMetric, setTrendMetric] = useState<TrendMetric>("volume");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [catalogMuscleByName, setCatalogMuscleByName] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -112,6 +117,30 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const syncCatalogCache = async () => {
+      try {
+        const items = await getExerciseCatalog({ limit: 500 });
+        if (!cancelled) {
+          writeExerciseCatalogCache(items);
+          setCatalogMuscleByName(
+            items.reduce<Record<string, string>>((acc, item) => {
+              acc[normalizeExerciseName(item.name)] = item.muscleGroup;
+              return acc;
+            }, {})
+          );
+        }
+      } catch {
+        // Keep analytics working with whatever cache already exists.
+      }
+    };
+    void syncCatalogCache();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const analytics = useMemo(() => {
     let totalVolume = 0;
     let totalSets = 0;
@@ -125,7 +154,11 @@ export default function Home() {
       for (const exercise of workout.exercises) {
         const normalizedName = normalizeExerciseName(exercise.name);
         const displayName = exercise.name.trim() || "Unnamed exercise";
-        const group = exercise.muscleGroup?.trim() || resolveExerciseMuscle(displayName);
+        const group =
+          exercise.muscleGroup?.trim() ||
+          catalogMuscleByName[normalizeExerciseName(displayName)] ||
+          resolveMuscleFromCatalogCache(displayName) ||
+          "Other";
 
         for (const set of exercise.sets) {
           const volume = Math.max(0, set.weight) * Math.max(0, set.reps);
@@ -211,7 +244,7 @@ export default function Home() {
       muscleSummary,
       latestVolumePoints,
     };
-  }, [timeframe, trendMetric, workouts]);
+  }, [catalogMuscleByName, timeframe, trendMetric, workouts]);
 
   const chartTheme = useMemo(
     () => ({

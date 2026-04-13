@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { getWorkoutById, updateWorkout } from "@/lib/services/workout-service";
 import type { ExerciseCatalogItem } from "@/types/exercise-catalog";
@@ -98,6 +99,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
       try {
         const items = await getExerciseCatalog({ limit: 300 });
         if (!cancelled) {
+          writeExerciseCatalogCache(items);
           setCatalogItems(items);
         }
       } catch {
