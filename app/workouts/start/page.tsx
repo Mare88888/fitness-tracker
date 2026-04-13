@@ -6,9 +6,9 @@ import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
-import { EXERCISE_LIBRARY, resolveExerciseMuscle } from "@/lib/exercise-library";
 import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import { ApiRequestError } from "@/lib/services/api-error";
+import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
 import {
   assignWeeklyPlan,
@@ -17,6 +17,7 @@ import {
   getWeeklyPlan,
 } from "@/lib/services/template-service";
 import type { ApiFieldValidationError } from "@/types/api-error";
+import type { ExerciseCatalogItem } from "@/types/exercise-catalog";
 import type { WorkoutTemplate } from "@/types/template";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import type { WeeklyPlan } from "@/types/weekly-plan";
@@ -104,7 +105,14 @@ export default function StartWorkoutPage() {
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [isUpdatingPlanDay, setIsUpdatingPlanDay] = useState<number | null>(null);
   const [isStartingTodaysPlan, setIsStartingTodaysPlan] = useState(false);
+  const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
   const autosaveTimeoutRef = useRef<number | null>(null);
+
+  const resolveMuscleGroup = (exerciseName: string): string => {
+    const normalized = exerciseName.trim().toLowerCase();
+    const match = catalogItems.find((item) => item.name.trim().toLowerCase() === normalized);
+    return match?.muscleGroup ?? "Other";
+  };
 
   const addExercise = () => {
     setExercises((previous) => [...previous, createExercise()]);
@@ -318,6 +326,26 @@ export default function StartWorkoutPage() {
       setWorkoutName(initialName);
       setExercises(initialExercises);
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCatalog = async () => {
+      try {
+        const items = await getExerciseCatalog({ limit: 300 });
+        if (!cancelled) {
+          setCatalogItems(items);
+        }
+      } catch {
+        if (!cancelled) {
+          setCatalogItems([]);
+        }
+      }
+    };
+    void loadCatalog();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -682,7 +710,7 @@ export default function StartWorkoutPage() {
                             />
                             {exercise.name.trim() && (
                               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                Muscle: {resolveExerciseMuscle(exercise.name)}
+                                Muscle: {resolveMuscleGroup(exercise.name)}
                               </p>
                             )}
                             {exerciseNameErrors[exercise.id] && (
@@ -920,9 +948,9 @@ export default function StartWorkoutPage() {
         </div>
       </div>
       <datalist id={EXERCISE_DATALIST_ID}>
-        {EXERCISE_LIBRARY.map((exercise) => (
-          <option key={`${exercise.name}-${exercise.muscle}`} value={exercise.name}>
-            {exercise.muscle}
+        {catalogItems.map((exercise) => (
+          <option key={`${exercise.name}-${exercise.muscleGroup}`} value={exercise.name}>
+            {exercise.muscleGroup}
           </option>
         ))}
       </datalist>

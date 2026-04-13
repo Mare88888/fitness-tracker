@@ -6,7 +6,9 @@ export type Set = {
 
 export type Exercise = {
   id: number;
+  catalogId?: number | null;
   name: string;
+  muscleGroup?: string | null;
   sets: Set[];
 };
 

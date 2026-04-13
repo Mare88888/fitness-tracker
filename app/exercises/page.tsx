@@ -9,8 +9,12 @@ import {
   subscribeExerciseFavorites,
   toggleExerciseFavorite,
 } from "@/lib/exercise-favorites";
-import { EXERCISE_LIBRARY, EXERCISE_MUSCLE_GROUPS } from "@/lib/exercise-library";
 import { queueExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
+import {
+  getExerciseCatalog,
+  getExerciseCatalogMuscles,
+} from "@/lib/services/exercise-catalog-service";
+import type { ExerciseCatalogItem } from "@/types/exercise-catalog";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +26,9 @@ export default function ExerciseLibraryPage() {
   const [muscleFilter, setMuscleFilter] = useState<string>("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
+  const [muscleGroups, setMuscleGroups] = useState<string[]>([]);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
 
   useEffect(() => {
     queueMicrotask(() => setFavorites(getFavoriteExerciseNamesSnapshot()));
@@ -30,21 +37,63 @@ export default function ExerciseLibraryPage() {
     });
   }, []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = EXERCISE_LIBRARY.filter((exercise) => {
-      if (muscleFilter !== "all" && exercise.muscle !== muscleFilter) {
-        return false;
+  useEffect(() => {
+    let cancelled = false;
+    const loadMuscles = async () => {
+      try {
+        const groups = await getExerciseCatalogMuscles();
+        if (!cancelled) {
+          setMuscleGroups(groups);
+        }
+      } catch {
+        if (!cancelled) {
+          setMuscleGroups([]);
+        }
       }
+    };
+    void loadMuscles();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingCatalog(true);
+    const timeout = window.setTimeout(async () => {
+      try {
+        const items = await getExerciseCatalog({
+          query,
+          muscle: muscleFilter === "all" ? undefined : muscleFilter,
+          limit: 300,
+        });
+        if (!cancelled) {
+          setCatalogItems(items);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : "Failed to load exercise catalog.";
+          toast.error(message);
+          setCatalogItems([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingCatalog(false);
+        }
+      }
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [muscleFilter, query]);
+
+  const filtered = useMemo(() => {
+    let list = catalogItems.filter((exercise) => {
       if (favoritesOnly && !favorites.has(exercise.name)) {
         return false;
       }
-      if (!q) {
-        return true;
-      }
-      return (
-        exercise.name.toLowerCase().includes(q) || exercise.muscle.toLowerCase().includes(q)
-      );
+      return true;
     });
     list = [...list].sort((a, b) => {
       const fa = favorites.has(a.name) ? 0 : 1;
@@ -55,7 +104,7 @@ export default function ExerciseLibraryPage() {
       return a.name.localeCompare(b.name);
     });
     return list;
-  }, [favorites, favoritesOnly, muscleFilter, query]);
+  }, [catalogItems, favorites, favoritesOnly]);
 
   const handleStar = (name: string) => {
     const nowFavorite = toggleExerciseFavorite(name);
@@ -108,7 +157,7 @@ export default function ExerciseLibraryPage() {
                   aria-label="Filter by muscle"
                 >
                   <option value="all">All muscles</option>
-                  {EXERCISE_MUSCLE_GROUPS.map((muscle) => (
+                  {muscleGroups.map((muscle) => (
                     <option key={muscle} value={muscle}>
                       {muscle}
                     </option>
@@ -125,7 +174,9 @@ export default function ExerciseLibraryPage() {
                 </label>
               </div>
 
-              {filtered.length === 0 ? (
+              {isLoadingCatalog ? (
+                <p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">Loading exercise catalog...</p>
+              ) : filtered.length === 0 ? (
                 <div className="mt-8">
                   <EmptyState
                     title="No exercises match"
@@ -156,7 +207,7 @@ export default function ExerciseLibraryPage() {
                       >
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-zinc-900 dark:text-zinc-100">{exercise.name}</p>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">{exercise.muscle}</p>
+                          <p className="text-sm text-zinc-600 dark:text-zinc-400">{exercise.muscleGroup}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button

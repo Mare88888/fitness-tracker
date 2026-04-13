@@ -20,9 +20,24 @@ public class ExerciseCatalogService {
     @Transactional(readOnly = true)
     public List<ExerciseCatalogDto> search(String query, String muscleGroup, Integer limit) {
         int safeLimit = (limit == null || limit <= 0) ? 50 : Math.min(limit, 200);
-        String normalizedQuery = (query == null || query.isBlank()) ? null : query.trim();
+        String normalizedQuery = (query == null || query.isBlank()) ? "" : query.trim();
         String normalizedMuscle = (muscleGroup == null || muscleGroup.isBlank()) ? null : muscleGroup.trim();
-        return exerciseCatalogRepository.search(normalizedQuery, normalizedMuscle).stream()
+
+        List<ExerciseCatalog> items;
+        if (normalizedMuscle != null && !normalizedQuery.isBlank()) {
+            items = exerciseCatalogRepository.findAllByMuscleGroupAndNameContainingIgnoreCaseOrderByNameAsc(
+                    normalizedMuscle,
+                    normalizedQuery
+            );
+        } else if (normalizedMuscle != null) {
+            items = exerciseCatalogRepository.findAllByMuscleGroupOrderByNameAsc(normalizedMuscle);
+        } else if (!normalizedQuery.isBlank()) {
+            items = exerciseCatalogRepository.findAllByNameContainingIgnoreCaseOrderByNameAsc(normalizedQuery);
+        } else {
+            items = exerciseCatalogRepository.findAllByOrderByNameAsc();
+        }
+
+        return items.stream()
                 .limit(safeLimit)
                 .map(this::toDto)
                 .toList();

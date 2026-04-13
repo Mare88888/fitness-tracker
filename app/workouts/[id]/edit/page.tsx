@@ -4,8 +4,9 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { EXERCISE_LIBRARY, resolveExerciseMuscle } from "@/lib/exercise-library";
+import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { getWorkoutById, updateWorkout } from "@/lib/services/workout-service";
+import type { ExerciseCatalogItem } from "@/types/exercise-catalog";
 import type { CreateWorkoutInput } from "@/types/workout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +27,13 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
+
+  const resolveMuscleGroup = (exerciseName: string): string => {
+    const normalized = exerciseName.trim().toLowerCase();
+    const match = catalogItems.find((item) => item.name.trim().toLowerCase() === normalized);
+    return match?.muscleGroup ?? "Other";
+  };
 
   const getValidationError = (currentPayload: CreateWorkoutInput | null): string | null => {
     if (!currentPayload) {
@@ -83,6 +91,26 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
 
     void loadWorkout();
   }, [params]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCatalog = async () => {
+      try {
+        const items = await getExerciseCatalog({ limit: 300 });
+        if (!cancelled) {
+          setCatalogItems(items);
+        }
+      } catch {
+        if (!cancelled) {
+          setCatalogItems([]);
+        }
+      }
+    };
+    void loadCatalog();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSave = async () => {
     if (!payload || workoutId == null) {
@@ -257,7 +285,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                       <div className="space-y-2">
                         {exercise.name.trim() && (
                           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Muscle: {resolveExerciseMuscle(exercise.name)}
+                            Muscle: {resolveMuscleGroup(exercise.name)}
                           </p>
                         )}
                         {exercise.sets.map((set, setIndex) => (
@@ -348,9 +376,9 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
         </div>
       </div>
       <datalist id={EXERCISE_DATALIST_ID}>
-        {EXERCISE_LIBRARY.map((exercise) => (
-          <option key={`${exercise.name}-${exercise.muscle}`} value={exercise.name}>
-            {exercise.muscle}
+        {catalogItems.map((exercise) => (
+          <option key={`${exercise.name}-${exercise.muscleGroup}`} value={exercise.name}>
+            {exercise.muscleGroup}
           </option>
         ))}
       </datalist>

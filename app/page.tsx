@@ -125,7 +125,7 @@ export default function Home() {
       for (const exercise of workout.exercises) {
         const normalizedName = normalizeExerciseName(exercise.name);
         const displayName = exercise.name.trim() || "Unnamed exercise";
-        const group = resolveExerciseMuscle(displayName);
+        const group = exercise.muscleGroup?.trim() || resolveExerciseMuscle(displayName);
 
         for (const set of exercise.sets) {
           const volume = Math.max(0, set.weight) * Math.max(0, set.reps);
