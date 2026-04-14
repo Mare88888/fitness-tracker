@@ -33,9 +33,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\WorkoutTemplate.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\AppUserRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\ExerciseCatalogRepository.java
-D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\ExerciseRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\RefreshTokenRepository.java
-D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\SetRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WeeklyPlanRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WorkoutRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WorkoutTemplateRepository.java

@@ -41,7 +41,6 @@ com\fitnesstracker\backend\dto\ExerciseSetDto.class
 com\fitnesstracker\backend\dto\WeeklyPlanDto.class
 com\fitnesstracker\backend\service\WorkoutTemplateService.class
 com\fitnesstracker\backend\model\AppUser.class
-com\fitnesstracker\backend\repository\SetRepository.class
 com\fitnesstracker\backend\service\AuthService.class
 com\fitnesstracker\backend\model\WeeklyPlan$WeeklyPlanBuilder.class
 com\fitnesstracker\backend\dto\WorkoutTemplateDto$WorkoutTemplateDtoBuilder.class
@@ -55,7 +54,6 @@ com\fitnesstracker\backend\mapper\WorkoutTemplateMapper.class
 com\fitnesstracker\backend\controller\HealthController.class
 com\fitnesstracker\backend\config\SecurityConfig.class
 com\fitnesstracker\backend\security\JwtService.class
-com\fitnesstracker\backend\repository\ExerciseRepository.class
 com\fitnesstracker\backend\model\Workout$WorkoutBuilder.class
 com\fitnesstracker\backend\service\WorkoutService.class
 com\fitnesstracker\backend\dto\RegisterRequest.class
