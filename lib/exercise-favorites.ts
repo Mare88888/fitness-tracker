@@ -39,10 +39,6 @@ export function getFavoriteExerciseNamesSnapshot(): Set<string> {
   }
 }
 
-export function isExerciseFavorite(name: string): boolean {
-  return getFavoriteExerciseNamesSnapshot().has(name.trim());
-}
-
 export function toggleExerciseFavorite(name: string): boolean {
   if (typeof window === "undefined") {
     return false;

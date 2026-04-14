@@ -6,7 +6,7 @@ function normalizeName(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-export function readExerciseCatalogCache(): ExerciseCatalogItem[] {
+function readExerciseCatalogCache(): ExerciseCatalogItem[] {
   if (typeof window === "undefined") {
     return [];
   }

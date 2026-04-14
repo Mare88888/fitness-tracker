@@ -1,4 +1,4 @@
-export const PENDING_WORKOUT_EXERCISES_KEY = "fitness_pending_workout_exercises";
+const PENDING_WORKOUT_EXERCISES_KEY = "fitness_pending_workout_exercises";
 
 export function queueExercisesForStartWorkout(names: string[]): void {
   if (typeof window === "undefined") {
