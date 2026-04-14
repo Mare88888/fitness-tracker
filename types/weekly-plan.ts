@@ -4,8 +4,3 @@ export type WeeklyPlan = {
   templateId: number;
   templateName: string;
 };
-
-export type WeekDayOption = {
-  value: number;
-  label: string;
-};

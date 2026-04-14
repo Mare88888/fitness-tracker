@@ -37,7 +37,10 @@ export function takePendingExercisesForStartWorkout(): string[] {
     if (!Array.isArray(parsed)) {
       return [];
     }
-    return parsed.filter((item): item is string => typeof item === "string").map((s) => s.trim()).filter(Boolean);
+    return parsed
+      .filter((item): item is string => typeof item === "string")
+      .map((s) => s.trim())
+      .filter(Boolean);
   } catch {
     return [];
   }
