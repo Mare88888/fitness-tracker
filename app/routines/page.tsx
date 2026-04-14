@@ -141,15 +141,15 @@ export default function RoutinesPage() {
         </div>
       </div>
       <ConfirmModal
-        open={templatePendingDelete !== null}
+        isOpen={templatePendingDelete !== null}
         title="Delete template?"
         description={
           templatePendingDelete
             ? `This will remove "${templatePendingDelete.name}" and any weekly plan assignment using it.`
             : ""
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         onConfirm={handleDeleteTemplate}
         onCancel={() => setTemplatePendingDelete(null)}
       />

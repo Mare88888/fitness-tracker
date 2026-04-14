@@ -27,7 +27,7 @@ export function Navbar() {
 
   const applyThemeToDom = (mode: "light" | "dark" | "system") => {
     if (typeof window === "undefined") {
-      return;
+      return false;
     }
     const root = window.document.documentElement;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
