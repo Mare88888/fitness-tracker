@@ -112,31 +112,31 @@ export function Navbar() {
   };
 
   return (
-    <header className="relative z-40 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="relative z-40 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
       <nav className="flex items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3 md:hidden">
           <button
             type="button"
             onClick={() => setIsDrawerOpen((previous) => !previous)}
-            className="rounded-md border border-zinc-300 px-2 py-1 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-md border border-zinc-700 px-2 py-1 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
             aria-label="Toggle navigation menu"
             aria-expanded={isDrawerOpen}
             aria-controls="mobile-nav-drawer"
           >
             Menu
           </button>
-          <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="text-lg font-semibold text-emerald-300">
             Fitness Tracker
           </div>
         </div>
-        <div className="hidden text-lg font-semibold text-zinc-900 dark:text-zinc-100 md:block">
+        <div className="hidden text-lg font-semibold text-emerald-300 md:block">
           Fitness Tracker
         </div>
         <div className="relative ml-auto" ref={menuRef}>
           <button
             type="button"
             onClick={() => setIsMenuOpen((previous) => !previous)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 bg-zinc-100 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-700 bg-zinc-900 text-sm font-semibold text-emerald-200 transition hover:bg-zinc-800"
             aria-label="Open profile menu"
             aria-expanded={isMenuOpen}
             aria-controls="profile-menu"
@@ -146,26 +146,26 @@ export function Navbar() {
           {isMenuOpen && (
             <div
               id="profile-menu"
-              className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+              className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-zinc-700 bg-zinc-900 p-1 shadow-lg"
             >
               <button
                 type="button"
                 onClick={() => applyTheme(isDarkApplied ? "light" : "dark")}
-                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
               >
                 {isDarkApplied ? "Switch to light mode" : "Switch to dark mode"}
               </button>
               <button
                 type="button"
                 onClick={() => applyTheme("system")}
-                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
               >
                 Use system theme
               </button>
               <Link
                 href="/settings"
                 onClick={() => setIsMenuOpen(false)}
-                className="block rounded px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="block rounded px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
               >
                 Settings
               </Link>
@@ -173,7 +173,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
                 >
                   Logout
                 </button>
@@ -181,7 +181,7 @@ export function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block rounded px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  className="block rounded px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
                 >
                   Login
                 </Link>
@@ -191,7 +191,7 @@ export function Navbar() {
         </div>
       </nav>
       {isDrawerOpen && (
-        <div className="border-t border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 md:hidden">
+        <div className="border-t border-zinc-800 bg-zinc-950 px-4 py-3 md:hidden">
           <nav id="mobile-nav-drawer" ref={drawerRef} aria-label="Mobile navigation">
             <ul className="space-y-1">
               {navItems.map((item) => (
@@ -202,8 +202,8 @@ export function Navbar() {
                     aria-current={pathname === item.href ? "page" : undefined}
                     className={`block rounded-md px-3 py-2 text-sm font-medium transition ${
                       pathname === item.href
-                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                        : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        ? "bg-emerald-600 text-white"
+                        : "text-zinc-300 hover:bg-zinc-800 hover:text-emerald-300"
                     }`}
                   >
                     {item.label}

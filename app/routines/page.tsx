@@ -67,18 +67,12 @@ export default function RoutinesPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-6 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30">
-              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
-              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
+            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
 
               <div className="relative">
-                <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-                  Planning
-                </p>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Routines & Templates</h1>
-                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  View your saved templates and weekly routine assignments.
-                </p>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Routines & Templates</h1>
               </div>
 
               {isLoading ? (

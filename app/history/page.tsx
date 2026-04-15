@@ -136,18 +136,12 @@ export default function HistoryPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-6 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30">
-              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
-              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
+            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
 
               <div className="relative">
-                <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-                  Workout archive
-                </p>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Workout History</h1>
-                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  Review previously saved workouts from your backend.
-                </p>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Workout History</h1>
               </div>
               {!isLoading && !error && workouts.length > 0 && (
                 <div className="mt-4 rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
@@ -227,13 +221,13 @@ export default function HistoryPage() {
                       <div className="mt-3 flex flex-wrap gap-3">
                         <Link
                           href={`/history/${workout.id}`}
-                          className="inline-flex items-center rounded-md border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="inline-flex items-center rounded-md border border-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
                         >
                           View details
                         </Link>
                         <Link
                           href={`/workouts/${workout.id}/edit`}
-                          className="inline-flex items-center rounded-md border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="inline-flex items-center rounded-md border border-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
                         >
                           Edit
                         </Link>
@@ -267,7 +261,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page <= 1}
                       onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-                      className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
                     >
                       Previous
                     </button>
@@ -275,7 +269,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page >= pageCount}
                       onClick={() => setPage((previous) => Math.min(pageCount, previous + 1))}
-                      className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
                     >
                       Next
                     </button>

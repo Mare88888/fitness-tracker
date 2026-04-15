@@ -644,19 +644,13 @@ export default function StartWorkoutPage() {
           <Navbar />
           <PageContainer>
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-4 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30 sm:p-6">
-                <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
+              <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-4 shadow-sm shadow-black/30 sm:p-6">
+                <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
                 <div className="mb-6">
-                  <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-                    Workout builder
-                  </p>
-                  <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
                     Start Workout
                   </h1>
-                  <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                    Add exercises and log your sets with reps and weight.
-                  </p>
                 </div>
 
                 <div className="relative space-y-6">
@@ -700,7 +694,7 @@ export default function StartWorkoutPage() {
                     {exercises.map((exercise, exerciseIndex) => (
                       <article
                         key={exercise.id}
-                        className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70"
+                        className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm"
                       >
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="w-full">
@@ -793,7 +787,7 @@ export default function StartWorkoutPage() {
                         <button
                           type="button"
                           onClick={() => addSet(exercise.id)}
-                          className="mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                          className="mt-4 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500"
                         >
                           Add set
                         </button>
@@ -817,11 +811,11 @@ export default function StartWorkoutPage() {
                     </Link>
                   </div>
 
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-3 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-3 shadow-sm">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Ready to save?</p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm font-semibold text-zinc-100">Ready to save?</p>
+                        <p className="text-xs text-zinc-400">
                           {formValidationError
                             ? "Fix validation issues before saving."
                             : "Your workout is valid and ready to store."}
@@ -832,7 +826,7 @@ export default function StartWorkoutPage() {
                           type="button"
                           onClick={handleCreateWorkout}
                           disabled={!canSaveWorkout}
-                          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                          className="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                         >
                           {isSaving ? "Saving..." : "Save workout"}
                         </button>
@@ -852,11 +846,9 @@ export default function StartWorkoutPage() {
                       {formValidationError}
                     </p>
                   )}
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Templates</h2>
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                      Save reusable workout structures and quickly apply them.
-                    </p>
+                    <p className="mt-1 text-xs text-zinc-400">Save and apply templates fast.</p>
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                       <select
                         value={selectedTemplateId}
@@ -889,11 +881,9 @@ export default function StartWorkoutPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                      Assign templates to training days.
-                    </p>
+                    <p className="mt-1 text-xs text-zinc-400">Assign templates to days.</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       {TRAINING_DAYS.map((day) => {
                         const dayPlan = weeklyPlan.find((item) => item.dayOfWeek === day.dayOfWeek);

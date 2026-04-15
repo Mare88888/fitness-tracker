@@ -429,22 +429,16 @@ export default function Home() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-6 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30">
-              <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
-              <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
+            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
 
               <div className="relative">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-                      Performance overview
-                    </p>
-                    <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">
                       {APP_NAME} Analytics Dashboard
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                      Track PRs, workout volume trends, streaks, and muscle-group focus.
-                    </p>
                   </div>
                   <div
                     className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${trendToneClass}`}
@@ -639,7 +633,7 @@ export default function Home() {
                             type="button"
                             onClick={() => setTrendMetric("volume")}
                             className={`px-2 py-1 text-xs ${trendMetric === "volume"
-                              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                              ? "bg-emerald-600 text-white"
                               : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                           >
@@ -649,7 +643,7 @@ export default function Home() {
                             type="button"
                             onClick={() => setTrendMetric("estimated1rm")}
                             className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm"
-                              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                              ? "bg-emerald-600 text-white"
                               : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
                               }`}
                           >

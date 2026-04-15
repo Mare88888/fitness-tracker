@@ -2,8 +2,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafafa;
-  --foreground: #18181b;
+  --background: #0f1211;
+  --foreground: #e8f2ec;
 }
 
 @theme inline {
@@ -14,8 +14,8 @@
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #f4f4f5;
+  --background: #0b0f0d;
+  --foreground: #e8f2ec;
 }
 
 body {
@@ -26,9 +26,9 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #a1a1aa transparent;
+  scrollbar-color: #22c55e transparent;
 }
 
 .dark * {
-  scrollbar-color: #52525b transparent;
+  scrollbar-color: #16a34a transparent;
 }
