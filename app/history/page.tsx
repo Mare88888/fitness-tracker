@@ -136,7 +136,7 @@ export default function HistoryPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+            <section className="surface-page">
               <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
 
@@ -144,7 +144,7 @@ export default function HistoryPage() {
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Workout History</h1>
               </div>
               {!isLoading && !error && workouts.length > 0 && (
-                <div className="mt-4 rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                <div className="surface-card mt-4">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                   <input
                     type="search"
@@ -205,7 +205,7 @@ export default function HistoryPage() {
               {!isLoading && !error && workouts.length > 0 && (
                 <ul className="mt-4 space-y-3">
                   {paginatedWorkouts.map((workout) => (
-                    <li key={workout.id} className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 text-sm shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <li key={workout.id} className="surface-card text-sm">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
@@ -214,7 +214,7 @@ export default function HistoryPage() {
                             Exercises: {workout.exercises.length}
                           </p>
                         </div>
-                        <span className="rounded-full border border-zinc-300/80 bg-zinc-100/70 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
+                        <span className="rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-xs font-medium text-zinc-300">
                           #{workout.id}
                         </span>
                       </div>
@@ -252,7 +252,7 @@ export default function HistoryPage() {
                 </div>
               )}
               {!isLoading && !error && visibleWorkouts.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200/90 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70 dark:text-zinc-300">
+                <div className="surface-card mt-4 flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-zinc-300">
                   <p>
                     Page {page} of {pageCount}
                   </p>

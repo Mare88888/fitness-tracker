@@ -97,7 +97,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <section className="surface-page">
               <Link
                 href="/history"
                 className="mb-4 inline-block text-sm font-medium text-zinc-700 underline-offset-4 hover:underline dark:text-zinc-300"
@@ -163,7 +163,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                       {workout.exercises.map((exercise, exerciseIndex) => (
                         <article
                           key={exercise.id}
-                          className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
+                          className="surface-card"
                         >
                           <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
                             {exerciseIndex + 1}. {exercise.name}

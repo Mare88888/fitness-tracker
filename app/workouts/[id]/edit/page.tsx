@@ -214,7 +214,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <section className="surface-page">
               <Link
                 href="/history"
                 className="mb-4 inline-block text-sm font-medium text-zinc-700 underline-offset-4 hover:underline dark:text-zinc-300"
@@ -257,7 +257,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                     />
                   </div>
                   {payload.exercises.map((exercise, exerciseIndex) => (
-                    <article key={`exercise-${exerciseIndex}`} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                    <article key={`exercise-${exerciseIndex}`} className="surface-card">
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <input
                           value={exercise.name}

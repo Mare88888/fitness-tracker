@@ -67,7 +67,7 @@ export default function RoutinesPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+            <section className="surface-page">
               <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
 
@@ -79,10 +79,10 @@ export default function RoutinesPage() {
                 <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">Loading routines...</p>
               ) : (
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="surface-card">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Templates</h2>
-                      <span className="rounded-full border border-zinc-300/80 bg-zinc-100/70 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
+                      <span className="rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-xs font-medium text-zinc-300">
                         {templates.length}
                       </span>
                     </div>
@@ -96,7 +96,7 @@ export default function RoutinesPage() {
                         {templates.map((template) => (
                           <li
                             key={template.id}
-                            className="rounded-lg border border-zinc-200/80 bg-zinc-50/90 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-950/80"
+                            className="surface-soft px-3 py-2"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium">
@@ -124,7 +124,7 @@ export default function RoutinesPage() {
                     )}
                   </div>
 
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="surface-card">
                     <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
                     {weeklyPlan.length === 0 ? (
                       <EmptyState
@@ -136,7 +136,7 @@ export default function RoutinesPage() {
                         {weeklyPlan.map((entry) => (
                           <li
                             key={entry.id}
-                            className="rounded-lg border border-zinc-200/80 bg-zinc-50/90 px-3 py-2 dark:border-zinc-700/70 dark:bg-zinc-950/80"
+                            className="surface-soft px-3 py-2"
                           >
                             <span className="font-medium">{dayLabels[entry.dayOfWeek] ?? `Day ${entry.dayOfWeek}`}</span>:{" "}
                             {entry.templateName}

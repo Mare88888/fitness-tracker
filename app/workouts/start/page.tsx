@@ -644,7 +644,7 @@ export default function StartWorkoutPage() {
           <Navbar />
           <PageContainer>
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-4 shadow-sm shadow-black/30 sm:p-6">
+              <section className="surface-page p-4 sm:p-6">
                 <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
                 <div className="mb-6">
@@ -694,7 +694,7 @@ export default function StartWorkoutPage() {
                     {exercises.map((exercise, exerciseIndex) => (
                       <article
                         key={exercise.id}
-                        className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm"
+                        className="surface-card"
                       >
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="w-full">
@@ -734,7 +734,7 @@ export default function StartWorkoutPage() {
                           {exercise.sets.map((set, setIndex) => (
                             <div
                               key={set.id}
-                              className="grid grid-cols-1 gap-3 rounded-lg border border-zinc-200/80 bg-zinc-50/90 p-3 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto] dark:border-zinc-700/70 dark:bg-zinc-950/80"
+                              className="surface-soft grid grid-cols-1 gap-3 p-3 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto]"
                             >
                               <div className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 Set {setIndex + 1}
@@ -811,7 +811,7 @@ export default function StartWorkoutPage() {
                     </Link>
                   </div>
 
-                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-3 shadow-sm">
+                  <div className="surface-card p-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-zinc-100">Ready to save?</p>
@@ -846,7 +846,7 @@ export default function StartWorkoutPage() {
                       {formValidationError}
                     </p>
                   )}
-                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm">
+                  <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Templates</h2>
                     <p className="mt-1 text-xs text-zinc-400">Save and apply templates fast.</p>
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -881,7 +881,7 @@ export default function StartWorkoutPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 shadow-sm">
+                  <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
                     <p className="mt-1 text-xs text-zinc-400">Assign templates to days.</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -936,7 +936,7 @@ export default function StartWorkoutPage() {
                   )}
 
                   {loadedWorkouts.length > 0 ? (
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         Loaded workouts
                       </h2>

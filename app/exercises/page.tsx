@@ -127,7 +127,7 @@ export default function ExerciseLibraryPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <section className="surface-page">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Exercise Library</h1>
@@ -205,7 +205,7 @@ export default function ExerciseLibraryPage() {
                     return (
                       <li
                         key={exercise.name}
-                        className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
+                        className="surface-card flex flex-col gap-3"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-zinc-900 dark:text-zinc-100">{exercise.name}</p>

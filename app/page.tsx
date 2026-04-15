@@ -429,7 +429,7 @@ export default function Home() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-sm shadow-black/30">
+            <section className="surface-page p-6">
               <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
 
@@ -468,25 +468,25 @@ export default function Home() {
               ) : (
                 <div className="mt-4 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Total volume</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.totalVolume).toLocaleString()}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Current streak</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {analytics.currentStreak} day{analytics.currentStreak === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Avg volume / workout</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Weekly adherence</p>
                       <p className={`mt-1 text-2xl font-semibold ${adherenceToneClass}`}>
                         {analytics.adherenceScore}%
@@ -498,7 +498,7 @@ export default function Home() {
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Next best set suggestions</h2>
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                         Auto-suggested overload targets from your latest top sets.
@@ -508,7 +508,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.nextBestSetSuggestions.map((item) => (
-                            <li key={item.exercise} className="rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-zinc-700/70 dark:bg-zinc-950/80">
+                            <li key={item.exercise} className="surface-soft p-3">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 Last: {item.basedOnWeight} kg x {item.basedOnReps} reps {"->"} Next: {item.suggestedWeight} kg x {item.suggestedReps} reps
@@ -520,7 +520,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Plateau detection</h2>
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                         Flags exercises with no estimated 1RM PR in 5+ sessions.
@@ -532,7 +532,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.plateauAlerts.map((item) => (
-                            <li key={item.exercise} className="rounded-lg border border-amber-200/90 bg-amber-50/80 p-3 dark:border-amber-900/50 dark:bg-amber-950/25">
+                            <li key={item.exercise} className="rounded-lg border border-amber-900/50 bg-amber-950/25 p-3">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 {item.sessionsWithoutPr} sessions without PR (best est. 1RM {item.currentBest.toFixed(1)})
@@ -548,7 +548,7 @@ export default function Home() {
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <div className="flex items-center justify-between">
                         <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">PR tracking</h2>
                         <Link href="/history" className="btn btn-ghost px-2 py-1 text-xs">
@@ -560,7 +560,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.topPrs.map((record) => (
-                            <li key={record.exercise} className="rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-zinc-700/70 dark:bg-zinc-950/80">
+                            <li key={record.exercise} className="surface-soft p-3">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{record.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} | Top set {record.maxWeight} kg | {record.achievedOn}
@@ -571,12 +571,12 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                    <div className="surface-card">
                       <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Muscle-group summary</h2>
                       {analytics.muscleSummary.length === 0 ? (
                         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No muscle-group data yet.</p>
                       ) : (
-                        <div className="mt-2 h-72 rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-2 dark:border-zinc-700/70 dark:bg-zinc-950/80">
+                        <div className="surface-soft mt-2 h-72 p-2">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                               data={analytics.muscleSummary.map((item) => ({
@@ -612,7 +612,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="surface-card">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">
                         {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
@@ -649,7 +649,7 @@ export default function Home() {
                     {analytics.latestVolumePoints.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No volume trend yet.</p>
                     ) : (
-                      <div className="mt-2 h-80 rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-2 dark:border-zinc-700/70 dark:bg-zinc-950/80">
+                      <div className="surface-soft mt-2 h-80 p-2">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={analytics.latestVolumePoints.map((point) => ({
