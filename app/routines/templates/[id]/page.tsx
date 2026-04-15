@@ -169,12 +169,12 @@ export default function EditTemplatePage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <section className="surface-page">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Edit template</h1>
                 <Link
                   href="/routines"
-                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="btn btn-secondary"
                 >
                   Back
                 </Link>
@@ -189,7 +189,7 @@ export default function EditTemplatePage() {
                     <input
                       value={template.name}
                       onChange={(event) => setTemplate((prev) => (prev ? { ...prev, name: event.target.value } : prev))}
-                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                      className="field"
                     />
                   </div>
 
@@ -205,7 +205,7 @@ export default function EditTemplatePage() {
                           setDragItem(null);
                         }
                       }}
-                      className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50"
+                      className="surface-card"
                     >
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Drag</span>
@@ -213,12 +213,12 @@ export default function EditTemplatePage() {
                           value={exercise.name}
                           onChange={(event) => updateExerciseName(exerciseIndex, event.target.value)}
                           placeholder="Exercise name"
-                          className="flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                          className="field flex-1"
                         />
                         <button
                           type="button"
                           onClick={() => removeExercise(exerciseIndex)}
-                          className="rounded-md border border-red-300 px-2 py-2 text-xs text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/30"
+                          className="btn btn-danger px-2 py-2 text-xs"
                         >
                           Remove
                         </button>
@@ -237,14 +237,14 @@ export default function EditTemplatePage() {
                                 setDragItem(null);
                               }
                             }}
-                            className="grid grid-cols-1 gap-2 rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900 md:grid-cols-[1fr_1fr_auto]"
+                            className="surface-soft grid grid-cols-1 gap-2 p-3 md:grid-cols-[1fr_1fr_auto]"
                           >
                             <input
                               type="number"
                               min={1}
                               value={set.reps}
                               onChange={(event) => updateSet(exerciseIndex, setIndex, "reps", Number(event.target.value))}
-                              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                              className="field"
                               placeholder="Reps"
                             />
                             <input
@@ -253,13 +253,13 @@ export default function EditTemplatePage() {
                               step="0.5"
                               value={set.weight}
                               onChange={(event) => updateSet(exerciseIndex, setIndex, "weight", Number(event.target.value))}
-                              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                              className="field"
                               placeholder="Weight"
                             />
                             <button
                               type="button"
                               onClick={() => removeSet(exerciseIndex, setIndex)}
-                              className="rounded-md border border-red-300 px-2 py-2 text-xs text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/30"
+                              className="btn btn-danger px-2 py-2 text-xs"
                             >
                               Remove set
                             </button>
@@ -270,7 +270,7 @@ export default function EditTemplatePage() {
                       <button
                         type="button"
                         onClick={() => addSet(exerciseIndex)}
-                        className="mt-2 rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                        className="btn btn-secondary mt-2 px-2 py-1 text-xs"
                       >
                         Add set
                       </button>
@@ -281,7 +281,7 @@ export default function EditTemplatePage() {
                     <button
                       type="button"
                       onClick={addExercise}
-                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      className="btn btn-secondary"
                     >
                       Add exercise
                     </button>
@@ -289,7 +289,7 @@ export default function EditTemplatePage() {
                       type="button"
                       disabled={isSaving}
                       onClick={handleSave}
-                      className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                      className="btn btn-primary"
                     >
                       {isSaving ? "Saving..." : "Save template"}
                     </button>

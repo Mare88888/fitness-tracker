@@ -621,7 +621,7 @@ export default function Home() {
                         <select
                           value={timeframe}
                           onChange={(event) => setTimeframe(event.target.value as Timeframe)}
-                          className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-800 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                          className="field field-select w-auto px-2 py-1 text-xs font-medium"
                         >
                           <option value="7d">7d</option>
                           <option value="30d">30d</option>

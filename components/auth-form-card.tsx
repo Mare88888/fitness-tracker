@@ -62,7 +62,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
   };
 
   return (
-    <section className="mx-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <section className="surface-page mx-auto w-full max-w-md">
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
         {isLogin ? "Login" : "Register"}
       </h1>
@@ -85,7 +85,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             type="text"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+            className="field"
           />
           {usernameError && <p className="mt-1 text-xs text-red-600">{usernameError}</p>}
         </div>
@@ -102,7 +102,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+            className="field"
           />
           {passwordError && <p className="mt-1 text-xs text-red-600">{passwordError}</p>}
         </div>
@@ -111,7 +111,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
           type="button"
           disabled={isSubmitting || !isFormValid}
           onClick={handleSubmit}
-          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="btn btn-primary w-full"
         >
           {isSubmitting ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
