@@ -139,14 +139,14 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                     <div className="mt-3 flex gap-3">
                       <Link
                         href={`/workouts/${workout.id}/edit`}
-                        className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                        className="btn btn-secondary px-2.5 py-1.5 text-xs"
                       >
                         Edit workout
                       </Link>
                       <button
                         type="button"
                         onClick={() => setIsDeleteModalOpen(true)}
-                        className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
+                        className="btn btn-danger px-2.5 py-1.5 text-xs"
                       >
                         Delete workout
                       </button>

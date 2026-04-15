@@ -279,7 +279,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                           type="button"
                           onClick={() => removeExercise(exerciseIndex)}
                           disabled={payload.exercises.length === 1}
-                          className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="btn btn-secondary"
                         >
                           Remove
                         </button>
@@ -337,7 +337,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                               type="button"
                               onClick={() => removeSet(exerciseIndex, setIndex)}
                               disabled={exercise.sets.length === 1}
-                              className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                              className="btn btn-secondary"
                             >
                               Remove
                             </button>
@@ -347,7 +347,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                       <button
                         type="button"
                         onClick={() => addSet(exerciseIndex)}
-                        className="mt-3 rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="btn btn-secondary mt-3"
                       >
                         Add set
                       </button>
@@ -356,7 +356,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                   <button
                     type="button"
                     onClick={addExercise}
-                    className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    className="btn btn-secondary"
                   >
                     Add exercise
                   </button>
@@ -364,7 +364,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                     type="button"
                     onClick={handleSave}
                     disabled={!canSave}
-                    className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                    className="btn btn-primary"
                   >
                     {isSaving ? "Saving..." : "Save changes"}
                   </button>

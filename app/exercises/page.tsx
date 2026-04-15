@@ -137,7 +137,7 @@ export default function ExerciseLibraryPage() {
                 </div>
                 <Link
                   href="/workouts/start"
-                  className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="btn btn-secondary"
                 >
                   Start Workout
                 </Link>
@@ -192,7 +192,7 @@ export default function ExerciseLibraryPage() {
                         setMuscleFilter("all");
                         setFavoritesOnly(false);
                       }}
-                      className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="btn btn-secondary"
                     >
                       Reset filters
                     </button>
@@ -228,7 +228,7 @@ export default function ExerciseLibraryPage() {
                           <button
                             type="button"
                             onClick={() => handleAddToWorkout(exercise.name)}
-                            className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                            className="btn btn-primary px-3 py-1.5 text-sm"
                           >
                             Add to workout
                           </button>
