@@ -228,7 +228,7 @@ export default function ExerciseLibraryPage() {
                           <button
                             type="button"
                             onClick={() => handleAddToWorkout(exercise.name)}
-                            className="btn btn-primary px-3 py-1.5 text-sm"
+                            className="btn btn-primary px-3 py-1.5"
                           >
                             Add to workout
                           </button>

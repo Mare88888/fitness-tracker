@@ -118,7 +118,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setIsDrawerOpen((previous) => !previous)}
-            className="btn btn-secondary px-2 py-1 text-sm"
+            className="btn btn-secondary px-2 py-1"
             aria-label="Toggle navigation menu"
             aria-expanded={isDrawerOpen}
             aria-controls="mobile-nav-drawer"
@@ -151,21 +151,21 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => applyTheme(isDarkApplied ? "light" : "dark")}
-                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
+                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left"
               >
                 {isDarkApplied ? "Switch to light mode" : "Switch to dark mode"}
               </button>
               <button
                 type="button"
                 onClick={() => applyTheme("system")}
-                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
+                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left"
               >
                 Use system theme
               </button>
               <Link
                 href="/settings"
                 onClick={() => setIsMenuOpen(false)}
-                className="btn btn-ghost block w-full justify-start px-3 py-2 text-sm"
+                className="btn btn-ghost block w-full justify-start px-3 py-2"
               >
                 Settings
               </Link>
@@ -173,7 +173,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
+                  className="btn btn-ghost block w-full justify-start px-3 py-2 text-left"
                 >
                   Logout
                 </button>
@@ -181,7 +181,7 @@ export function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setIsMenuOpen(false)}
-                  className="btn btn-ghost block w-full justify-start px-3 py-2 text-sm"
+                  className="btn btn-ghost block w-full justify-start px-3 py-2"
                 >
                   Login
                 </Link>
