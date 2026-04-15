@@ -685,7 +685,7 @@ export default function StartWorkoutPage() {
                       value={workoutName}
                       onChange={(event) => setWorkoutName(event.target.value)}
                       placeholder="e.g. Push Day"
-                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                      className="field"
                     />
                     {workoutNameError && <p className="mt-1 text-xs text-red-600">{workoutNameError}</p>}
                   </div>
@@ -709,7 +709,7 @@ export default function StartWorkoutPage() {
                               }
                               list={EXERCISE_DATALIST_ID}
                               placeholder="e.g. Bench Press"
-                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                              className="field"
                             />
                             {exercise.name.trim() && (
                               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
@@ -749,7 +749,7 @@ export default function StartWorkoutPage() {
                                   onChange={(event) =>
                                     updateSetField(exercise.id, set.id, "reps", event.target.value)
                                   }
-                                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                                  className="field"
                                 />
                                 {setFieldErrors[set.id]?.reps && (
                                   <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
@@ -766,7 +766,7 @@ export default function StartWorkoutPage() {
                                   onChange={(event) =>
                                     updateSetField(exercise.id, set.id, "weight", event.target.value)
                                   }
-                                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                                  className="field"
                                 />
                                 {setFieldErrors[set.id]?.weight && (
                                   <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.weight}</p>
@@ -853,7 +853,7 @@ export default function StartWorkoutPage() {
                       <select
                         value={selectedTemplateId}
                         onChange={(event) => setSelectedTemplateId(event.target.value)}
-                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                        className="field field-select"
                       >
                         <option value="">Select template</option>
                         {templates.map((template) => (
@@ -894,7 +894,7 @@ export default function StartWorkoutPage() {
                               value={dayPlan?.templateId ?? ""}
                               onChange={(event) => handleAssignPlanDay(day.dayOfWeek, Number(event.target.value))}
                               disabled={isUpdatingPlanDay === day.dayOfWeek}
-                              className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                              className="field field-select px-2 py-1"
                             >
                               <option value="">No template</option>
                               {templates.map((template) => (

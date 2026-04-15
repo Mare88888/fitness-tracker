@@ -242,7 +242,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                     <input
                       value={payload.name}
                       onChange={(event) => setPayload((prev) => (prev ? { ...prev, name: event.target.value } : prev))}
-                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                      className="field"
                     />
                   </div>
                   <div>
@@ -253,7 +253,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                       type="date"
                       value={payload.date}
                       onChange={(event) => setPayload((prev) => (prev ? { ...prev, date: event.target.value } : prev))}
-                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                      className="field"
                     />
                   </div>
                   {payload.exercises.map((exercise, exerciseIndex) => (
@@ -273,7 +273,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                           }
                           list={EXERCISE_DATALIST_ID}
                           placeholder={`Exercise ${exerciseIndex + 1}`}
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                          className="field"
                         />
                         <button
                           type="button"
@@ -310,7 +310,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                 })
                               }
                               placeholder="Reps"
-                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                              className="field"
                             />
                             <input
                               type="number"
@@ -331,7 +331,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                 })
                               }
                               placeholder="Weight (kg)"
-                              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
+                              className="field"
                             />
                             <button
                               type="button"
