@@ -2,6 +2,7 @@
 
 import { clearAuthToken, getAuthUsername } from "@/lib/auth/token";
 import { logout } from "@/lib/services/auth-service";
+import { APP_NAME } from "@/lib/constants";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -125,12 +126,7 @@ export function Navbar() {
           >
             Menu
           </button>
-          <div className="text-lg font-semibold text-emerald-300">
-            Fitness Tracker
-          </div>
-        </div>
-        <div className="hidden text-lg font-semibold text-emerald-300 md:block">
-          Fitness Tracker
+          <div className="text-lg font-semibold text-emerald-300">{APP_NAME}</div>
         </div>
         <div className="relative ml-auto" ref={menuRef}>
           <button

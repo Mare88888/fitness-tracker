@@ -1,1 +1,1 @@
-export const APP_NAME = "Fitness Tracker";
+export const APP_NAME = "TrackUrGains";
