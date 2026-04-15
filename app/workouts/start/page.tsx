@@ -724,7 +724,7 @@ export default function StartWorkoutPage() {
                             type="button"
                             onClick={() => removeExercise(exercise.id)}
                             disabled={exercises.length === 1}
-                            className="self-start rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            className="btn btn-secondary self-start"
                           >
                             Remove exercise
                           </button>
@@ -776,7 +776,7 @@ export default function StartWorkoutPage() {
                                 type="button"
                                 onClick={() => removeSet(exercise.id, set.id)}
                                 disabled={exercise.sets.length === 1}
-                                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                className="btn btn-secondary"
                               >
                                 Remove
                               </button>
@@ -787,7 +787,7 @@ export default function StartWorkoutPage() {
                         <button
                           type="button"
                           onClick={() => addSet(exercise.id)}
-                          className="mt-4 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500"
+                          className="btn btn-primary mt-4"
                         >
                           Add set
                         </button>
@@ -799,13 +799,13 @@ export default function StartWorkoutPage() {
                     <button
                       type="button"
                       onClick={addExercise}
-                      className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="btn btn-secondary w-full sm:w-auto"
                     >
                       Add exercise
                     </button>
                     <Link
                       href="/exercises"
-                      className="inline-flex w-full items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="btn btn-secondary w-full sm:w-auto"
                     >
                       Exercise Library
                     </Link>
@@ -826,7 +826,7 @@ export default function StartWorkoutPage() {
                           type="button"
                           onClick={handleCreateWorkout}
                           disabled={!canSaveWorkout}
-                          className="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                          className="btn btn-primary w-full sm:w-auto"
                         >
                           {isSaving ? "Saving..." : "Save workout"}
                         </button>
@@ -834,7 +834,7 @@ export default function StartWorkoutPage() {
                           type="button"
                           onClick={handleLoadWorkouts}
                           disabled={isLoadingWorkouts}
-                          className="w-full rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="btn btn-secondary w-full sm:w-auto"
                         >
                           {isLoadingWorkouts ? "Loading..." : "Load workouts (integration test)"}
                         </button>
@@ -866,7 +866,7 @@ export default function StartWorkoutPage() {
                         type="button"
                         onClick={applyTemplate}
                         disabled={!selectedTemplateId || isLoadingTemplates}
-                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="btn btn-secondary"
                       >
                         Start from template
                       </button>
@@ -874,7 +874,7 @@ export default function StartWorkoutPage() {
                         type="button"
                         onClick={handleSaveTemplate}
                         disabled={isSavingTemplate}
-                        className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="btn btn-secondary"
                       >
                         {isSavingTemplate ? "Saving template..." : "Save as template"}
                       </button>
@@ -911,7 +911,7 @@ export default function StartWorkoutPage() {
                       type="button"
                       onClick={handleStartTodaysPlannedWorkout}
                       disabled={isStartingTodaysPlan || isLoadingTemplates}
-                      className="mt-3 rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="btn btn-secondary mt-3"
                     >
                       {isStartingTodaysPlan ? "Starting..." : "Start today's planned workout"}
                     </button>

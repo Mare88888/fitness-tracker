@@ -118,7 +118,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setIsDrawerOpen((previous) => !previous)}
-            className="rounded-md border border-zinc-700 px-2 py-1 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+            className="btn btn-secondary px-2 py-1 text-sm"
             aria-label="Toggle navigation menu"
             aria-expanded={isDrawerOpen}
             aria-controls="mobile-nav-drawer"
@@ -151,21 +151,21 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => applyTheme(isDarkApplied ? "light" : "dark")}
-                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
               >
                 {isDarkApplied ? "Switch to light mode" : "Switch to dark mode"}
               </button>
               <button
                 type="button"
                 onClick={() => applyTheme("system")}
-                className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
               >
                 Use system theme
               </button>
               <Link
                 href="/settings"
                 onClick={() => setIsMenuOpen(false)}
-                className="block rounded px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                className="btn btn-ghost block w-full justify-start px-3 py-2 text-sm"
               >
                 Settings
               </Link>
@@ -173,7 +173,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full rounded px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                  className="btn btn-ghost block w-full justify-start px-3 py-2 text-left text-sm"
                 >
                   Logout
                 </button>
@@ -181,7 +181,7 @@ export function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block rounded px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                  className="btn btn-ghost block w-full justify-start px-3 py-2 text-sm"
                 >
                   Login
                 </Link>

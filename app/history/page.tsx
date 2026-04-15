@@ -221,20 +221,20 @@ export default function HistoryPage() {
                       <div className="mt-3 flex flex-wrap gap-3">
                         <Link
                           href={`/history/${workout.id}`}
-                          className="inline-flex items-center rounded-md border border-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                          className="btn btn-secondary px-2.5 py-1.5 text-xs"
                         >
                           View details
                         </Link>
                         <Link
                           href={`/workouts/${workout.id}/edit`}
-                          className="inline-flex items-center rounded-md border border-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 hover:text-emerald-300"
+                          className="btn btn-secondary px-2.5 py-1.5 text-xs"
                         >
                           Edit
                         </Link>
                         <button
                           type="button"
                           onClick={() => setPendingDelete(workout)}
-                          className="inline-flex items-center rounded-md border border-red-300 px-2.5 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/40"
+                          className="btn btn-danger px-2.5 py-1.5 text-xs"
                         >
                           Delete
                         </button>
@@ -261,7 +261,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page <= 1}
                       onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-                      className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
+                      className="btn btn-secondary px-3 py-1.5 text-xs"
                     >
                       Previous
                     </button>
@@ -269,7 +269,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page >= pageCount}
                       onClick={() => setPage((previous) => Math.min(pageCount, previous + 1))}
-                      className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-zinc-800 disabled:opacity-50"
+                      className="btn btn-secondary px-3 py-1.5 text-xs"
                     >
                       Next
                     </button>

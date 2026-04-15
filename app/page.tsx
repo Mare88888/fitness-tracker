@@ -551,7 +551,7 @@ export default function Home() {
                     <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <div className="flex items-center justify-between">
                         <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">PR tracking</h2>
-                        <Link href="/history" className="text-xs font-medium text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100">
+                        <Link href="/history" className="btn btn-ghost px-2 py-1 text-xs">
                           View history
                         </Link>
                       </div>
@@ -632,20 +632,14 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => setTrendMetric("volume")}
-                            className={`px-2 py-1 text-xs ${trendMetric === "volume"
-                              ? "bg-emerald-600 text-white"
-                              : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
+                            className={`px-2 py-1 text-xs ${trendMetric === "volume" ? "btn btn-primary" : "btn btn-secondary"}`}
                           >
                             Volume
                           </button>
                           <button
                             type="button"
                             onClick={() => setTrendMetric("estimated1rm")}
-                            className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm"
-                              ? "bg-emerald-600 text-white"
-                              : "bg-white text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                              }`}
+                            className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm" ? "btn btn-primary" : "btn btn-secondary"}`}
                           >
                             Est. 1RM
                           </button>

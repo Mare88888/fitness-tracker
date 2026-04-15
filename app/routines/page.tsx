@@ -105,14 +105,14 @@ export default function RoutinesPage() {
                               <div className="flex items-center gap-2">
                                 <Link
                                   href={`/routines/templates/${template.id}`}
-                                  className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                                  className="btn btn-secondary px-2 py-1 text-xs"
                                 >
                                   Edit
                                 </Link>
                                 <button
                                   type="button"
                                   onClick={() => setTemplatePendingDelete(template)}
-                                  className="rounded-md border border-red-300 px-2 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/40"
+                                  className="btn btn-danger px-2 py-1 text-xs"
                                 >
                                   Delete
                                 </button>
