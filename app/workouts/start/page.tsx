@@ -655,7 +655,7 @@ export default function StartWorkoutPage() {
 
                 <div className="relative space-y-6">
                   {getDraftStatusLabel() && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{getDraftStatusLabel()}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-300">{getDraftStatusLabel()}</p>
                   )}
                   {hasRecoveredDraft && (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -712,7 +712,7 @@ export default function StartWorkoutPage() {
                               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-zinc-800"
                             />
                             {exercise.name.trim() && (
-                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
                                 Muscle: {resolveMuscleGroup(exercise.name)}
                               </p>
                             )}
@@ -815,7 +815,7 @@ export default function StartWorkoutPage() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-zinc-100">Ready to save?</p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-zinc-300">
                           {formValidationError
                             ? "Fix validation issues before saving."
                             : "Your workout is valid and ready to store."}
@@ -842,7 +842,7 @@ export default function StartWorkoutPage() {
                     </div>
                   </div>
                   {formValidationError && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-300">
                       {formValidationError}
                     </p>
                   )}

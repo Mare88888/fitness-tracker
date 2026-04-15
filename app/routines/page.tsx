@@ -76,7 +76,7 @@ export default function RoutinesPage() {
               </div>
 
               {isLoading ? (
-                <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">Loading routines...</p>
+                <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">Loading routines...</p>
               ) : (
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
                   <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">

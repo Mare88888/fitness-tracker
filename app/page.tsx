@@ -469,29 +469,29 @@ export default function Home() {
                 <div className="mt-4 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Total volume</p>
+                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Total volume</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.totalVolume).toLocaleString()}
                       </p>
                     </div>
                     <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Current streak</p>
+                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Current streak</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {analytics.currentStreak} day{analytics.currentStreak === 1 ? "" : "s"}
                       </p>
                     </div>
                     <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Avg volume / workout</p>
+                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Avg volume / workout</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
                       </p>
                     </div>
                     <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Weekly adherence</p>
+                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Weekly adherence</p>
                       <p className={`mt-1 text-2xl font-semibold ${adherenceToneClass}`}>
                         {analytics.adherenceScore}%
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-300">
                         {analytics.workoutsThisWeek}/{analytics.weeklyTarget} workouts this week
                       </p>
                     </div>

@@ -209,8 +209,8 @@ export default function HistoryPage() {
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
-                          <p className="text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
-                          <p className="text-zinc-600 dark:text-zinc-400">
+                          <p className="text-zinc-600 dark:text-zinc-300">Date: {workout.date}</p>
+                          <p className="text-zinc-600 dark:text-zinc-300">
                             Exercises: {workout.exercises.length}
                           </p>
                         </div>
