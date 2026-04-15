@@ -407,6 +407,21 @@ export default function Home() {
     [isDarkMode]
   );
 
+  const trendLabel = `${analytics.trendPct >= 0 ? "+" : ""}${analytics.trendPct.toFixed(1)}%`;
+  const trendToneClass =
+    analytics.trendPct > 0
+      ? "border-emerald-300/70 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
+      : analytics.trendPct < 0
+        ? "border-rose-300/70 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300"
+        : "border-zinc-300 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300";
+
+  const adherenceToneClass =
+    analytics.adherenceScore >= 100
+      ? "text-emerald-600 dark:text-emerald-400"
+      : analytics.adherenceScore >= 60
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-rose-600 dark:text-rose-400";
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
@@ -414,13 +429,31 @@ export default function Home() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                {APP_NAME} Analytics Dashboard
-              </h1>
-              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                Track PRs, workout volume trends, streaks, and muscle-group focus.
-              </p>
+            <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-6 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
+              <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
+
+              <div className="relative">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
+                      Performance overview
+                    </p>
+                    <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+                      {APP_NAME} Analytics Dashboard
+                    </h1>
+                    <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                      Track PRs, workout volume trends, streaks, and muscle-group focus.
+                    </p>
+                  </div>
+                  <div
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${trendToneClass}`}
+                    title="Trend compares recent sessions to previous window."
+                  >
+                    Trend {trendLabel}
+                  </div>
+                </div>
+              </div>
 
               {isLoading ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -441,27 +474,27 @@ export default function Home() {
               ) : (
                 <div className="mt-4 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Total volume</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.totalVolume).toLocaleString()}
                       </p>
                     </div>
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Current streak</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {analytics.currentStreak} day{analytics.currentStreak === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Avg volume / workout</p>
                       <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
                       </p>
                     </div>
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Weekly adherence</p>
-                      <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                      <p className={`mt-1 text-2xl font-semibold ${adherenceToneClass}`}>
                         {analytics.adherenceScore}%
                       </p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -471,8 +504,8 @@ export default function Home() {
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
-                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Next best set suggestions</h2>
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Next best set suggestions</h2>
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                         Auto-suggested overload targets from your latest top sets.
                       </p>
@@ -481,7 +514,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.nextBestSetSuggestions.map((item) => (
-                            <li key={item.exercise} className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                            <li key={item.exercise} className="rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-zinc-700/70 dark:bg-zinc-950/80">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 Last: {item.basedOnWeight} kg x {item.basedOnReps} reps {"->"} Next: {item.suggestedWeight} kg x {item.suggestedReps} reps
@@ -493,8 +526,8 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
-                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Plateau detection</h2>
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Plateau detection</h2>
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                         Flags exercises with no estimated 1RM PR in 5+ sessions.
                       </p>
@@ -505,7 +538,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.plateauAlerts.map((item) => (
-                            <li key={item.exercise} className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+                            <li key={item.exercise} className="rounded-lg border border-amber-200/90 bg-amber-50/80 p-3 dark:border-amber-900/50 dark:bg-amber-950/25">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 {item.sessionsWithoutPr} sessions without PR (best est. 1RM {item.currentBest.toFixed(1)})
@@ -521,10 +554,10 @@ export default function Home() {
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">PR tracking</h2>
-                        <Link href="/history" className="text-xs text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400">
+                        <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">PR tracking</h2>
+                        <Link href="/history" className="text-xs font-medium text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100">
                           View history
                         </Link>
                       </div>
@@ -533,7 +566,7 @@ export default function Home() {
                       ) : (
                         <ul className="mt-2 space-y-2 text-sm">
                           {analytics.topPrs.map((record) => (
-                            <li key={record.exercise} className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                            <li key={record.exercise} className="rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-3 dark:border-zinc-700/70 dark:bg-zinc-950/80">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{record.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
                                 Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} | Top set {record.maxWeight} kg | {record.achievedOn}
@@ -544,12 +577,12 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
-                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Muscle-group summary</h2>
+                    <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Muscle-group summary</h2>
                       {analytics.muscleSummary.length === 0 ? (
                         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No muscle-group data yet.</p>
                       ) : (
-                        <div className="mt-2 h-72 rounded-md border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
+                        <div className="mt-2 h-72 rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-2 dark:border-zinc-700/70 dark:bg-zinc-950/80">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                               data={analytics.muscleSummary.map((item) => ({
@@ -585,16 +618,16 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                  <div className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">
                         {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
                       </h2>
                       <div className="flex flex-wrap items-center gap-2">
                         <select
                           value={timeframe}
                           onChange={(event) => setTimeframe(event.target.value as Timeframe)}
-                          className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                          className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-800 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                         >
                           <option value="7d">7d</option>
                           <option value="30d">30d</option>
@@ -628,7 +661,7 @@ export default function Home() {
                     {analytics.latestVolumePoints.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No volume trend yet.</p>
                     ) : (
-                      <div className="mt-2 h-80 rounded-md border border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900">
+                      <div className="mt-2 h-80 rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-2 dark:border-zinc-700/70 dark:bg-zinc-950/80">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={analytics.latestVolumePoints.map((point) => ({

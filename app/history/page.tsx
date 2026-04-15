@@ -136,13 +136,22 @@ export default function HistoryPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Workout History</h1>
-              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                Review previously saved workouts from your backend.
-              </p>
+            <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-linear-to-b from-white to-zinc-50 p-6 shadow-sm shadow-zinc-200/60 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950 dark:shadow-black/30">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/10" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
+
+              <div className="relative">
+                <p className="inline-flex items-center rounded-full border border-zinc-300/80 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
+                  Workout archive
+                </p>
+                <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Workout History</h1>
+                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                  Review previously saved workouts from your backend.
+                </p>
+              </div>
               {!isLoading && !error && workouts.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+                <div className="mt-4 rounded-xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                   <input
                     type="search"
                     value={query}
@@ -170,6 +179,7 @@ export default function HistoryPage() {
                     <option value="desc">Newest first</option>
                     <option value="asc">Oldest first</option>
                   </select>
+                  </div>
                 </div>
               )}
 
@@ -201,29 +211,36 @@ export default function HistoryPage() {
               {!isLoading && !error && workouts.length > 0 && (
                 <ul className="mt-4 space-y-3">
                   {paginatedWorkouts.map((workout) => (
-                    <li key={workout.id} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-800/60">
-                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
-                      <p className="text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
-                      <p className="text-zinc-600 dark:text-zinc-400">
-                        Exercises: {workout.exercises.length}
-                      </p>
-                      <div className="mt-2 flex gap-3">
+                    <li key={workout.id} className="rounded-xl border border-zinc-200/90 bg-white/90 p-4 text-sm shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
+                          <p className="text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
+                          <p className="text-zinc-600 dark:text-zinc-400">
+                            Exercises: {workout.exercises.length}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-zinc-300/80 bg-zinc-100/70 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300">
+                          #{workout.id}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-3">
                         <Link
                           href={`/history/${workout.id}`}
-                          className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                          className="inline-flex items-center rounded-md border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                         >
                           View details
                         </Link>
                         <Link
                           href={`/workouts/${workout.id}/edit`}
-                          className="inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+                          className="inline-flex items-center rounded-md border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                         >
                           Edit
                         </Link>
                         <button
                           type="button"
                           onClick={() => setPendingDelete(workout)}
-                          className="text-sm font-medium text-red-700 underline-offset-4 hover:underline dark:text-red-400"
+                          className="inline-flex items-center rounded-md border border-red-300 px-2.5 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/40"
                         >
                           Delete
                         </button>
@@ -241,7 +258,7 @@ export default function HistoryPage() {
                 </div>
               )}
               {!isLoading && !error && visibleWorkouts.length > 0 && (
-                <div className="mt-4 flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-300">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200/90 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70 dark:text-zinc-300">
                   <p>
                     Page {page} of {pageCount}
                   </p>
@@ -250,7 +267,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page <= 1}
                       onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-                      className="rounded border border-zinc-300 px-3 py-1 disabled:opacity-50 dark:border-zinc-700"
+                      className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                     >
                       Previous
                     </button>
@@ -258,7 +275,7 @@ export default function HistoryPage() {
                       type="button"
                       disabled={page >= pageCount}
                       onClick={() => setPage((previous) => Math.min(pageCount, previous + 1))}
-                      className="rounded border border-zinc-300 px-3 py-1 disabled:opacity-50 dark:border-zinc-700"
+                      className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                     >
                       Next
                     </button>
