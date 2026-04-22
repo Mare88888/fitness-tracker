@@ -18,6 +18,7 @@ import { Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } 
 import { toast } from "sonner";
 
 type MetricKey = "weight" | "waist" | "chest" | "leftArm" | "rightArm";
+type Timeframe = "30d" | "90d" | "all";
 
 const metricOptions: { value: MetricKey; label: string; unit: string }[] = [
   { value: "weight", label: "Weight", unit: "kg" },
@@ -32,6 +33,7 @@ type ProgressPoint = {
   shortDate: string;
   metricValue: number;
   adherencePct: number;
+  goalValue: number | null;
 };
 
 function weekKey(dateString: string): string {
@@ -49,7 +51,16 @@ export default function ProgressPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [metric, setMetric] = useState<MetricKey>("weight");
+  const [timeframe, setTimeframe] = useState<Timeframe>("90d");
   const [weeklyGoal, setWeeklyGoal] = useState<number>(() => getWeeklyGoal());
+  const [metricGoals, setMetricGoals] = useState<Record<MetricKey, string>>({
+    weight: "",
+    waist: "",
+    chest: "",
+    leftArm: "",
+    rightArm: "",
+  });
+  const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
 
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [weight, setWeight] = useState("");
@@ -84,6 +95,25 @@ export default function ProgressPage() {
     });
   }, []);
 
+  const fillFormFromEntry = (entry: BodyMeasurement) => {
+    setDate(entry.date);
+    setWeight(entry.weight != null ? String(entry.weight) : "");
+    setWaist(entry.waist != null ? String(entry.waist) : "");
+    setChest(entry.chest != null ? String(entry.chest) : "");
+    setLeftArm(entry.leftArm != null ? String(entry.leftArm) : "");
+    setRightArm(entry.rightArm != null ? String(entry.rightArm) : "");
+  };
+
+  const resetForm = () => {
+    setDate(new Date().toISOString().slice(0, 10));
+    setWeight("");
+    setWaist("");
+    setChest("");
+    setLeftArm("");
+    setRightArm("");
+    setEditingEntryId(null);
+  };
+
   const chartData = useMemo<ProgressPoint[]>(() => {
     const byWeek = workouts.reduce<Record<string, number>>((acc, workout) => {
       const key = weekKey(workout.date);
@@ -91,7 +121,10 @@ export default function ProgressPage() {
       return acc;
     }, {});
 
-    return [...measurements]
+    const selectedGoalRaw = metricGoals[metric]?.trim() ?? "";
+    const selectedGoal = selectedGoalRaw ? Number(selectedGoalRaw) : null;
+
+    const base = [...measurements]
       .sort((a, b) => a.date.localeCompare(b.date))
       .map((entry) => {
         const value = entry[metric];
@@ -106,10 +139,22 @@ export default function ProgressPage() {
           shortDate: entry.date.slice(5),
           metricValue: Number(value),
           adherencePct,
+          goalValue: selectedGoal != null && Number.isFinite(selectedGoal) && selectedGoal > 0 ? selectedGoal : null,
         };
       })
       .filter((point): point is ProgressPoint => Boolean(point));
-  }, [measurements, metric, workouts, weeklyGoal]);
+    if (timeframe === "all" || base.length === 0) {
+      return base;
+    }
+    const latest = new Date(base[base.length - 1].date);
+    const maxDays = timeframe === "30d" ? 30 : 90;
+    return base.filter((point) => {
+      const pointDate = new Date(point.date);
+      const diffMs = latest.getTime() - pointDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      return diffDays <= maxDays;
+    });
+  }, [measurements, metric, workouts, weeklyGoal, timeframe, metricGoals]);
 
   const selectedMetric = metricOptions.find((option) => option.value === metric) ?? metricOptions[0];
 
@@ -163,7 +208,8 @@ export default function ProgressPage() {
         const withoutSameDate = previous.filter((entry) => entry.date !== saved.date);
         return [...withoutSameDate, saved].sort((a, b) => a.date.localeCompare(b.date));
       });
-      toast.success("Measurement saved.");
+      toast.success(editingEntryId ? "Measurement updated." : "Measurement saved.");
+      resetForm();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save measurement.");
     } finally {
@@ -195,17 +241,42 @@ export default function ProgressPage() {
                   <div className="surface-card">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <h2 className="text-sm font-semibold text-zinc-100">Trend chart</h2>
-                      <select
-                        value={metric}
-                        onChange={(event) => setMetric(event.target.value as MetricKey)}
-                        className="field field-select w-auto"
-                      >
-                        {metricOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={metric}
+                          onChange={(event) => setMetric(event.target.value as MetricKey)}
+                          className="field field-select w-auto"
+                        >
+                          {metricOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={timeframe}
+                          onChange={(event) => setTimeframe(event.target.value as Timeframe)}
+                          className="field field-select w-auto"
+                        >
+                          <option value="30d">30d</option>
+                          <option value="90d">90d</option>
+                          <option value="all">All</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <label className="text-xs text-zinc-300">Goal ({selectedMetric.unit})</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.1"
+                        value={metricGoals[metric]}
+                        onChange={(event) =>
+                          setMetricGoals((previous) => ({ ...previous, [metric]: event.target.value }))
+                        }
+                        placeholder={`Target ${selectedMetric.label.toLowerCase()}`}
+                        className="field w-44"
+                      />
                     </div>
                     {isLoading ? (
                       <p className="mt-3 text-sm text-zinc-300">Loading chart...</p>
@@ -244,6 +315,9 @@ export default function ProgressPage() {
                                 if (name === "adherencePct") {
                                   return [`${value}%`, "Adherence"];
                                 }
+                                if (name === "goalValue") {
+                                  return [`${value} ${selectedMetric.unit}`, `${selectedMetric.label} goal`];
+                                }
                                 return [`${value} ${selectedMetric.unit}`, selectedMetric.label];
                               }}
                               contentStyle={{
@@ -269,6 +343,16 @@ export default function ProgressPage() {
                               dot={{ r: 3 }}
                               activeDot={{ r: 5 }}
                               name="metricValue"
+                            />
+                            <Line
+                              yAxisId="metric"
+                              type="monotone"
+                              dataKey="goalValue"
+                              stroke="#f59e0b"
+                              strokeWidth={2}
+                              strokeDasharray="6 4"
+                              dot={false}
+                              name="goalValue"
                             />
                           </ComposedChart>
                         </ResponsiveContainer>
@@ -303,6 +387,16 @@ export default function ProgressPage() {
                               </div>
                               <button
                                 type="button"
+                                onClick={() => {
+                                  setEditingEntryId(entry.id);
+                                  fillFormFromEntry(entry);
+                                }}
+                                className="btn btn-secondary px-2 py-1 text-xs"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleDelete(entry.id)}
                                 className="btn btn-danger px-2 py-1 text-xs"
                               >
@@ -317,7 +411,9 @@ export default function ProgressPage() {
               </section>
 
               <section className="surface-card xl:sticky xl:top-6">
-                <h2 className="text-sm font-semibold text-zinc-100">Add measurement</h2>
+                <h2 className="text-sm font-semibold text-zinc-100">
+                  {editingEntryId ? "Edit measurement" : "Add measurement"}
+                </h2>
                 <div className="mt-3 space-y-3">
                   <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="field" />
                   <input
@@ -366,8 +462,13 @@ export default function ProgressPage() {
                     placeholder="Right arm (cm)"
                   />
                   <button type="button" onClick={handleSave} disabled={isSaving} className="btn btn-primary w-full">
-                    {isSaving ? "Saving..." : "Save entry"}
+                    {isSaving ? "Saving..." : editingEntryId ? "Update entry" : "Save entry"}
                   </button>
+                  {editingEntryId && (
+                    <button type="button" onClick={resetForm} className="btn btn-secondary w-full">
+                      Cancel edit
+                    </button>
+                  )}
                 </div>
               </section>
             </div>
