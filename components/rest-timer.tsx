@@ -6,6 +6,7 @@ type RestTimerProps = {
   defaultSeconds?: number;
   className?: string;
   onComplete?: () => void;
+  startSignal?: number;
 };
 
 function formatSeconds(totalSeconds: number) {
@@ -14,7 +15,7 @@ function formatSeconds(totalSeconds: number) {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function RestTimer({ defaultSeconds = 90, className = "", onComplete }: RestTimerProps) {
+export function RestTimer({ defaultSeconds = 90, className = "", onComplete, startSignal = 0 }: RestTimerProps) {
   const safeDefaultSeconds = Math.max(1, Math.floor(defaultSeconds));
   const [secondsLeft, setSecondsLeft] = useState(safeDefaultSeconds);
   const [isRunning, setIsRunning] = useState(false);
@@ -39,6 +40,16 @@ export function RestTimer({ defaultSeconds = 90, className = "", onComplete }: R
 
     return () => window.clearInterval(interval);
   }, [isRunning, onComplete]);
+
+  useEffect(() => {
+    if (startSignal <= 0) {
+      return;
+    }
+    queueMicrotask(() => {
+      setSecondsLeft(safeDefaultSeconds);
+      setIsRunning(true);
+    });
+  }, [safeDefaultSeconds, startSignal]);
 
   const progressPercent = useMemo(() => {
     const elapsed = safeDefaultSeconds - secondsLeft;

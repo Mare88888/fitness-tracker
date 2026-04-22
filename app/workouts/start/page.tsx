@@ -23,7 +23,7 @@ import type { WorkoutTemplate } from "@/types/template";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import type { WeeklyPlan } from "@/types/weekly-plan";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type WorkoutSet = {
@@ -85,8 +85,11 @@ function createExercise(): WorkoutExercise {
 }
 
 export default function StartWorkoutPage() {
+  const [sessionStartedAt] = useState(() => Date.now());
   const [workoutName, setWorkoutName] = useState("");
   const [exercises, setExercises] = useState<WorkoutExercise[]>([createExercise()]);
+  const [completedSetIds, setCompletedSetIds] = useState<Set<string>>(new Set());
+  const [restTimerStartSignal, setRestTimerStartSignal] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -120,7 +123,17 @@ export default function StartWorkoutPage() {
   };
 
   const removeExercise = (exerciseId: string) => {
-    setExercises((previous) => previous.filter((exercise) => exercise.id !== exerciseId));
+    setExercises((previous) => {
+      const removedExercise = previous.find((exercise) => exercise.id === exerciseId);
+      if (removedExercise) {
+        setCompletedSetIds((prev) => {
+          const next = new Set(prev);
+          removedExercise.sets.forEach((set) => next.delete(set.id));
+          return next;
+        });
+      }
+      return previous.filter((exercise) => exercise.id !== exerciseId);
+    });
   };
 
   const updateExerciseName = (exerciseId: string, name: string) => {
@@ -146,6 +159,14 @@ export default function StartWorkoutPage() {
   };
 
   const removeSet = (exerciseId: string, setId: string) => {
+    setCompletedSetIds((previous) => {
+      if (!previous.has(setId)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.delete(setId);
+      return next;
+    });
     setExercises((previous) =>
       previous.map((exercise) => {
         if (exercise.id !== exerciseId) {
@@ -158,6 +179,22 @@ export default function StartWorkoutPage() {
         };
       })
     );
+  };
+
+  const markSetCompleted = (setId: string) => {
+    let shouldStartRest = false;
+    setCompletedSetIds((previous) => {
+      if (previous.has(setId)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.add(setId);
+      shouldStartRest = true;
+      return next;
+    });
+    if (shouldStartRest) {
+      setRestTimerStartSignal((previous) => previous + 1);
+    }
   };
 
   const updateSetField = (
@@ -229,6 +266,32 @@ export default function StartWorkoutPage() {
 
   const formValidationError = getValidationError();
   const canSaveWorkout = !isSaving && !formValidationError;
+  const sessionDurationLabel = useMemo(() => {
+    const totalSeconds = Math.max(0, Math.floor((Date.now() - sessionStartedAt) / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}m ${seconds}s`;
+  }, [sessionStartedAt]);
+  const liveTotalSets = useMemo(
+    () => exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0),
+    [exercises]
+  );
+  const liveTotalVolume = useMemo(() => {
+    const volume = exercises.reduce((sum, exercise) => {
+      return (
+        sum +
+        exercise.sets.reduce((exerciseSum, set) => {
+          const reps = Number(set.reps);
+          const weight = Number(set.weight);
+          if (!Number.isFinite(reps) || !Number.isFinite(weight)) {
+            return exerciseSum;
+          }
+          return exerciseSum + Math.max(0, reps) * Math.max(0, weight);
+        }, 0)
+      );
+    }, 0);
+    return Math.round(volume);
+  }, [exercises]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -654,6 +717,32 @@ export default function StartWorkoutPage() {
                 </div>
 
                 <div className="relative space-y-6">
+                  <div className="surface-soft px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap gap-6 text-xs">
+                        <div>
+                          <p className="text-zinc-400">Duration</p>
+                          <p className="text-base font-semibold text-emerald-300">{sessionDurationLabel}</p>
+                        </div>
+                        <div>
+                          <p className="text-zinc-400">Volume</p>
+                          <p className="text-base font-semibold text-zinc-100">{liveTotalVolume} kg</p>
+                        </div>
+                        <div>
+                          <p className="text-zinc-400">Sets</p>
+                          <p className="text-base font-semibold text-zinc-100">{liveTotalSets}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCreateWorkout}
+                        disabled={!canSaveWorkout}
+                        className="btn btn-primary"
+                      >
+                        {isSaving ? "Saving..." : "Finish"}
+                      </button>
+                    </div>
+                  </div>
                   {getDraftStatusLabel() && (
                     <p className="text-xs text-zinc-500 dark:text-zinc-300">{getDraftStatusLabel()}</p>
                   )}
@@ -696,9 +785,9 @@ export default function StartWorkoutPage() {
                         key={exercise.id}
                         className="surface-card"
                       >
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="w-full">
-                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-400">
                               Exercise {exerciseIndex + 1}
                             </label>
                             <input
@@ -712,7 +801,7 @@ export default function StartWorkoutPage() {
                               className="field"
                             />
                             {exercise.name.trim() && (
-                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
+                              <p className="mt-1 text-xs text-zinc-400">
                                 Muscle: {resolveMuscleGroup(exercise.name)}
                               </p>
                             )}
@@ -726,18 +815,46 @@ export default function StartWorkoutPage() {
                             disabled={exercises.length === 1}
                             className="btn btn-secondary self-start"
                           >
-                            Remove exercise
+                            Remove
                           </button>
                         </div>
 
+                        <div className="mb-2 grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                          <span>Set</span>
+                          <span>Previous</span>
+                          <span>Kg</span>
+                          <span>Reps</span>
+                          <span>Done</span>
+                          <span></span>
+                        </div>
                         <div className="space-y-3">
                           {exercise.sets.map((set, setIndex) => (
                             <div
                               key={set.id}
-                              className="surface-soft grid grid-cols-1 gap-3 p-3 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto]"
+                              className={`surface-soft grid grid-cols-1 gap-2 p-2 sm:grid-cols-[auto_1fr_1fr_1fr_auto_auto] sm:items-center ${
+                                completedSetIds.has(set.id) ? "border-emerald-600/60 bg-emerald-950/20" : ""
+                              }`}
                             >
-                              <div className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                Set {setIndex + 1}
+                              <div className="flex items-center text-sm font-semibold text-zinc-200">
+                                {setIndex + 1}
+                              </div>
+                              <div className="text-sm text-zinc-500">-</div>
+                              <div>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="0.5"
+                                  inputMode="decimal"
+                                  placeholder="Kg"
+                                  value={set.weight}
+                                  onChange={(event) =>
+                                    updateSetField(exercise.id, set.id, "weight", event.target.value)
+                                  }
+                                  className="field"
+                                />
+                                {setFieldErrors[set.id]?.weight && (
+                                  <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.weight}</p>
+                                )}
                               </div>
                               <div>
                                 <input
@@ -755,30 +872,21 @@ export default function StartWorkoutPage() {
                                   <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
                                 )}
                               </div>
-                              <div>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  step="0.5"
-                                  inputMode="decimal"
-                                  placeholder="Weight (kg)"
-                                  value={set.weight}
-                                  onChange={(event) =>
-                                    updateSetField(exercise.id, set.id, "weight", event.target.value)
-                                  }
-                                  className="field"
-                                />
-                                {setFieldErrors[set.id]?.weight && (
-                                  <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.weight}</p>
-                                )}
-                              </div>
+                              <button
+                                type="button"
+                                onClick={() => markSetCompleted(set.id)}
+                                className="btn btn-secondary"
+                                aria-pressed={completedSetIds.has(set.id)}
+                              >
+                                ✓
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => removeSet(exercise.id, set.id)}
                                 disabled={exercise.sets.length === 1}
-                                className="btn btn-secondary"
+                                className="btn btn-danger"
                               >
-                                Remove
+                                X
                               </button>
                             </div>
                           ))}
@@ -957,7 +1065,7 @@ export default function StartWorkoutPage() {
                 </div>
               </section>
 
-              <RestTimer className="xl:sticky xl:top-6" />
+              <RestTimer className="xl:sticky xl:top-6" startSignal={restTimerStartSignal} />
             </div>
           </PageContainer>
         </div>
