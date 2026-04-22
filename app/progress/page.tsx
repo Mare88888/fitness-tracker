@@ -220,6 +220,22 @@ export default function ProgressPage() {
     return parsed;
   };
 
+  const resetChartPreferences = () => {
+    setMetric("weight");
+    setTimeframe("90d");
+    setMetricGoals({
+      weight: "",
+      waist: "",
+      chest: "",
+      leftArm: "",
+      rightArm: "",
+    });
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(PROGRESS_PREFS_KEY);
+    }
+    toast.success("Chart preferences reset.");
+  };
+
   const handleSave = async () => {
     if (!date) {
       toast.error("Date is required.");
@@ -312,6 +328,9 @@ export default function ProgressPage() {
                           <option value="90d">90d</option>
                           <option value="all">All</option>
                         </select>
+                        <button type="button" onClick={resetChartPreferences} className="btn btn-secondary text-xs">
+                          Reset prefs
+                        </button>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-2">
