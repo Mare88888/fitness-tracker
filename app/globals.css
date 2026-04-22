@@ -165,3 +165,7 @@ textarea:focus-visible {
   background-repeat: no-repeat;
   padding-right: 2rem;
 }
+
+.field-inline {
+  width: 12rem;
+}

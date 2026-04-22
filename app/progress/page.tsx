@@ -300,18 +300,32 @@ export default function ProgressPage() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
               <section className="surface-page">
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Body Progress</h1>
                 <div className="mt-4 space-y-4">
                   <div className="surface-card">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="space-y-3">
                       <h2 className="text-sm font-semibold text-zinc-100">Trend chart</h2>
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(220px,340px)_140px_110px_auto] xl:items-end">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-zinc-300">Goal ({selectedMetric.unit})</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.1"
+                            value={metricGoals[metric]}
+                            onChange={(event) =>
+                              setMetricGoals((previous) => ({ ...previous, [metric]: event.target.value }))
+                            }
+                            placeholder={`Target ${selectedMetric.label.toLowerCase()}`}
+                            className="field"
+                          />
+                        </div>
                         <select
                           value={metric}
                           onChange={(event) => setMetric(event.target.value as MetricKey)}
-                          className="field field-select w-auto"
+                          className="field field-select"
                         >
                           {metricOptions.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -322,30 +336,16 @@ export default function ProgressPage() {
                         <select
                           value={timeframe}
                           onChange={(event) => setTimeframe(event.target.value as Timeframe)}
-                          className="field field-select w-auto"
+                          className="field field-select"
                         >
                           <option value="30d">30d</option>
                           <option value="90d">90d</option>
                           <option value="all">All</option>
                         </select>
-                        <button type="button" onClick={resetChartPreferences} className="btn btn-secondary text-xs">
-                          Reset prefs
+                        <button type="button" onClick={resetChartPreferences} className="btn btn-secondary whitespace-nowrap">
+                          Reset preferences
                         </button>
                       </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <label className="text-xs text-zinc-300">Goal ({selectedMetric.unit})</label>
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.1"
-                        value={metricGoals[metric]}
-                        onChange={(event) =>
-                          setMetricGoals((previous) => ({ ...previous, [metric]: event.target.value }))
-                        }
-                        placeholder={`Target ${selectedMetric.label.toLowerCase()}`}
-                        className="field w-44"
-                      />
                     </div>
                     {isLoading ? (
                       <p className="mt-3 text-sm text-zinc-300">Loading chart...</p>
