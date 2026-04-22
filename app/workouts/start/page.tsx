@@ -181,18 +181,18 @@ export default function StartWorkoutPage() {
     );
   };
 
-  const markSetCompleted = (setId: string) => {
-    let shouldStartRest = false;
+  const toggleSetCompleted = (setId: string) => {
+    const isAlreadyCompleted = completedSetIds.has(setId);
     setCompletedSetIds((previous) => {
-      if (previous.has(setId)) {
-        return previous;
-      }
       const next = new Set(previous);
-      next.add(setId);
-      shouldStartRest = true;
+      if (isAlreadyCompleted) {
+        next.delete(setId);
+      } else {
+        next.add(setId);
+      }
       return next;
     });
-    if (shouldStartRest) {
+    if (!isAlreadyCompleted) {
       setRestTimerStartSignal((previous) => previous + 1);
     }
   };
@@ -832,13 +832,13 @@ export default function StartWorkoutPage() {
                             <div
                               key={set.id}
                               className={`surface-soft grid grid-cols-1 gap-2 p-2 sm:grid-cols-[auto_1fr_1fr_1fr_auto_auto] sm:items-center ${
-                                completedSetIds.has(set.id) ? "border-emerald-600/60 bg-emerald-950/20" : ""
+                                completedSetIds.has(set.id) ? "set-row-complete" : ""
                               }`}
                             >
                               <div className="flex items-center text-sm font-semibold text-zinc-200">
                                 {setIndex + 1}
                               </div>
-                              <div className="text-sm text-zinc-500">-</div>
+                              <div className={`${completedSetIds.has(set.id) ? "text-emerald-100/90" : "text-sm text-zinc-500"}`}>-</div>
                               <div>
                                 <input
                                   type="number"
@@ -874,7 +874,7 @@ export default function StartWorkoutPage() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() => markSetCompleted(set.id)}
+                                onClick={() => toggleSetCompleted(set.id)}
                                 className="btn btn-secondary"
                                 aria-pressed={completedSetIds.has(set.id)}
                               >
