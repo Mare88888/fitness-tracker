@@ -36,6 +36,14 @@ type ProgressPoint = {
   goalValue: number | null;
 };
 
+const PROGRESS_PREFS_KEY = "fitness_progress_prefs_v1";
+
+type ProgressPrefs = {
+  metric: MetricKey;
+  timeframe: Timeframe;
+  metricGoals: Record<MetricKey, string>;
+};
+
 function weekKey(dateString: string): string {
   const d = new Date(dateString);
   d.setHours(0, 0, 0, 0);
@@ -68,6 +76,48 @@ export default function ProgressPage() {
   const [chest, setChest] = useState("");
   const [leftArm, setLeftArm] = useState("");
   const [rightArm, setRightArm] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(PROGRESS_PREFS_KEY);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw) as Partial<ProgressPrefs>;
+      if (
+        parsed.metric &&
+        ["weight", "waist", "chest", "leftArm", "rightArm"].includes(parsed.metric)
+      ) {
+        setMetric(parsed.metric as MetricKey);
+      }
+      if (parsed.timeframe && ["30d", "90d", "all"].includes(parsed.timeframe)) {
+        setTimeframe(parsed.timeframe as Timeframe);
+      }
+      if (parsed.metricGoals) {
+        setMetricGoals((previous) => ({
+          ...previous,
+          ...parsed.metricGoals,
+        }));
+      }
+    } catch {
+      // Ignore malformed local storage data.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const prefs: ProgressPrefs = {
+      metric,
+      timeframe,
+      metricGoals,
+    };
+    window.localStorage.setItem(PROGRESS_PREFS_KEY, JSON.stringify(prefs));
+  }, [metric, timeframe, metricGoals]);
 
   useEffect(() => {
     const load = async () => {
