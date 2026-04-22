@@ -875,7 +875,7 @@ export default function StartWorkoutPage() {
                               <button
                                 type="button"
                                 onClick={() => toggleSetCompleted(set.id)}
-                                className="btn btn-secondary"
+                                className={`btn ${completedSetIds.has(set.id) ? "set-done-btn" : "btn-secondary"}`}
                                 aria-pressed={completedSetIds.has(set.id)}
                               >
                                 ✓
