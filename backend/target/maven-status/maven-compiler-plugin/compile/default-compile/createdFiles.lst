@@ -1,6 +1,8 @@
 com\fitnesstracker\backend\model\RefreshToken$RefreshTokenBuilder.class
 com\fitnesstracker\backend\security\CsrfCookieFilter.class
+com\fitnesstracker\backend\model\BodyMeasurement$BodyMeasurementBuilder.class
 com\fitnesstracker\backend\service\RefreshTokenService.class
+com\fitnesstracker\backend\model\BodyMeasurement.class
 com\fitnesstracker\backend\model\RefreshToken.class
 com\fitnesstracker\backend\model\TemplateSet.class
 com\fitnesstracker\backend\model\AppUser$AppUserBuilder.class
@@ -41,11 +43,13 @@ com\fitnesstracker\backend\dto\ExerciseSetDto.class
 com\fitnesstracker\backend\dto\WeeklyPlanDto.class
 com\fitnesstracker\backend\service\WorkoutTemplateService.class
 com\fitnesstracker\backend\model\AppUser.class
+com\fitnesstracker\backend\service\BodyMeasurementService.class
 com\fitnesstracker\backend\service\AuthService.class
 com\fitnesstracker\backend\model\WeeklyPlan$WeeklyPlanBuilder.class
 com\fitnesstracker\backend\dto\WorkoutTemplateDto$WorkoutTemplateDtoBuilder.class
 com\fitnesstracker\backend\dto\ExerciseDto$ExerciseDtoBuilder.class
 com\fitnesstracker\backend\dto\AuthResponse.class
+com\fitnesstracker\backend\dto\BodyMeasurementDto.class
 com\fitnesstracker\backend\dto\ExerciseCatalogDto$ExerciseCatalogDtoBuilder.class
 com\fitnesstracker\backend\repository\WorkoutRepository.class
 com\fitnesstracker\backend\model\WorkoutTemplate$WorkoutTemplateBuilder.class
@@ -58,7 +62,9 @@ com\fitnesstracker\backend\model\Workout$WorkoutBuilder.class
 com\fitnesstracker\backend\service\WorkoutService.class
 com\fitnesstracker\backend\dto\RegisterRequest.class
 com\fitnesstracker\backend\dto\ExerciseDto.class
+com\fitnesstracker\backend\repository\BodyMeasurementRepository.class
 com\fitnesstracker\backend\dto\WeeklyPlanDto$WeeklyPlanDtoBuilder.class
+com\fitnesstracker\backend\controller\BodyMeasurementController.class
 com\fitnesstracker\backend\security\SpaCsrfTokenRequestHandler.class
 com\fitnesstracker\backend\service\HealthService.class
 com\fitnesstracker\backend\config\CorsConfig.class

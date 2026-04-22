@@ -8,6 +8,7 @@ const sidebarItems = [
   { label: "Dashboard", href: "/" },
   { label: "Workouts", href: "/workouts/start" },
   { label: "Exercise Library", href: "/exercises" },
+  { label: "Progress", href: "/progress" },
   { label: "History", href: "/history" },
   { label: "Routines", href: "/routines" },
 ];
