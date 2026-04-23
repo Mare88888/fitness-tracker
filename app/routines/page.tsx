@@ -100,7 +100,7 @@ export default function RoutinesPage() {
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium">
-                                {template.name} ({template.exercises.length} exercise(s))
+                                {template.name} ({template.exercises.length} exercises)
                               </span>
                               <div className="flex items-center gap-2">
                                 <Link

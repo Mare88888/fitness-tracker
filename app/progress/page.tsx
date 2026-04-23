@@ -14,7 +14,20 @@ import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preference
 import type { BodyMeasurement } from "@/types/body-measurement";
 import type { Workout } from "@/types/workout";
 import { useEffect, useMemo, useState } from "react";
-import { Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  ComposedChart,
+  Line,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { toast } from "sonner";
 
 type MetricKey = "weight" | "waist" | "chest" | "leftArm" | "rightArm";
@@ -44,6 +57,22 @@ type ProgressPrefs = {
   metricGoals: Record<MetricKey, string>;
 };
 
+type MuscleDistributionTimeframe = "7d" | "30d" | "90d";
+type MuscleBucket = "Back" | "Chest" | "Core" | "Shoulders" | "Arms" | "Legs";
+
+type MuscleDistributionPoint = {
+  muscle: MuscleBucket;
+  current: number;
+  previous: number;
+};
+
+type DistributionSummary = {
+  workouts: number;
+  durationMinutes: number;
+  volumeKg: number;
+  sets: number;
+};
+
 function weekKey(dateString: string): string {
   const d = new Date(dateString);
   d.setHours(0, 0, 0, 0);
@@ -53,13 +82,87 @@ function weekKey(dateString: string): string {
   return d.toISOString().slice(0, 10);
 }
 
+function normalizeMuscle(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function mapToMuscleBucket(muscleGroup: string): MuscleBucket {
+  const key = normalizeMuscle(muscleGroup);
+  if (key.includes("chest") || key.includes("pec")) return "Chest";
+  if (key.includes("shoulder") || key.includes("delt")) return "Shoulders";
+  if (key.includes("bicep") || key.includes("tricep") || key.includes("arm") || key.includes("forearm")) return "Arms";
+  if (
+    key.includes("quad") ||
+    key.includes("hamstring") ||
+    key.includes("glute") ||
+    key.includes("calf") ||
+    key.includes("leg")
+  ) {
+    return "Legs";
+  }
+  if (key.includes("core") || key.includes("ab") || key.includes("oblique")) return "Core";
+  if (key.includes("back") || key.includes("lat") || key.includes("trap") || key.includes("rear")) return "Back";
+  return "Back";
+}
+
+function inferMuscleFromExerciseName(exerciseName: string): MuscleBucket {
+  const key = exerciseName.trim().toLowerCase();
+  if (key.includes("bench") || key.includes("fly")) return "Chest";
+  if (key.includes("row") || key.includes("pulldown") || key.includes("pull up")) return "Back";
+  if (key.includes("curl") || key.includes("tricep") || key.includes("dip") || key.includes("skull")) return "Arms";
+  if (key.includes("press")) return "Shoulders";
+  if (key.includes("squat") || key.includes("lunge") || key.includes("leg extension")) return "Legs";
+  if (key.includes("rdl") || key.includes("deadlift") || key.includes("leg curl")) return "Legs";
+  if (key.includes("hip thrust") || key.includes("glute") || key.includes("calf")) return "Legs";
+  if (key.includes("crunch") || key.includes("plank") || key.includes("sit up")) return "Core";
+  return "Back";
+}
+
+function summarizeWorkouts(workouts: Workout[]): DistributionSummary {
+  const summary: DistributionSummary = {
+    workouts: workouts.length,
+    durationMinutes: 0,
+    volumeKg: 0,
+    sets: 0,
+  };
+  for (const workout of workouts) {
+    let workoutSets = 0;
+    for (const exercise of workout.exercises) {
+      for (const set of exercise.sets) {
+        workoutSets += 1;
+        summary.volumeKg += Math.max(0, set.weight) * Math.max(0, set.reps);
+      }
+    }
+    summary.sets += workoutSets;
+    summary.durationMinutes += Math.max(15, workoutSets * 2);
+  }
+  return summary;
+}
+
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) {
+    return `${m}m`;
+  }
+  return `${h}h ${m}m`;
+}
+
+function formatDelta(value: number, suffix = ""): string {
+  const rounded = Math.round(value);
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded}${suffix}`;
+}
+
 export default function ProgressPage() {
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [metric, setMetric] = useState<MetricKey>("weight");
   const [timeframe, setTimeframe] = useState<Timeframe>("90d");
+  const [muscleTimeframe, setMuscleTimeframe] = useState<MuscleDistributionTimeframe>("30d");
   const [weeklyGoal, setWeeklyGoal] = useState<number>(() => getWeeklyGoal());
   const [metricGoals, setMetricGoals] = useState<Record<MetricKey, string>>({
     weight: "",
@@ -145,6 +248,10 @@ export default function ProgressPage() {
     });
   }, []);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const fillFormFromEntry = (entry: BodyMeasurement) => {
     setDate(entry.date);
     setWeight(entry.weight != null ? String(entry.weight) : "");
@@ -207,6 +314,67 @@ export default function ProgressPage() {
   }, [measurements, metric, workouts, weeklyGoal, timeframe, metricGoals]);
 
   const selectedMetric = metricOptions.find((option) => option.value === metric) ?? metricOptions[0];
+
+  const muscleDistribution = useMemo(() => {
+    const periodDays = muscleTimeframe === "7d" ? 7 : muscleTimeframe === "30d" ? 30 : 90;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentStart = new Date(today);
+    currentStart.setDate(today.getDate() - (periodDays - 1));
+    const previousEnd = new Date(currentStart);
+    previousEnd.setDate(currentStart.getDate() - 1);
+    const previousStart = new Date(previousEnd);
+    previousStart.setDate(previousEnd.getDate() - (periodDays - 1));
+
+    const baseBuckets: Record<MuscleBucket, number> = {
+      Back: 0,
+      Chest: 0,
+      Core: 0,
+      Shoulders: 0,
+      Arms: 0,
+      Legs: 0,
+    };
+    const currentBuckets = { ...baseBuckets };
+    const previousBuckets = { ...baseBuckets };
+    const currentWindow: Workout[] = [];
+    const previousWindow: Workout[] = [];
+
+    for (const workout of workouts) {
+      const workoutDate = new Date(workout.date);
+      workoutDate.setHours(0, 0, 0, 0);
+      const isCurrent = workoutDate >= currentStart && workoutDate <= today;
+      const isPrevious = workoutDate >= previousStart && workoutDate <= previousEnd;
+      if (!isCurrent && !isPrevious) continue;
+
+      if (isCurrent) currentWindow.push(workout);
+      if (isPrevious) previousWindow.push(workout);
+
+      for (const exercise of workout.exercises) {
+        const bucket = exercise.muscleGroup
+          ? mapToMuscleBucket(exercise.muscleGroup)
+          : inferMuscleFromExerciseName(exercise.name);
+        const setCount = Math.max(1, exercise.sets.length);
+        if (isCurrent) {
+          currentBuckets[bucket] += setCount;
+        }
+        if (isPrevious) {
+          previousBuckets[bucket] += setCount;
+        }
+      }
+    }
+
+    const points: MuscleDistributionPoint[] = (Object.keys(baseBuckets) as MuscleBucket[]).map((muscle) => ({
+      muscle,
+      current: currentBuckets[muscle],
+      previous: previousBuckets[muscle],
+    }));
+
+    return {
+      points,
+      currentSummary: summarizeWorkouts(currentWindow),
+      previousSummary: summarizeWorkouts(previousWindow),
+    };
+  }, [muscleTimeframe, workouts]);
 
   const parseOptionalNumber = (value: string): number | undefined => {
     const trimmed = value.trim();
@@ -427,6 +595,110 @@ export default function ProgressPage() {
                         </ResponsiveContainer>
                       </div>
                     )}
+                  </div>
+
+                  <div className="surface-card">
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="text-sm font-semibold text-zinc-100">Muscle distribution</h2>
+                      <select
+                        value={muscleTimeframe}
+                        onChange={(event) => setMuscleTimeframe(event.target.value as MuscleDistributionTimeframe)}
+                        className="field field-select w-[140px]"
+                      >
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d">Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                      </select>
+                    </div>
+                    <div className="surface-soft mt-3 h-72 p-3">
+                      {isMounted ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart data={muscleDistribution.points} margin={{ top: 8, right: 12, left: 12, bottom: 24 }}>
+                            <PolarGrid stroke="#3f3f46" />
+                            <PolarAngleAxis dataKey="muscle" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
+                            <PolarRadiusAxis tick={false} axisLine={false} />
+                            <Tooltip
+                              formatter={(value, name) => [value, name === "current" ? "Current" : "Previous"]}
+                              contentStyle={{
+                                borderRadius: 8,
+                                border: "1px solid #3f3f46",
+                                backgroundColor: "#18181b",
+                                color: "#e4e4e7",
+                              }}
+                            />
+                            <Radar
+                              name="previous"
+                              dataKey="previous"
+                              stroke="#71717a"
+                              fill="#52525b"
+                              fillOpacity={0.2}
+                              strokeWidth={1.5}
+                            />
+                            <Radar
+                              name="current"
+                              dataKey="current"
+                              stroke="#3b82f6"
+                              fill="#3b82f6"
+                              fillOpacity={0.3}
+                              strokeWidth={2}
+                            />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-zinc-400">Loading chart...</div>
+                      )}
+                    </div>
+                    <div className="mt-3 flex items-center justify-center gap-5 text-sm">
+                      <span className="inline-flex items-center gap-2 text-blue-400">
+                        <span className="h-3 w-3 bg-blue-500" />
+                        Current
+                      </span>
+                      <span className="inline-flex items-center gap-2 text-zinc-400">
+                        <span className="h-3 w-3 bg-zinc-500" />
+                        Previous
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="surface-soft px-3 py-2">
+                        <p className="text-xs text-zinc-400">Workouts</p>
+                        <p className="text-xl font-semibold text-zinc-100">{muscleDistribution.currentSummary.workouts}</p>
+                        <p className="text-xs text-emerald-400">
+                          {formatDelta(muscleDistribution.currentSummary.workouts - muscleDistribution.previousSummary.workouts)}
+                        </p>
+                      </div>
+                      <div className="surface-soft px-3 py-2">
+                        <p className="text-xs text-zinc-400">Duration</p>
+                        <p className="text-xl font-semibold text-zinc-100">
+                          {formatDuration(muscleDistribution.currentSummary.durationMinutes)}
+                        </p>
+                        <p className="text-xs text-emerald-400">
+                          {formatDelta(
+                            muscleDistribution.currentSummary.durationMinutes -
+                              muscleDistribution.previousSummary.durationMinutes,
+                            "m"
+                          )}
+                        </p>
+                      </div>
+                      <div className="surface-soft px-3 py-2">
+                        <p className="text-xs text-zinc-400">Volume</p>
+                        <p className="text-xl font-semibold text-zinc-100">
+                          {Math.round(muscleDistribution.currentSummary.volumeKg).toLocaleString()} kg
+                        </p>
+                        <p className="text-xs text-emerald-400">
+                          {formatDelta(
+                            muscleDistribution.currentSummary.volumeKg - muscleDistribution.previousSummary.volumeKg,
+                            " kg"
+                          )}
+                        </p>
+                      </div>
+                      <div className="surface-soft px-3 py-2">
+                        <p className="text-xs text-zinc-400">Sets</p>
+                        <p className="text-xl font-semibold text-zinc-100">{muscleDistribution.currentSummary.sets}</p>
+                        <p className="text-xs text-emerald-400">
+                          {formatDelta(muscleDistribution.currentSummary.sets - muscleDistribution.previousSummary.sets)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="surface-card">
