@@ -123,6 +123,19 @@ export default function StartWorkoutPage() {
     return String(setIndex + 1);
   };
 
+  const getSetTypeButtonClass = (setType: WorkoutSet["type"]): string => {
+    if (setType === "warmup") {
+      return "border-amber-600/60 bg-amber-500/20 text-amber-300 hover:bg-amber-500/35";
+    }
+    if (setType === "failure") {
+      return "border-rose-600/60 bg-rose-500/20 text-rose-300 hover:bg-rose-500/35";
+    }
+    if (setType === "drop") {
+      return "border-sky-600/60 bg-sky-500/20 text-sky-300 hover:bg-sky-500/35";
+    }
+    return "btn-secondary";
+  };
+
   const resolveMuscleGroup = (exerciseName: string): string => {
     const normalized = exerciseName.trim().toLowerCase();
     const match = catalogItems.find((item) => item.name.trim().toLowerCase() === normalized);
@@ -873,7 +886,7 @@ export default function StartWorkoutPage() {
                                   onClick={() =>
                                     setActiveSetTypeMenuId((previous) => (previous === set.id ? null : set.id))
                                   }
-                                  className="btn btn-secondary min-w-[44px] px-2 py-1 text-sm font-semibold"
+                                  className={`btn min-w-[44px] px-2 py-1 text-sm font-semibold ${getSetTypeButtonClass(set.type)}`}
                                   aria-haspopup="menu"
                                   aria-expanded={activeSetTypeMenuId === set.id}
                                 >
@@ -884,7 +897,7 @@ export default function StartWorkoutPage() {
                                     <button
                                       type="button"
                                       onClick={() => updateSetType(exercise.id, set.id, "warmup")}
-                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-amber-500/20"
                                     >
                                       <span>Warm Up Set</span>
                                       <span className="font-semibold text-amber-400">W</span>
@@ -900,7 +913,7 @@ export default function StartWorkoutPage() {
                                     <button
                                       type="button"
                                       onClick={() => updateSetType(exercise.id, set.id, "failure")}
-                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-rose-500/20"
                                     >
                                       <span>Failure Set</span>
                                       <span className="font-semibold text-rose-400">F</span>
@@ -908,7 +921,7 @@ export default function StartWorkoutPage() {
                                     <button
                                       type="button"
                                       onClick={() => updateSetType(exercise.id, set.id, "drop")}
-                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-sky-500/20"
                                     >
                                       <span>Drop Set</span>
                                       <span className="font-semibold text-sky-400">D</span>
