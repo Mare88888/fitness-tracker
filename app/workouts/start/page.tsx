@@ -125,15 +125,15 @@ export default function StartWorkoutPage() {
 
   const getSetTypeButtonClass = (setType: WorkoutSet["type"]): string => {
     if (setType === "warmup") {
-      return "border-amber-600/60 bg-amber-500/20 text-amber-300 hover:bg-amber-500/35";
+      return "border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:border-amber-400";
     }
     if (setType === "failure") {
-      return "border-rose-600/60 bg-rose-500/20 text-rose-300 hover:bg-rose-500/35";
+      return "border-rose-500/60 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 hover:border-rose-400";
     }
     if (setType === "drop") {
-      return "border-sky-600/60 bg-sky-500/20 text-sky-300 hover:bg-sky-500/35";
+      return "border-sky-500/60 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 hover:border-sky-400";
     }
-    return "btn-secondary";
+    return "border-zinc-500/60 bg-zinc-700/20 text-zinc-100 hover:bg-zinc-700/35 hover:border-zinc-400";
   };
 
   const resolveMuscleGroup = (exerciseName: string): string => {
@@ -886,7 +886,7 @@ export default function StartWorkoutPage() {
                                   onClick={() =>
                                     setActiveSetTypeMenuId((previous) => (previous === set.id ? null : set.id))
                                   }
-                                  className={`btn min-w-[44px] px-2 py-1 text-sm font-semibold ${getSetTypeButtonClass(set.type)}`}
+                                  className={`ml-1 inline-flex min-w-[28px] cursor-pointer items-center justify-center rounded-md border px-2 py-1 text-xs font-semibold leading-none shadow-sm transition-colors ${getSetTypeButtonClass(set.type)}`}
                                   aria-haspopup="menu"
                                   aria-expanded={activeSetTypeMenuId === set.id}
                                 >

@@ -713,7 +713,7 @@ export default function ProgressPage() {
                         <p className="text-xs text-emerald-400">
                           {formatDelta(
                             muscleDistribution.currentSummary.durationMinutes -
-                              muscleDistribution.previousSummary.durationMinutes,
+                            muscleDistribution.previousSummary.durationMinutes,
                             "m"
                           )}
                         </p>
