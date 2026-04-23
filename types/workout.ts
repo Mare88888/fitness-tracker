@@ -16,6 +16,7 @@ export type Workout = {
   id: number;
   name: string;
   date: string;
+  formattedDate?: string;
   exercises: Exercise[];
 };
 

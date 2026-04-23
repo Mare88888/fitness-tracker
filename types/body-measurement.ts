@@ -1,6 +1,7 @@
 export type BodyMeasurement = {
   id: number;
   date: string;
+  formattedDate?: string;
   weight: number | null;
   waist: number | null;
   chest: number | null;

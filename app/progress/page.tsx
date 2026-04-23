@@ -294,7 +294,7 @@ export default function ProgressPage() {
         const adherencePct = Math.min(100, Math.round((workoutsDone / Math.max(1, weeklyGoal)) * 100));
         return {
           date: entry.date,
-          displayDate: formatDateDDMMYYYY(entry.date),
+          displayDate: entry.formattedDate ?? formatDateDDMMYYYY(entry.date),
           metricValue: Number(value),
           adherencePct,
           goalValue: selectedGoal != null && Number.isFinite(selectedGoal) && selectedGoal > 0 ? selectedGoal : null,
@@ -622,7 +622,7 @@ export default function ProgressPage() {
                               .sort((a, b) => a.date.localeCompare(b.date))
                               .map((entry) => (
                                 <tr key={`all-${entry.id}`} className="border-b border-zinc-900/80 text-zinc-200">
-                                  <td className="px-3 py-2 font-medium">{formatDateDDMMYYYY(entry.date)}</td>
+                                  <td className="px-3 py-2 font-medium">{entry.formattedDate ?? formatDateDDMMYYYY(entry.date)}</td>
                                   <td className="px-3 py-2">{entry.weight ?? "-"}</td>
                                   <td className="px-3 py-2">{entry.waist ?? "-"}</td>
                                   <td className="px-3 py-2">{entry.chest ?? "-"}</td>
@@ -752,7 +752,7 @@ export default function ProgressPage() {
                           .map((entry) => (
                             <li key={entry.id} className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm">
                               <div className="text-zinc-200">
-                                <p className="font-medium">{formatDateDDMMYYYY(entry.date)}</p>
+                                <p className="font-medium">{entry.formattedDate ?? formatDateDDMMYYYY(entry.date)}</p>
                                 <p className="text-xs text-zinc-400">
                                   {[
                                     entry.weight != null ? `W ${entry.weight}kg` : null,

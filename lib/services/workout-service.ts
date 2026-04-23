@@ -1,6 +1,14 @@
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import { parseApiRequestError } from "@/lib/services/api-error";
 import { buildUrl, fetchWithSilentRefresh, parseJsonResponse } from "@/lib/services/http-client";
+
+function mapWorkoutDates(workout: Workout): Workout {
+  return {
+    ...workout,
+    formattedDate: formatDateDDMMYYYY(workout.date),
+  };
+}
 
 export async function getWorkouts(): Promise<Workout[]> {
   const response = await fetchWithSilentRefresh(buildUrl("/workouts"), {
@@ -8,7 +16,8 @@ export async function getWorkouts(): Promise<Workout[]> {
     cache: "no-store",
   });
 
-  return parseJsonResponse<Workout[]>(response);
+  const workouts = await parseJsonResponse<Workout[]>(response);
+  return workouts.map(mapWorkoutDates);
 }
 
 export async function getWorkoutById(id: number): Promise<Workout> {
@@ -17,7 +26,8 @@ export async function getWorkoutById(id: number): Promise<Workout> {
     cache: "no-store",
   });
 
-  return parseJsonResponse<Workout>(response);
+  const workout = await parseJsonResponse<Workout>(response);
+  return mapWorkoutDates(workout);
 }
 
 export async function createWorkout(payload: CreateWorkoutInput): Promise<Workout> {
@@ -26,7 +36,8 @@ export async function createWorkout(payload: CreateWorkoutInput): Promise<Workou
     body: JSON.stringify(payload),
   });
 
-  return parseJsonResponse<Workout>(response);
+  const workout = await parseJsonResponse<Workout>(response);
+  return mapWorkoutDates(workout);
 }
 
 export async function updateWorkout(id: number, payload: CreateWorkoutInput): Promise<Workout> {
@@ -35,7 +46,8 @@ export async function updateWorkout(id: number, payload: CreateWorkoutInput): Pr
     body: JSON.stringify(payload),
   });
 
-  return parseJsonResponse<Workout>(response);
+  const workout = await parseJsonResponse<Workout>(response);
+  return mapWorkoutDates(workout);
 }
 
 export async function deleteWorkout(id: number): Promise<void> {
