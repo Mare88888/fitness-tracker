@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import { createWorkout, deleteWorkout, getWorkouts } from "@/lib/services/workout-service";
 import type { CreateWorkoutInput, Workout } from "@/types/workout";
 import Link from "next/link";
@@ -209,7 +210,7 @@ export default function HistoryPage() {
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold text-zinc-900 dark:text-zinc-100">{workout.name}</p>
-                          <p className="text-zinc-600 dark:text-zinc-300">Date: {workout.date}</p>
+                          <p className="text-zinc-600 dark:text-zinc-300">Date: {formatDateDDMMYYYY(workout.date)}</p>
                           <p className="text-zinc-600 dark:text-zinc-300">
                             Exercises: {workout.exercises.length}
                           </p>

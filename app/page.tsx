@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { APP_NAME } from "@/lib/constants";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import {
   resolveMuscleFromCatalogCache,
   writeExerciseCatalogCache,
@@ -237,7 +238,7 @@ export default function Home() {
         date,
         totalVolume: volume,
         estimatedOneRepMax: oneRepMaxByDate.get(date) ?? 0,
-        shortDate: date.slice(5),
+        shortDate: formatDateDDMMYYYY(date),
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -563,7 +564,8 @@ export default function Home() {
                             <li key={record.exercise} className="surface-soft p-3">
                               <p className="font-medium text-zinc-900 dark:text-zinc-100">{record.exercise}</p>
                               <p className="text-zinc-600 dark:text-zinc-400">
-                                Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} | Top set {record.maxWeight} kg | {record.achievedOn}
+                                Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} | Top set {record.maxWeight} kg |{" "}
+                                {formatDateDDMMYYYY(record.achievedOn)}
                               </p>
                             </li>
                           ))}
@@ -663,7 +665,9 @@ export default function Home() {
                             <XAxis dataKey="shortDate" tick={{ fill: chartTheme.axis, fontSize: 12 }} />
                             <YAxis tick={{ fill: chartTheme.axis, fontSize: 12 }} />
                             <Tooltip
-                              labelFormatter={(_, payload) => payload?.[0]?.payload?.date ?? ""}
+                              labelFormatter={(_, payload) =>
+                                formatDateDDMMYYYY(String(payload?.[0]?.payload?.date ?? ""))
+                              }
                               contentStyle={{
                                 borderRadius: 8,
                                 border: `1px solid ${chartTheme.tooltipBorder}`,

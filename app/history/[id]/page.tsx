@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import { createWorkout, deleteWorkout, getWorkoutById } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
@@ -135,7 +136,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                     <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                       {workout.name}
                     </h1>
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Date: {workout.date}</p>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Date: {formatDateDDMMYYYY(workout.date)}</p>
                     <div className="mt-3 flex gap-3">
                       <Link
                         href={`/workouts/${workout.id}/edit`}

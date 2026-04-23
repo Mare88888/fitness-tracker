@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import {
   deleteBodyMeasurement,
   getBodyMeasurements,
@@ -43,7 +44,7 @@ const metricOptions: { value: MetricKey; label: string; unit: string }[] = [
 
 type ProgressPoint = {
   date: string;
-  shortDate: string;
+  displayDate: string;
   metricValue: number;
   adherencePct: number;
   goalValue: number | null;
@@ -293,7 +294,7 @@ export default function ProgressPage() {
         const adherencePct = Math.min(100, Math.round((workoutsDone / Math.max(1, weeklyGoal)) * 100));
         return {
           date: entry.date,
-          shortDate: entry.date.slice(5),
+          displayDate: formatDateDDMMYYYY(entry.date),
           metricValue: Number(value),
           adherencePct,
           goalValue: selectedGoal != null && Number.isFinite(selectedGoal) && selectedGoal > 0 ? selectedGoal : null,
@@ -528,7 +529,7 @@ export default function ProgressPage() {
                       <div className="surface-soft mt-3 h-80 p-2">
                         <ResponsiveContainer width="100%" height="100%">
                           <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-                            <XAxis dataKey="shortDate" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
+                            <XAxis dataKey="displayDate" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
                             <YAxis
                               yAxisId="metric"
                               tick={{ fill: "#a1a1aa", fontSize: 12 }}
@@ -547,7 +548,9 @@ export default function ProgressPage() {
                               tick={{ fill: "#a1a1aa", fontSize: 12 }}
                             />
                             <Tooltip
-                              labelFormatter={(_, payload) => payload?.[0]?.payload?.date ?? ""}
+                              labelFormatter={(_, payload) =>
+                                formatDateDDMMYYYY(String(payload?.[0]?.payload?.date ?? ""))
+                              }
                               formatter={(value, name) => {
                                 if (name === "adherencePct") {
                                   return [`${value}%`, "Adherence"];
@@ -619,7 +622,7 @@ export default function ProgressPage() {
                               .sort((a, b) => a.date.localeCompare(b.date))
                               .map((entry) => (
                                 <tr key={`all-${entry.id}`} className="border-b border-zinc-900/80 text-zinc-200">
-                                  <td className="px-3 py-2 font-medium">{entry.date}</td>
+                                  <td className="px-3 py-2 font-medium">{formatDateDDMMYYYY(entry.date)}</td>
                                   <td className="px-3 py-2">{entry.weight ?? "-"}</td>
                                   <td className="px-3 py-2">{entry.waist ?? "-"}</td>
                                   <td className="px-3 py-2">{entry.chest ?? "-"}</td>
@@ -749,7 +752,7 @@ export default function ProgressPage() {
                           .map((entry) => (
                             <li key={entry.id} className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm">
                               <div className="text-zinc-200">
-                                <p className="font-medium">{entry.date}</p>
+                                <p className="font-medium">{formatDateDDMMYYYY(entry.date)}</p>
                                 <p className="text-xs text-zinc-400">
                                   {[
                                     entry.weight != null ? `W ${entry.weight}kg` : null,

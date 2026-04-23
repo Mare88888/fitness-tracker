@@ -6,6 +6,7 @@ import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
+import { formatDateTimeDDMMYYYY } from "@/lib/date-format";
 import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import { ApiRequestError } from "@/lib/services/api-error";
@@ -750,7 +751,7 @@ export default function StartWorkoutPage() {
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                       <p>
                         Recovered draft
-                        {draftTimestamp ? ` from ${new Date(draftTimestamp).toLocaleString()}` : ""}.
+                        {draftTimestamp ? ` from ${formatDateTimeDDMMYYYY(draftTimestamp)}` : ""}.
                       </p>
                       <button
                         type="button"
