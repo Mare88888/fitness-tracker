@@ -31,6 +31,7 @@ type WorkoutSet = {
   id: string;
   reps: string;
   weight: string;
+  type: "normal" | "warmup" | "failure" | "drop";
 };
 
 type WorkoutExercise = {
@@ -74,6 +75,7 @@ function createSet(): WorkoutSet {
     id: crypto.randomUUID(),
     reps: "",
     weight: "",
+    type: "normal",
   };
 }
 
@@ -111,7 +113,15 @@ export default function StartWorkoutPage() {
   const [isUpdatingPlanDay, setIsUpdatingPlanDay] = useState<number | null>(null);
   const [isStartingTodaysPlan, setIsStartingTodaysPlan] = useState(false);
   const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
+  const [activeSetTypeMenuId, setActiveSetTypeMenuId] = useState<string | null>(null);
   const autosaveTimeoutRef = useRef<number | null>(null);
+
+  const getSetTypeLabel = (set: WorkoutSet, setIndex: number): string => {
+    if (set.type === "warmup") return "W";
+    if (set.type === "failure") return "F";
+    if (set.type === "drop") return "D";
+    return String(setIndex + 1);
+  };
 
   const resolveMuscleGroup = (exerciseName: string): string => {
     const normalized = exerciseName.trim().toLowerCase();
@@ -160,6 +170,7 @@ export default function StartWorkoutPage() {
   };
 
   const removeSet = (exerciseId: string, setId: string) => {
+    setActiveSetTypeMenuId((previous) => (previous === setId ? null : previous));
     setCompletedSetIds((previous) => {
       if (!previous.has(setId)) {
         return previous;
@@ -196,6 +207,25 @@ export default function StartWorkoutPage() {
     if (!isAlreadyCompleted) {
       setRestTimerStartSignal((previous) => previous + 1);
     }
+  };
+
+  const updateSetType = (
+    exerciseId: string,
+    setId: string,
+    setType: "normal" | "warmup" | "failure" | "drop"
+  ) => {
+    setExercises((previous) =>
+      previous.map((exercise) => {
+        if (exercise.id !== exerciseId) {
+          return exercise;
+        }
+        return {
+          ...exercise,
+          sets: exercise.sets.map((set) => (set.id === setId ? { ...set, type: setType } : set)),
+        };
+      })
+    );
+    setActiveSetTypeMenuId(null);
   };
 
   const updateSetField = (
@@ -525,6 +555,7 @@ export default function StartWorkoutPage() {
           id: crypto.randomUUID(),
           reps: String(set.reps),
           weight: String(set.weight),
+          type: "normal",
         })),
       }))
     );
@@ -836,8 +867,63 @@ export default function StartWorkoutPage() {
                                 completedSetIds.has(set.id) ? "set-row-complete" : ""
                               }`}
                             >
-                              <div className="flex items-center text-sm font-semibold text-zinc-200">
-                                {setIndex + 1}
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setActiveSetTypeMenuId((previous) => (previous === set.id ? null : set.id))
+                                  }
+                                  className="btn btn-secondary min-w-[44px] px-2 py-1 text-sm font-semibold"
+                                  aria-haspopup="menu"
+                                  aria-expanded={activeSetTypeMenuId === set.id}
+                                >
+                                  {getSetTypeLabel(set, setIndex)}
+                                </button>
+                                {activeSetTypeMenuId === set.id && (
+                                  <div className="absolute left-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-xl">
+                                    <button
+                                      type="button"
+                                      onClick={() => updateSetType(exercise.id, set.id, "warmup")}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                    >
+                                      <span>Warm Up Set</span>
+                                      <span className="font-semibold text-amber-400">W</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateSetType(exercise.id, set.id, "normal")}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                    >
+                                      <span>Normal Set</span>
+                                      <span className="font-semibold text-zinc-300">{setIndex + 1}</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateSetType(exercise.id, set.id, "failure")}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                    >
+                                      <span>Failure Set</span>
+                                      <span className="font-semibold text-rose-400">F</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateSetType(exercise.id, set.id, "drop")}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                    >
+                                      <span>Drop Set</span>
+                                      <span className="font-semibold text-sky-400">D</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeSet(exercise.id, set.id)}
+                                      disabled={exercise.sets.length === 1}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-300 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      <span>Remove Set</span>
+                                      <span className="font-semibold text-red-400">X</span>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                               <div className={`${completedSetIds.has(set.id) ? "text-emerald-100/90" : "text-sm text-zinc-500"}`}>-</div>
                               <div>
