@@ -598,6 +598,42 @@ export default function ProgressPage() {
                   </div>
 
                   <div className="surface-card">
+                    <h2 className="text-sm font-semibold text-zinc-100">All measurements over time</h2>
+                    {measurements.length === 0 ? (
+                      <p className="mt-2 text-sm text-zinc-300">No saved entries.</p>
+                    ) : (
+                      <div className="surface-soft mt-3 overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-zinc-800 text-left text-xs uppercase tracking-wide text-zinc-400">
+                              <th className="px-3 py-2">Date</th>
+                              <th className="px-3 py-2">Weight (kg)</th>
+                              <th className="px-3 py-2">Waist (cm)</th>
+                              <th className="px-3 py-2">Chest (cm)</th>
+                              <th className="px-3 py-2">Left arm (cm)</th>
+                              <th className="px-3 py-2">Right arm (cm)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...measurements]
+                              .sort((a, b) => a.date.localeCompare(b.date))
+                              .map((entry) => (
+                                <tr key={`all-${entry.id}`} className="border-b border-zinc-900/80 text-zinc-200">
+                                  <td className="px-3 py-2 font-medium">{entry.date}</td>
+                                  <td className="px-3 py-2">{entry.weight ?? "-"}</td>
+                                  <td className="px-3 py-2">{entry.waist ?? "-"}</td>
+                                  <td className="px-3 py-2">{entry.chest ?? "-"}</td>
+                                  <td className="px-3 py-2">{entry.leftArm ?? "-"}</td>
+                                  <td className="px-3 py-2">{entry.rightArm ?? "-"}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="surface-card">
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="text-sm font-semibold text-zinc-100">Muscle distribution</h2>
                       <select
@@ -749,41 +785,6 @@ export default function ProgressPage() {
                     )}
                   </div>
 
-                  <div className="surface-card">
-                    <h2 className="text-sm font-semibold text-zinc-100">All measurements over time</h2>
-                    {measurements.length === 0 ? (
-                      <p className="mt-2 text-sm text-zinc-300">No saved entries.</p>
-                    ) : (
-                      <div className="surface-soft mt-3 overflow-x-auto">
-                        <table className="min-w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-zinc-800 text-left text-xs uppercase tracking-wide text-zinc-400">
-                              <th className="px-3 py-2">Date</th>
-                              <th className="px-3 py-2">Weight (kg)</th>
-                              <th className="px-3 py-2">Waist (cm)</th>
-                              <th className="px-3 py-2">Chest (cm)</th>
-                              <th className="px-3 py-2">Left arm (cm)</th>
-                              <th className="px-3 py-2">Right arm (cm)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {[...measurements]
-                              .sort((a, b) => a.date.localeCompare(b.date))
-                              .map((entry) => (
-                                <tr key={`all-${entry.id}`} className="border-b border-zinc-900/80 text-zinc-200">
-                                  <td className="px-3 py-2 font-medium">{entry.date}</td>
-                                  <td className="px-3 py-2">{entry.weight ?? "-"}</td>
-                                  <td className="px-3 py-2">{entry.waist ?? "-"}</td>
-                                  <td className="px-3 py-2">{entry.chest ?? "-"}</td>
-                                  <td className="px-3 py-2">{entry.leftArm ?? "-"}</td>
-                                  <td className="px-3 py-2">{entry.rightArm ?? "-"}</td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </section>
 
