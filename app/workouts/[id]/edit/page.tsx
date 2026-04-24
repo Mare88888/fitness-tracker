@@ -278,26 +278,38 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
               )}
               {!isLoading && payload && (
                 <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Workout name
-                    </label>
-                    <input
-                      value={payload.name}
-                      onChange={(event) => setPayload((prev) => (prev ? { ...prev, name: event.target.value } : prev))}
-                      className="field"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      Workout date
-                    </label>
-                    <input
-                      type="date"
-                      value={payload.date}
-                      onChange={(event) => setPayload((prev) => (prev ? { ...prev, date: event.target.value } : prev))}
-                      className="field"
-                    />
+                  <div className="surface-card">
+                    <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-zinc-300">
+                          Workout name
+                        </label>
+                        <input
+                          value={payload.name}
+                          onChange={(event) => setPayload((prev) => (prev ? { ...prev, name: event.target.value } : prev))}
+                          className="field"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-zinc-300">
+                          Workout date
+                        </label>
+                        <input
+                          type="date"
+                          value={payload.date}
+                          onChange={(event) => setPayload((prev) => (prev ? { ...prev, date: event.target.value } : prev))}
+                          className="field"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-xs font-medium text-zinc-300">
+                        {payload.exercises.length} exercise{payload.exercises.length === 1 ? "" : "s"}
+                      </span>
+                      <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-xs font-medium text-zinc-300">
+                        {payload.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0)} total sets
+                      </span>
+                    </div>
                   </div>
                   {payload.exercises.map((exercise, exerciseIndex) => (
                     <article key={`exercise-${exerciseIndex}`} className="surface-card">
@@ -340,6 +352,11 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                             placeholder={`Exercise ${exerciseIndex + 1}`}
                             className="field"
                           />
+                          {exercise.name.trim() && (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              Muscle: {resolveMuscleGroup(exercise.name)}
+                            </p>
+                          )}
                         </div>
                         <button
                           type="button"
@@ -351,13 +368,17 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                         </button>
                       </div>
                       <div className="space-y-2">
-                        {exercise.name.trim() && (
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                            Muscle: {resolveMuscleGroup(exercise.name)}
-                          </p>
-                        )}
+                        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                          <span>{isTimedExerciseName(exercise.name) ? "Time" : "Reps"}</span>
+                          <span>Weight</span>
+                          <span></span>
+                          <span></span>
+                        </div>
                         {exercise.sets.map((set, setIndex) => (
-                          <div key={`set-${exerciseIndex}-${setIndex}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                          <div
+                            key={`set-${exerciseIndex}-${setIndex}`}
+                            className="surface-soft grid grid-cols-1 gap-2 p-2 sm:grid-cols-[1fr_1fr_auto]"
+                          >
                             {isTimedExerciseName(exercise.name) ? (
                               <input
                                 type="text"
@@ -430,7 +451,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                               disabled={exercise.sets.length === 1}
                               className="btn btn-secondary"
                             >
-                              Remove
+                              Remove set
                             </button>
                           </div>
                         ))}
@@ -451,14 +472,19 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                   >
                     Add exercise
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!canSave}
-                    className="btn btn-primary"
-                  >
-                    {isSaving ? "Saving..." : "Save changes"}
-                  </button>
+                  <div className="surface-card flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm text-zinc-300">
+                      {formValidationError ? "Fix validation issues before saving." : "Ready to save changes."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={!canSave}
+                      className="btn btn-primary"
+                    >
+                      {isSaving ? "Saving..." : "Save changes"}
+                    </button>
+                  </div>
                   {formValidationError && (
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">{formValidationError}</p>
                   )}
