@@ -10,6 +10,7 @@ import { getWeeklyPlan } from "@/lib/services/template-service";
 import { getWeeklyGoal } from "@/lib/user-preferences";
 import type { WeeklyPlan } from "@/types/weekly-plan";
 import type { Workout } from "@/types/workout";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -79,6 +80,7 @@ export default function CalendarPage() {
     now.setHours(0, 0, 0, 0);
     return now;
   });
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [weeklyGoal] = useState<number>(() => getWeeklyGoal());
 
   useEffect(() => {
@@ -101,6 +103,16 @@ export default function CalendarPage() {
   const workoutsByDate = useMemo(() => {
     return workouts.reduce<Record<string, number>>((acc, workout) => {
       acc[workout.date] = (acc[workout.date] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [workouts]);
+
+  const workoutsByDateList = useMemo(() => {
+    return workouts.reduce<Record<string, Workout[]>>((acc, workout) => {
+      if (!acc[workout.date]) {
+        acc[workout.date] = [];
+      }
+      acc[workout.date].push(workout);
       return acc;
     }, {});
   }, [workouts]);
@@ -191,6 +203,8 @@ export default function CalendarPage() {
           addDays(getStartOfWeek(anchorDate), 6)
         )}`;
 
+  const selectedDayWorkouts = selectedDateKey ? workoutsByDateList[selectedDateKey] ?? [] : [];
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
@@ -278,7 +292,9 @@ export default function CalendarPage() {
                             day.inCurrentMonth ? "text-zinc-200" : "text-zinc-600"
                           }`}
                         >
-                          <span
+                          <button
+                            type="button"
+                            onClick={() => day.workoutCount > 0 && setSelectedDateKey(day.dateKey)}
                             title={[
                               formatDateDDMMYYYY(day.dateKey),
                               day.workoutCount > 0 ? `${day.workoutCount} workout(s)` : "",
@@ -287,20 +303,61 @@ export default function CalendarPage() {
                             ]
                               .filter(Boolean)
                               .join(" | ")}
-                            className={`inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold ${
+                            className={`inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold transition ${
                               day.workoutCount > 0
-                                ? "bg-blue-500 text-white"
+                                ? "bg-blue-500 text-white hover:bg-blue-400 cursor-pointer"
                                 : day.isToday
                                   ? "border border-emerald-500 text-emerald-300"
                                   : ""
-                            } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""}`}
+                            } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""} ${
+                              selectedDateKey === day.dateKey ? "ring-2 ring-blue-300" : ""
+                            }`}
                           >
                             {day.date.getDate()}
-                          </span>
+                          </button>
                         </div>
                       ))}
                     </div>
                   </div>
+
+                  {selectedDateKey && (
+                    <div className="surface-card">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <h2 className="text-sm font-semibold text-zinc-100">
+                          Workouts on {formatDateDDMMYYYY(selectedDateKey)}
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDateKey(null)}
+                          className="btn btn-secondary px-2 py-1 text-xs"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      {selectedDayWorkouts.length === 0 ? (
+                        <p className="text-sm text-zinc-400">No workouts logged for this day.</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {selectedDayWorkouts.map((workout) => (
+                            <li
+                              key={workout.id}
+                              className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm"
+                            >
+                              <div>
+                                <p className="font-semibold text-zinc-100">{workout.name}</p>
+                                <p className="text-xs text-zinc-400">
+                                  {workout.exercises.length} exercise{workout.exercises.length === 1 ? "" : "s"}
+                                </p>
+                              </div>
+                              <Link href={`/history/${workout.id}`} className="btn btn-secondary px-2 py-1 text-xs">
+                                View
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
 
                   <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-100">Streak visualization (last 21 days)</h2>
