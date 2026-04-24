@@ -1,17 +1,46 @@
-Data durability & trust
-Real backup/restore (export/import JSON+CSV, scheduled DB backups) and soft-delete archive for workouts/templates.
+Highest-impact next additions
 
-Account maturity
-Password reset, email verification, and “active sessions/devices” management with revoke.
+Program builder (goal-based plans): let users choose goal/days/equipment and auto-generate a 4-8 week plan.
 
-Observability
-Error tracking (Sentry), structured logs, and basic dashboards/alerts for auth failures, API latency, and DB health.
+Exercise notes + RPE/RIR per set: capture effort quality, not just load/reps/time; unlock much smarter progression logic.
 
-Progression intelligence
-“Next best set” suggestions (progressive overload), plateau detection, and weekly goal adherence score.
+Calendar view: month/week workout + plan adherence view (missed sessions, streak visualization).
 
-Exercise model upgrade
-First-class Exercise catalog in backend DB (id, aliases, primary muscle, secondary muscles), not just frontend constants.
+Deload + fatigue management: auto-suggest lighter weeks when plateau/fatigue signals accumulate.
 
-Conflict-safe editing
-Optimistic locking/versioning so concurrent edits don’t silently overwrite data across devices/tabs.
+Progress photos (private): timestamped comparison with optional reminders; huge motivation feature.
+
+Export/import backup: one-click CSV/JSON export and restore.
+
+
+
+
+Product-quality essentials
+
+Session/device management: show logged-in devices + revoke sessions.
+
+Forgot/reset password + email verification: needed for real-user adoption.
+
+Rate limiting + lockout policy on auth: protect against brute force.
+
+Notifications/reminders: “planned workout today” + consistency nudges.
+
+In-app onboarding/tutorial: first-time setup flow (goal, split, weekly target, preferred units).
+
+Role-based admin tools: catalog moderation, duplicate merge, typo cleanup.
+
+
+
+
+Analytics upgrades worth doing
+
+Volume landmarks per muscle group (weekly target ranges).
+
+Exercise trend cards (last 5 sessions, PR velocity, stagnation flags).
+
+Bodyweight-adjusted strength metrics (e.g., estimated 1RM / bodyweight).
+
+Template effectiveness insights (which routines produce best PR/streak outcomes).
+
+
+

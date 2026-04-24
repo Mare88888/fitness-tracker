@@ -6,6 +6,7 @@ export type WorkoutTemplate = {
   exercises: {
     id: number;
     name: string;
+    note?: string | null;
     sets: {
       id: number;
       reps: number | null;

@@ -59,6 +59,7 @@ public class WorkoutTemplateMapper {
         return ExerciseDto.builder()
                 .id(exercise.getId())
                 .name(exercise.getName())
+                .note(exercise.getNote())
                 .sets(toSetDtos(exercise.getSets()))
                 .build();
     }
@@ -95,6 +96,7 @@ public class WorkoutTemplateMapper {
     private TemplateExercise toExercise(ExerciseDto exerciseDto, WorkoutTemplate template, int position) {
         TemplateExercise exercise = TemplateExercise.builder()
                 .name(exerciseDto.name())
+                .note(exerciseDto.note())
                 .position(position)
                 .template(template)
                 .sets(new LinkedHashSet<>())

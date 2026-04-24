@@ -32,6 +32,8 @@ public class TemplateExercise {
 
     private String name;
 
+    private String note;
+
     private Integer position;
 
     @ManyToOne(fetch = FetchType.LAZY)

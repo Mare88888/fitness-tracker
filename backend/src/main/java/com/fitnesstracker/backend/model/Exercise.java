@@ -30,6 +30,8 @@ public class Exercise {
 
     private String name;
 
+    private String note;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "catalog_id")
     private ExerciseCatalog catalog;

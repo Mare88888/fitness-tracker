@@ -9,6 +9,7 @@ export type Exercise = {
   id: number;
   catalogId?: number | null;
   name: string;
+  note?: string | null;
   muscleGroup?: string | null;
   sets: Set[];
 };
@@ -29,6 +30,7 @@ export type CreateSetInput = {
 
 export type CreateExerciseInput = {
   name: string;
+  note?: string;
   sets: CreateSetInput[];
 };
 

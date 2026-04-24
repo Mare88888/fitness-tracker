@@ -50,6 +50,7 @@ public class WorkoutMapper {
                 .id(exercise.getId())
                 .catalogId(exercise.getCatalog() != null ? exercise.getCatalog().getId() : null)
                 .name(exercise.getName())
+                .note(exercise.getNote())
                 .muscleGroup(exercise.getCatalog() != null ? exercise.getCatalog().getMuscleGroup() : null)
                 .sets(toSetDtos(exercise.getSets()))
                 .build();
@@ -85,6 +86,7 @@ public class WorkoutMapper {
     private Exercise toExercise(ExerciseDto exerciseDto, Workout workout) {
         Exercise exercise = Exercise.builder()
                 .name(exerciseDto.name())
+                .note(exerciseDto.note())
                 .workout(workout)
                 .sets(new LinkedHashSet<>())
                 .build();

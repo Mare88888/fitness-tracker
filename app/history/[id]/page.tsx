@@ -71,6 +71,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                 date: workout.date,
                 exercises: workout.exercises.map((exercise) => ({
                   name: exercise.name,
+                  note: exercise.note ?? undefined,
                   sets: exercise.sets.map((set) => ({
                     reps: set.reps ?? undefined,
                     durationSeconds: set.durationSeconds ?? undefined,
@@ -170,6 +171,9 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                           <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
                             {exerciseIndex + 1}. {exercise.name}
                           </h2>
+                          {exercise.note?.trim() && (
+                            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{exercise.note}</p>
+                          )}
 
                           {exercise.sets.length === 0 ? (
                             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No sets logged.</p>

@@ -39,6 +39,7 @@ type WorkoutSet = {
 type WorkoutExercise = {
   id: string;
   name: string;
+  note: string;
   sets: WorkoutSet[];
 };
 
@@ -110,6 +111,7 @@ function createExercise(): WorkoutExercise {
   return {
     id: crypto.randomUUID(),
     name: "",
+    note: "",
     sets: [createSet()],
   };
 }
@@ -120,6 +122,7 @@ function normalizeExercises(exercises: WorkoutExercise[] | undefined): WorkoutEx
   }
   return exercises.map((exercise) => ({
     ...exercise,
+    note: exercise.note ?? "",
     sets: exercise.sets.map((set) => ({
       ...set,
       reps: set.reps ?? "",
@@ -214,6 +217,12 @@ export default function StartWorkoutPage() {
     });
     setExercises((previous) =>
       previous.map((exercise) => (exercise.id === exerciseId ? { ...exercise, name } : exercise))
+    );
+  };
+
+  const updateExerciseNote = (exerciseId: string, note: string) => {
+    setExercises((previous) =>
+      previous.map((exercise) => (exercise.id === exerciseId ? { ...exercise, note } : exercise))
     );
   };
 
@@ -318,6 +327,7 @@ export default function StartWorkoutPage() {
       date: new Date().toISOString().slice(0, 10),
       exercises: exercises.map((exercise) => ({
         name: exercise.name.trim(),
+        note: exercise.note.trim() || undefined,
         sets: exercise.sets.map((set) => {
           const reps = Number(set.reps);
           const durationSeconds = parseDurationToSeconds(set.durationSeconds);
@@ -444,6 +454,7 @@ export default function StartWorkoutPage() {
       const rows: WorkoutExercise[] = pendingNames.map((name) => ({
         id: crypto.randomUUID(),
         name,
+        note: "",
         sets: [createSet()],
       }));
       const onlyOne = initialExercises.length === 1;
@@ -619,6 +630,7 @@ export default function StartWorkoutPage() {
       template.exercises.map((exercise) => ({
         id: crypto.randomUUID(),
         name: exercise.name,
+        note: exercise.note ?? "",
         sets: exercise.sets.map((set) => ({
           id: crypto.randomUUID(),
           reps: set.reps != null ? String(set.reps) : "",
@@ -890,6 +902,15 @@ export default function StartWorkoutPage() {
                       >
                         <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="w-full">
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                              Note
+                            </label>
+                            <textarea
+                              value={exercise.note}
+                              onChange={(event) => updateExerciseNote(exercise.id, event.target.value)}
+                              placeholder="Exercise note (optional)"
+                              className="field mb-3 min-h-[60px]"
+                            />
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-400">
                               Exercise {exerciseIndex + 1}
                             </label>

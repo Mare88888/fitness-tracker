@@ -108,6 +108,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
           date: workout.date,
           exercises: workout.exercises.map((exercise) => ({
             name: exercise.name,
+            note: exercise.note ?? "",
             sets: exercise.sets.map((set) => ({
               reps: set.reps ?? undefined,
               durationSeconds: set.durationSeconds ?? undefined,
@@ -196,7 +197,10 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
       }
       return {
         ...previous,
-        exercises: [...previous.exercises, { name: "", sets: [{ reps: 1, durationSeconds: undefined, weight: 0 }] }],
+        exercises: [
+          ...previous.exercises,
+          { name: "", note: "", sets: [{ reps: 1, durationSeconds: undefined, weight: 0 }] },
+        ],
       };
     });
   };
@@ -298,22 +302,45 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                   {payload.exercises.map((exercise, exerciseIndex) => (
                     <article key={`exercise-${exerciseIndex}`} className="surface-card">
                       <div className="mb-3 flex items-center justify-between gap-3">
-                        <input
-                          value={exercise.name}
-                          onChange={(event) =>
-                            setPayload((prev) => {
-                              if (!prev) {
-                                return prev;
-                              }
-                              const next = { ...prev };
-                              next.exercises[exerciseIndex] = { ...next.exercises[exerciseIndex], name: event.target.value };
-                              return next;
-                            })
-                          }
-                          list={EXERCISE_DATALIST_ID}
-                          placeholder={`Exercise ${exerciseIndex + 1}`}
-                          className="field"
-                        />
+                        <div className="w-full space-y-2">
+                          <textarea
+                            value={exercise.note ?? ""}
+                            onChange={(event) =>
+                              setPayload((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                const next = { ...prev };
+                                next.exercises[exerciseIndex] = {
+                                  ...next.exercises[exerciseIndex],
+                                  note: event.target.value,
+                                };
+                                return next;
+                              })
+                            }
+                            placeholder="Exercise note (optional)"
+                            className="field min-h-[60px]"
+                          />
+                          <input
+                            value={exercise.name}
+                            onChange={(event) =>
+                              setPayload((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                const next = { ...prev };
+                                next.exercises[exerciseIndex] = {
+                                  ...next.exercises[exerciseIndex],
+                                  name: event.target.value,
+                                };
+                                return next;
+                              })
+                            }
+                            list={EXERCISE_DATALIST_ID}
+                            placeholder={`Exercise ${exerciseIndex + 1}`}
+                            className="field"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeExercise(exerciseIndex)}

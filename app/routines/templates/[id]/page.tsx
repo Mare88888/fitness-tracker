@@ -108,6 +108,7 @@ export default function EditTemplatePage() {
       next.exercises.push({
         id: Date.now(),
         name: "",
+        note: "",
         sets: [{ id: Date.now() + 1, reps: 10, durationSeconds: null, weight: 0 }],
       });
       return next;
@@ -174,6 +175,7 @@ export default function EditTemplatePage() {
       name: template.name.trim(),
       exercises: template.exercises.map((exercise) => ({
         name: exercise.name.trim(),
+        note: exercise.note?.trim() || undefined,
         sets: exercise.sets.map((set) => ({
           reps: set.reps != null ? Number(set.reps) : undefined,
           durationSeconds: set.durationSeconds != null ? Number(set.durationSeconds) : undefined,
@@ -247,12 +249,27 @@ export default function EditTemplatePage() {
                     >
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Drag</span>
-                        <input
-                          value={exercise.name}
-                          onChange={(event) => updateExerciseName(exerciseIndex, event.target.value)}
-                          placeholder="Exercise name"
-                          className="field flex-1"
-                        />
+                        <div className="flex-1 space-y-2">
+                          <textarea
+                            value={exercise.note ?? ""}
+                            onChange={(event) =>
+                              setTemplate((prev) => {
+                                if (!prev) return prev;
+                                const next = structuredClone(prev);
+                                next.exercises[exerciseIndex].note = event.target.value;
+                                return next;
+                              })
+                            }
+                            placeholder="Exercise note (optional)"
+                            className="field min-h-[60px]"
+                          />
+                          <input
+                            value={exercise.name}
+                            onChange={(event) => updateExerciseName(exerciseIndex, event.target.value)}
+                            placeholder="Exercise name"
+                            className="field"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeExercise(exerciseIndex)}
