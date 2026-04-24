@@ -200,8 +200,8 @@ export default function CalendarPage() {
     view === "month"
       ? anchorDate.toLocaleString("en-GB", { month: "long", year: "numeric" })
       : `${formatDateDDMMYYYY(getStartOfWeek(anchorDate))} - ${formatDateDDMMYYYY(
-          addDays(getStartOfWeek(anchorDate), 6)
-        )}`;
+        addDays(getStartOfWeek(anchorDate), 6)
+      )}`;
 
   const selectedDayWorkouts = selectedDateKey ? workoutsByDateList[selectedDateKey] ?? [] : [];
 
@@ -288,9 +288,8 @@ export default function CalendarPage() {
                       {days.map((day) => (
                         <div
                           key={day.dateKey}
-                          className={`flex min-h-[40px] items-center justify-center text-sm ${
-                            day.inCurrentMonth ? "text-zinc-200" : "text-zinc-600"
-                          }`}
+                          className={`flex min-h-[40px] items-center justify-center text-sm ${day.inCurrentMonth ? "text-zinc-200" : "text-zinc-600"
+                            }`}
                         >
                           <button
                             type="button"
@@ -303,15 +302,13 @@ export default function CalendarPage() {
                             ]
                               .filter(Boolean)
                               .join(" | ")}
-                            className={`inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold transition ${
-                              day.workoutCount > 0
-                                ? "bg-blue-500 text-white hover:bg-blue-400 cursor-pointer"
-                                : day.isToday
-                                  ? "border border-emerald-500 text-emerald-300"
-                                  : ""
-                            } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""} ${
-                              selectedDateKey === day.dateKey ? "ring-2 ring-blue-300" : ""
-                            }`}
+                            className={`inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold transition ${day.workoutCount > 0
+                              ? "bg-green-400 text-zinc-950 hover:bg-green-300 cursor-pointer"
+                              : day.isToday
+                                ? "border border-emerald-500 text-emerald-300"
+                                : ""
+                              } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""} ${selectedDateKey === day.dateKey ? "ring-2 ring-emerald-200" : ""
+                              }`}
                           >
                             {day.date.getDate()}
                           </button>
