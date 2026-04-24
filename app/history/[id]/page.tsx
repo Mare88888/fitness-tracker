@@ -71,7 +71,8 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                 exercises: workout.exercises.map((exercise) => ({
                   name: exercise.name,
                   sets: exercise.sets.map((set) => ({
-                    reps: set.reps,
+                    reps: set.reps ?? undefined,
+                    durationSeconds: set.durationSeconds ?? undefined,
                     weight: set.weight,
                   })),
                 })),
@@ -175,7 +176,8 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                             <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                               {exercise.sets.map((set, setIndex) => (
                                 <li key={set.id}>
-                                  Set {setIndex + 1}: {set.reps} reps, weight: {set.weight} kg
+                                  Set {setIndex + 1}: {set.reps != null ? `${set.reps} reps` : `${set.durationSeconds ?? 0}s`},
+                                  {" "}weight: {set.weight} kg
                                 </li>
                               ))}
                             </ul>

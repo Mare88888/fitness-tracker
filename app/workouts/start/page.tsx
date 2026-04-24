@@ -30,6 +30,7 @@ import { toast } from "sonner";
 type WorkoutSet = {
   id: string;
   reps: string;
+  durationSeconds: string;
   weight: string;
   type: "normal" | "warmup" | "failure" | "drop";
 };
@@ -42,6 +43,7 @@ type WorkoutExercise = {
 
 type SetFieldError = {
   reps?: string;
+  durationSeconds?: string;
   weight?: string;
 };
 
@@ -64,6 +66,29 @@ const TRAINING_DAYS = [
 ];
 const EXERCISE_DATALIST_ID = "exercise-library-options";
 const START_WORKOUT_BOOTSTRAP_KEY = "fitness_start_workout_bootstrap";
+const TIMED_EXERCISE_KEYWORDS = [
+  "plank",
+  "treadmill",
+  "cycling",
+  "spinning",
+  "bike",
+  "elliptical",
+  "rowing",
+  "rower",
+  "walk",
+  "jog",
+  "run",
+  "sprint",
+  "stairmaster",
+];
+
+function isTimedExerciseName(name: string): boolean {
+  const normalized = name.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  return TIMED_EXERCISE_KEYWORDS.some((keyword) => normalized.includes(keyword));
+}
 
 function getDraftStorageKey(): string {
   const username = getAuthUsername() ?? "anonymous";
@@ -74,6 +99,7 @@ function createSet(): WorkoutSet {
   return {
     id: crypto.randomUUID(),
     reps: "",
+    durationSeconds: "",
     weight: "",
     type: "normal",
   };
@@ -85,6 +111,22 @@ function createExercise(): WorkoutExercise {
     name: "",
     sets: [createSet()],
   };
+}
+
+function normalizeExercises(exercises: WorkoutExercise[] | undefined): WorkoutExercise[] {
+  if (!exercises || exercises.length === 0) {
+    return [createExercise()];
+  }
+  return exercises.map((exercise) => ({
+    ...exercise,
+    sets: exercise.sets.map((set) => ({
+      ...set,
+      reps: set.reps ?? "",
+      durationSeconds: set.durationSeconds ?? "",
+      weight: set.weight ?? "",
+      type: set.type ?? "normal",
+    })),
+  }));
 }
 
 export default function StartWorkoutPage() {
@@ -244,7 +286,7 @@ export default function StartWorkoutPage() {
   const updateSetField = (
     exerciseId: string,
     setId: string,
-    field: "reps" | "weight",
+    field: "reps" | "weight" | "durationSeconds",
     value: string
   ) => {
     setSetFieldErrors((previous) => {
@@ -275,10 +317,16 @@ export default function StartWorkoutPage() {
       date: new Date().toISOString().slice(0, 10),
       exercises: exercises.map((exercise) => ({
         name: exercise.name.trim(),
-        sets: exercise.sets.map((set) => ({
-          reps: Number(set.reps) || 0,
-          weight: Number(set.weight) || 0,
-        })),
+        sets: exercise.sets.map((set) => {
+          const reps = Number(set.reps);
+          const durationSeconds = Number(set.durationSeconds);
+          const useDuration = Number.isFinite(durationSeconds) && durationSeconds > 0;
+          return {
+            reps: useDuration ? undefined : Number.isFinite(reps) && reps > 0 ? reps : undefined,
+            durationSeconds: useDuration ? durationSeconds : undefined,
+            weight: Number(set.weight) || 0,
+          };
+        }),
       })),
     };
   };
@@ -295,14 +343,16 @@ export default function StartWorkoutPage() {
     const invalidSet = exercises.some((exercise) =>
       exercise.sets.some((set) => {
         const reps = Number(set.reps);
+        const durationSeconds = Number(set.durationSeconds);
         const weight = Number(set.weight);
-
-        return Number.isNaN(reps) || Number.isNaN(weight) || reps <= 0 || weight < 0;
+        const hasValidReps = Number.isFinite(reps) && reps > 0;
+        const hasValidDuration = Number.isFinite(durationSeconds) && durationSeconds > 0;
+        return Number.isNaN(weight) || weight < 0 || (!hasValidReps && !hasValidDuration);
       })
     );
 
     if (invalidSet) {
-      return "Each set needs valid values: reps > 0 and weight >= 0.";
+      return "Each set needs reps > 0 or time > 0, and weight >= 0.";
     }
 
     return null;
@@ -352,7 +402,7 @@ export default function StartWorkoutPage() {
           draftTimestamp?: number | null;
         };
         setWorkoutName(parsed.workoutName ?? "");
-        setExercises(parsed.exercises?.length ? parsed.exercises : [createExercise()]);
+        setExercises(normalizeExercises(parsed.exercises));
         if (parsed.hasRecoveredDraft) {
           setHasRecoveredDraft(true);
         }
@@ -380,7 +430,7 @@ export default function StartWorkoutPage() {
         const parsed = JSON.parse(rawDraft) as WorkoutDraft;
         if (parsed.workoutName || (parsed.exercises && parsed.exercises.length > 0)) {
           initialName = parsed.workoutName ?? "";
-          initialExercises = parsed.exercises?.length ? parsed.exercises : [createExercise()];
+          initialExercises = normalizeExercises(parsed.exercises);
           recoveredDraft = true;
           draftTs = parsed.updatedAt ?? null;
         }
@@ -480,7 +530,11 @@ export default function StartWorkoutPage() {
     }
     const hasAnyFormContent =
       workoutName.trim().length > 0 ||
-      exercises.some((exercise) => exercise.name.trim().length > 0 || exercise.sets.some((set) => set.reps || set.weight));
+      exercises.some(
+        (exercise) =>
+          exercise.name.trim().length > 0 ||
+          exercise.sets.some((set) => set.reps || set.durationSeconds || set.weight)
+      );
 
     if (autosaveTimeoutRef.current) {
       window.clearTimeout(autosaveTimeoutRef.current);
@@ -566,7 +620,8 @@ export default function StartWorkoutPage() {
         name: exercise.name,
         sets: exercise.sets.map((set) => ({
           id: crypto.randomUUID(),
-          reps: String(set.reps),
+          reps: set.reps != null ? String(set.reps) : "",
+          durationSeconds: set.durationSeconds != null ? String(set.durationSeconds) : "",
           weight: String(set.weight),
           type: "normal",
         })),
@@ -707,11 +762,13 @@ export default function StartWorkoutPage() {
         return;
       }
 
-      const setFieldMatch = errorItem.field.match(/^exercises\[(\d+)\]\.sets\[(\d+)\]\.(reps|weight)$/);
+      const setFieldMatch = errorItem.field.match(
+        /^exercises\[(\d+)\]\.sets\[(\d+)\]\.(reps|weight|durationSeconds)$/
+      );
       if (setFieldMatch) {
         const exerciseIndex = Number(setFieldMatch[1]);
         const setIndex = Number(setFieldMatch[2]);
-        const field = setFieldMatch[3] as "reps" | "weight";
+        const field = setFieldMatch[3] as "reps" | "weight" | "durationSeconds";
         const set = exercises[exerciseIndex]?.sets[setIndex];
         if (set) {
           nextSetFieldErrors[set.id] = {
@@ -868,7 +925,7 @@ export default function StartWorkoutPage() {
                           <span>Set</span>
                           <span>Previous</span>
                           <span>Kg</span>
-                          <span>Reps</span>
+                          <span>Reps/Time</span>
                           <span>Done</span>
                           <span></span>
                         </div>
@@ -880,6 +937,10 @@ export default function StartWorkoutPage() {
                                 completedSetIds.has(set.id) ? "set-row-complete" : ""
                               }`}
                             >
+                              {(() => {
+                                const timedExercise = isTimedExerciseName(exercise.name);
+                                return (
+                                  <>
                               <div className="relative">
                                 <button
                                   type="button"
@@ -957,19 +1018,42 @@ export default function StartWorkoutPage() {
                                 )}
                               </div>
                               <div>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  inputMode="numeric"
-                                  placeholder="Reps"
-                                  value={set.reps}
-                                  onChange={(event) =>
-                                    updateSetField(exercise.id, set.id, "reps", event.target.value)
-                                  }
-                                  className="field"
-                                />
-                                {setFieldErrors[set.id]?.reps && (
-                                  <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
+                                {timedExercise ? (
+                                  <>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      inputMode="numeric"
+                                      placeholder="Time (sec)"
+                                      value={set.durationSeconds}
+                                      onChange={(event) =>
+                                        updateSetField(exercise.id, set.id, "durationSeconds", event.target.value)
+                                      }
+                                      className="field"
+                                    />
+                                    {setFieldErrors[set.id]?.durationSeconds && (
+                                      <p className="mt-1 text-xs text-red-600">
+                                        {setFieldErrors[set.id]?.durationSeconds}
+                                      </p>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      inputMode="numeric"
+                                      placeholder="Reps"
+                                      value={set.reps}
+                                      onChange={(event) =>
+                                        updateSetField(exercise.id, set.id, "reps", event.target.value)
+                                      }
+                                      className="field"
+                                    />
+                                    {setFieldErrors[set.id]?.reps && (
+                                      <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <button
@@ -988,6 +1072,9 @@ export default function StartWorkoutPage() {
                               >
                                 X
                               </button>
+                                  </>
+                                );
+                              })()}
                             </div>
                           ))}
                         </div>

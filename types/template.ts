@@ -8,7 +8,8 @@ export type WorkoutTemplate = {
     name: string;
     sets: {
       id: number;
-      reps: number;
+      reps: number | null;
+      durationSeconds?: number | null;
       weight: number;
     }[];
   }[];

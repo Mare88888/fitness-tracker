@@ -20,6 +20,26 @@ type EditWorkoutPageProps = {
   }>;
 };
 const EXERCISE_DATALIST_ID = "exercise-library-options-edit";
+const TIMED_EXERCISE_KEYWORDS = [
+  "plank",
+  "treadmill",
+  "cycling",
+  "spinning",
+  "bike",
+  "elliptical",
+  "rowing",
+  "rower",
+  "walk",
+  "jog",
+  "run",
+  "sprint",
+  "stairmaster",
+];
+
+function isTimedExerciseName(name: string): boolean {
+  const normalized = name.trim().toLowerCase();
+  return TIMED_EXERCISE_KEYWORDS.some((keyword) => normalized.includes(keyword));
+}
 
 export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const router = useRouter();
@@ -51,10 +71,17 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
     }
     if (
       currentPayload.exercises.some((exercise) =>
-        exercise.sets.some((set) => Number.isNaN(set.reps) || Number.isNaN(set.weight) || set.reps <= 0 || set.weight < 0)
+        exercise.sets.some((set) => {
+          const repsValue = set.reps ?? null;
+          const durationValue = set.durationSeconds ?? null;
+          const hasValidReps = repsValue != null && Number.isFinite(repsValue) && repsValue > 0;
+          const hasValidDuration =
+            durationValue != null && Number.isFinite(durationValue) && durationValue > 0;
+          return Number.isNaN(set.weight) || set.weight < 0 || (!hasValidReps && !hasValidDuration);
+        })
       )
     ) {
-      return "Each set needs valid values: reps > 0 and weight >= 0.";
+      return "Each set needs reps > 0 or time > 0, and weight >= 0.";
     }
     return null;
   };
@@ -80,7 +107,11 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
           date: workout.date,
           exercises: workout.exercises.map((exercise) => ({
             name: exercise.name,
-            sets: exercise.sets.map((set) => ({ reps: set.reps, weight: set.weight })),
+            sets: exercise.sets.map((set) => ({
+              reps: set.reps ?? undefined,
+              durationSeconds: set.durationSeconds ?? undefined,
+              weight: set.weight,
+            })),
           })),
         });
       } catch (loadError) {
@@ -128,10 +159,17 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
     }
     if (
       payload.exercises.some((exercise) =>
-        exercise.sets.some((set) => Number.isNaN(set.reps) || Number.isNaN(set.weight) || set.reps <= 0 || set.weight < 0)
+        exercise.sets.some((set) => {
+          const repsValue = set.reps ?? null;
+          const durationValue = set.durationSeconds ?? null;
+          const hasValidReps = repsValue != null && Number.isFinite(repsValue) && repsValue > 0;
+          const hasValidDuration =
+            durationValue != null && Number.isFinite(durationValue) && durationValue > 0;
+          return Number.isNaN(set.weight) || set.weight < 0 || (!hasValidReps && !hasValidDuration);
+        })
       )
     ) {
-      setError("Each set needs valid values: reps > 0 and weight >= 0.");
+      setError("Each set needs reps > 0 or time > 0, and weight >= 0.");
       return;
     }
 
@@ -157,7 +195,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
       }
       return {
         ...previous,
-        exercises: [...previous.exercises, { name: "", sets: [{ reps: 1, weight: 0 }] }],
+        exercises: [...previous.exercises, { name: "", sets: [{ reps: 1, durationSeconds: undefined, weight: 0 }] }],
       };
     });
   };
@@ -183,7 +221,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
       const currentExercise = nextExercises[exerciseIndex];
       nextExercises[exerciseIndex] = {
         ...currentExercise,
-        sets: [...currentExercise.sets, { reps: 1, weight: 0 }],
+        sets: [...currentExercise.sets, { reps: 1, durationSeconds: undefined, weight: 0 }],
       };
       return { ...previous, exercises: nextExercises };
     });
@@ -292,26 +330,51 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                         )}
                         {exercise.sets.map((set, setIndex) => (
                           <div key={`set-${exerciseIndex}-${setIndex}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                            <input
-                              type="number"
-                              min={1}
-                              value={set.reps}
-                              onChange={(event) =>
-                                setPayload((prev) => {
-                                  if (!prev) {
-                                    return prev;
-                                  }
-                                  const next = { ...prev };
-                                  next.exercises[exerciseIndex].sets[setIndex] = {
-                                    ...next.exercises[exerciseIndex].sets[setIndex],
-                                    reps: Number(event.target.value),
-                                  };
-                                  return next;
-                                })
-                              }
-                              placeholder="Reps"
-                              className="field"
-                            />
+                            {isTimedExerciseName(exercise.name) ? (
+                              <input
+                                type="number"
+                                min={1}
+                                value={set.durationSeconds ?? ""}
+                                onChange={(event) =>
+                                  setPayload((prev) => {
+                                    if (!prev) {
+                                      return prev;
+                                    }
+                                    const next = { ...prev };
+                                    next.exercises[exerciseIndex].sets[setIndex] = {
+                                      ...next.exercises[exerciseIndex].sets[setIndex],
+                                      reps: undefined,
+                                      durationSeconds: Number(event.target.value) || undefined,
+                                    };
+                                    return next;
+                                  })
+                                }
+                                placeholder="Time (sec)"
+                                className="field"
+                              />
+                            ) : (
+                              <input
+                                type="number"
+                                min={1}
+                                value={set.reps ?? ""}
+                                onChange={(event) =>
+                                  setPayload((prev) => {
+                                    if (!prev) {
+                                      return prev;
+                                    }
+                                    const next = { ...prev };
+                                    next.exercises[exerciseIndex].sets[setIndex] = {
+                                      ...next.exercises[exerciseIndex].sets[setIndex],
+                                      reps: Number(event.target.value) || undefined,
+                                      durationSeconds: undefined,
+                                    };
+                                    return next;
+                                  })
+                                }
+                                placeholder="Reps"
+                                className="field"
+                              />
+                            )}
                             <input
                               type="number"
                               min={0}

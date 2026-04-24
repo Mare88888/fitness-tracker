@@ -106,7 +106,8 @@ export default function HistoryPage() {
               exercises: workout.exercises.map((exercise) => ({
                 name: exercise.name,
                 sets: exercise.sets.map((set) => ({
-                  reps: set.reps,
+                  reps: set.reps ?? undefined,
+                  durationSeconds: set.durationSeconds ?? undefined,
                   weight: set.weight,
                 })),
               })),

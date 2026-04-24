@@ -131,7 +131,7 @@ function summarizeWorkouts(workouts: Workout[]): DistributionSummary {
     for (const exercise of workout.exercises) {
       for (const set of exercise.sets) {
         workoutSets += 1;
-        summary.volumeKg += Math.max(0, set.weight) * Math.max(0, set.reps);
+        summary.volumeKg += Math.max(0, set.weight) * Math.max(0, set.reps ?? 0);
       }
     }
     summary.sets += workoutSets;

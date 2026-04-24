@@ -1,6 +1,7 @@
 export type Set = {
   id: number;
-  reps: number;
+  reps: number | null;
+  durationSeconds?: number | null;
   weight: number;
 };
 
@@ -21,7 +22,8 @@ export type Workout = {
 };
 
 export type CreateSetInput = {
-  reps: number;
+  reps?: number;
+  durationSeconds?: number;
   weight: number;
 };
 

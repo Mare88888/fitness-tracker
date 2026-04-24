@@ -31,6 +31,8 @@ public class TemplateSet {
 
     private Double weight;
 
+    private Integer durationSeconds;
+
     private Integer position;
 
     @ManyToOne(fetch = FetchType.LAZY)

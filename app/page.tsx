@@ -202,20 +202,21 @@ export default function Home() {
           "Other";
 
         for (const set of exercise.sets) {
-          const volume = Math.max(0, set.weight) * Math.max(0, set.reps);
+          const repsValue = Math.max(0, set.reps ?? 0);
+          const volume = Math.max(0, set.weight) * repsValue;
           totalVolume += volume;
           totalSets += 1;
           volumeByDate.set(workoutDate, (volumeByDate.get(workoutDate) ?? 0) + volume);
           volumeByMuscleGroup.set(group, (volumeByMuscleGroup.get(group) ?? 0) + volume);
 
-          const oneRepMax = estimateOneRepMax(set.weight, set.reps);
+          const oneRepMax = estimateOneRepMax(set.weight, repsValue);
           oneRepMaxByDate.set(workoutDate, Math.max(oneRepMaxByDate.get(workoutDate) ?? 0, oneRepMax));
 
           const history = sessionHistoryByExercise.get(normalizedName) ?? [];
           history.push({
             date: workoutDate,
             weight: set.weight,
-            reps: set.reps,
+            reps: repsValue,
             estimatedOneRepMax: oneRepMax,
           });
           sessionHistoryByExercise.set(normalizedName, history);

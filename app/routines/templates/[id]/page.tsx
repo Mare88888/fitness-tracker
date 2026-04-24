@@ -14,6 +14,27 @@ type DragItem =
   | { type: "exercise"; exerciseIndex: number }
   | { type: "set"; exerciseIndex: number; setIndex: number };
 
+const TIMED_EXERCISE_KEYWORDS = [
+  "plank",
+  "treadmill",
+  "cycling",
+  "spinning",
+  "bike",
+  "elliptical",
+  "rowing",
+  "rower",
+  "walk",
+  "jog",
+  "run",
+  "sprint",
+  "stairmaster",
+];
+
+function isTimedExerciseName(name: string): boolean {
+  const normalized = name.trim().toLowerCase();
+  return TIMED_EXERCISE_KEYWORDS.some((keyword) => normalized.includes(keyword));
+}
+
 export default function EditTemplatePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -56,11 +77,25 @@ export default function EditTemplatePage() {
     });
   };
 
-  const updateSet = (exerciseIndex: number, setIndex: number, field: "reps" | "weight", value: number) => {
+  const updateSet = (
+    exerciseIndex: number,
+    setIndex: number,
+    field: "reps" | "weight" | "durationSeconds",
+    value: number
+  ) => {
     setTemplate((prev) => {
       if (!prev) return prev;
       const next = structuredClone(prev);
-      next.exercises[exerciseIndex].sets[setIndex][field] = value;
+      const current = next.exercises[exerciseIndex].sets[setIndex];
+      if (field === "reps") {
+        current.reps = value || null;
+        current.durationSeconds = null;
+      } else if (field === "durationSeconds") {
+        current.durationSeconds = value || null;
+        current.reps = null;
+      } else {
+        current.weight = value;
+      }
       return next;
     });
   };
@@ -72,7 +107,7 @@ export default function EditTemplatePage() {
       next.exercises.push({
         id: Date.now(),
         name: "",
-        sets: [{ id: Date.now() + 1, reps: 10, weight: 0 }],
+        sets: [{ id: Date.now() + 1, reps: 10, durationSeconds: null, weight: 0 }],
       });
       return next;
     });
@@ -94,6 +129,7 @@ export default function EditTemplatePage() {
       next.exercises[exerciseIndex].sets.push({
         id: Date.now(),
         reps: 10,
+        durationSeconds: null,
         weight: 0,
       });
       return next;
@@ -138,7 +174,8 @@ export default function EditTemplatePage() {
       exercises: template.exercises.map((exercise) => ({
         name: exercise.name.trim(),
         sets: exercise.sets.map((set) => ({
-          reps: Number(set.reps),
+          reps: set.reps != null ? Number(set.reps) : undefined,
+          durationSeconds: set.durationSeconds != null ? Number(set.durationSeconds) : undefined,
           weight: Number(set.weight),
         })),
       })),
@@ -239,14 +276,25 @@ export default function EditTemplatePage() {
                             }}
                             className="surface-soft grid grid-cols-1 gap-2 p-3 md:grid-cols-[1fr_1fr_auto]"
                           >
-                            <input
-                              type="number"
-                              min={1}
-                              value={set.reps}
-                              onChange={(event) => updateSet(exerciseIndex, setIndex, "reps", Number(event.target.value))}
-                              className="field"
-                              placeholder="Reps"
-                            />
+                            {isTimedExerciseName(exercise.name) ? (
+                              <input
+                                type="number"
+                                min={1}
+                                value={set.durationSeconds ?? ""}
+                                onChange={(event) => updateSet(exerciseIndex, setIndex, "durationSeconds", Number(event.target.value))}
+                                className="field"
+                                placeholder="Time (sec)"
+                              />
+                            ) : (
+                              <input
+                                type="number"
+                                min={1}
+                                value={set.reps ?? ""}
+                                onChange={(event) => updateSet(exerciseIndex, setIndex, "reps", Number(event.target.value))}
+                                className="field"
+                                placeholder="Reps"
+                              />
+                            )}
                             <input
                               type="number"
                               min={0}
