@@ -134,25 +134,39 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
 
               {!isLoading && !error && workout && (
                 <div className="space-y-4">
-                  <header>
-                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                      {workout.name}
-                    </h1>
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Date: {workout.formattedDate ?? workout.date}</p>
-                    <div className="mt-3 flex gap-3">
-                      <Link
-                        href={`/workouts/${workout.id}/edit`}
-                        className="btn btn-secondary px-2.5 py-1.5 text-xs"
-                      >
-                        Edit workout
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setIsDeleteModalOpen(true)}
-                        className="btn btn-danger px-2.5 py-1.5 text-xs"
-                      >
-                        Delete workout
-                      </button>
+                  <header className="surface-card">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
+                          {workout.name}
+                        </h1>
+                        <p className="mt-1 text-sm text-zinc-400">
+                          Date: {workout.formattedDate ?? workout.date}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-xs font-medium text-zinc-300">
+                            {workout.exercises.length} exercise{workout.exercises.length === 1 ? "" : "s"}
+                          </span>
+                          <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-xs font-medium text-zinc-300">
+                            {workout.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0)} total sets
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/workouts/${workout.id}/edit`}
+                          className="btn btn-secondary px-2.5 py-1.5 text-xs"
+                        >
+                          Edit workout
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setIsDeleteModalOpen(true)}
+                          className="btn btn-danger px-2.5 py-1.5 text-xs"
+                        >
+                          Delete workout
+                        </button>
+                      </div>
                     </div>
                   </header>
 
@@ -168,27 +182,39 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                           key={exercise.id}
                           className="surface-card"
                         >
-                          <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-                            {exerciseIndex + 1}. {exercise.name}
-                          </h2>
+                          <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+                            <h2 className="font-semibold text-zinc-100">
+                              {exerciseIndex + 1}. {exercise.name}
+                            </h2>
+                            <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-[11px] font-medium text-zinc-300">
+                              {exercise.sets.length} set{exercise.sets.length === 1 ? "" : "s"}
+                            </span>
+                          </div>
                           {exercise.note?.trim() && (
-                            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{exercise.note}</p>
+                            <p className="mb-3 rounded-md border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-sm text-zinc-300">
+                              {exercise.note}
+                            </p>
                           )}
 
                           {exercise.sets.length === 0 ? (
-                            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No sets logged.</p>
+                            <p className="mt-2 text-sm text-zinc-400">No sets logged.</p>
                           ) : (
-                            <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                            <div className="space-y-2">
                               {exercise.sets.map((set, setIndex) => (
-                                <li key={set.id}>
-                                  Set {setIndex + 1}:{" "}
-                                  {set.reps != null
-                                    ? `${set.reps} reps`
-                                    : `${formatSecondsToMMSS(set.durationSeconds)} (time)`},
-                                  {" "}weight: {set.weight} kg
-                                </li>
+                                <div
+                                  key={set.id}
+                                  className="surface-soft grid grid-cols-1 gap-2 px-3 py-2 text-sm sm:grid-cols-[auto_1fr_1fr]"
+                                >
+                                  <span className="font-semibold text-zinc-100">Set {setIndex + 1}</span>
+                                  <span className="text-zinc-300">
+                                    {set.reps != null
+                                      ? `${set.reps} reps`
+                                      : `${formatSecondsToMMSS(set.durationSeconds)} (time)`}
+                                  </span>
+                                  <span className="text-zinc-300">Weight: {set.weight} kg</span>
+                                </div>
                               ))}
-                            </ul>
+                            </div>
                           )}
                         </article>
                       ))}
