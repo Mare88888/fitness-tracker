@@ -3,6 +3,7 @@ export type Set = {
   reps: number | null;
   durationSeconds?: number | null;
   weight: number;
+  completed?: boolean | null;
 };
 
 export type Exercise = {
@@ -26,6 +27,7 @@ export type CreateSetInput = {
   reps?: number;
   durationSeconds?: number;
   weight: number;
+  completed?: boolean;
 };
 
 export type CreateExerciseInput = {

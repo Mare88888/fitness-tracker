@@ -79,6 +79,7 @@ public class WorkoutTemplateMapper {
                 .reps(set.getReps())
                 .weight(set.getWeight())
                 .durationSeconds(set.getDurationSeconds())
+                .completed(set.getCompleted())
                 .build();
     }
 
@@ -118,6 +119,7 @@ public class WorkoutTemplateMapper {
                     .reps(setDto.reps())
                     .weight(setDto.weight())
                     .durationSeconds(setDto.durationSeconds())
+                    .completed(Boolean.TRUE.equals(setDto.completed()))
                     .position(i)
                     .exercise(exercise)
                     .build());

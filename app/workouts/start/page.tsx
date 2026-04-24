@@ -336,6 +336,7 @@ export default function StartWorkoutPage() {
             reps: useDuration ? undefined : Number.isFinite(reps) && reps > 0 ? reps : undefined,
             durationSeconds: useDuration ? durationSeconds : undefined,
             weight: Number(set.weight) || 0,
+            completed: completedSetIds.has(set.id),
           };
         }),
       })),

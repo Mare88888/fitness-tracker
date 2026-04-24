@@ -33,6 +33,9 @@ public class TemplateSet {
 
     private Integer durationSeconds;
 
+    @Builder.Default
+    private Boolean completed = Boolean.FALSE;
+
     private Integer position;
 
     @ManyToOne(fetch = FetchType.LAZY)

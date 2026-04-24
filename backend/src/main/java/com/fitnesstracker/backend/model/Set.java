@@ -33,6 +33,9 @@ public class Set {
 
     private Integer durationSeconds;
 
+    @Builder.Default
+    private Boolean completed = Boolean.FALSE;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exercise_id", nullable = false)
     private Exercise exercise;

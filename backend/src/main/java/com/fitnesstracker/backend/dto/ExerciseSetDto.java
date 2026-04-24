@@ -15,7 +15,8 @@ public record ExerciseSetDto(
         @DecimalMin(value = "0.0", inclusive = true, message = "Set weight must be 0 or greater.")
         Double weight,
         @Min(value = 1, message = "Set duration must be at least 1 second.")
-        Integer durationSeconds
+        Integer durationSeconds,
+        Boolean completed
 ) {
     @AssertTrue(message = "Each set must include reps or duration.")
     public boolean hasRepsOrDuration() {

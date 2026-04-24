@@ -50,7 +50,6 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
-  const [completedSetKeys, setCompletedSetKeys] = useState<Set<string>>(new Set());
   const [setTypeByKey, setSetTypeByKey] = useState<
     Record<string, "normal" | "warmup" | "failure" | "drop">
   >({});
@@ -140,6 +139,8 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
               reps: set.reps ?? undefined,
               durationSeconds: set.durationSeconds ?? undefined,
               weight: set.weight,
+              // Backward compatibility: older workouts may not include persisted completion yet.
+              completed: set.completed ?? true,
             })),
           })),
         });
@@ -226,7 +227,11 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
         ...previous,
         exercises: [
           ...previous.exercises,
-          { name: "", note: "", sets: [{ reps: 1, durationSeconds: undefined, weight: 0 }] },
+          {
+            name: "",
+            note: "",
+            sets: [{ reps: 1, durationSeconds: undefined, weight: 0, completed: false }],
+          },
         ],
       };
     });
@@ -253,7 +258,10 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
       const currentExercise = nextExercises[exerciseIndex];
       nextExercises[exerciseIndex] = {
         ...currentExercise,
-        sets: [...currentExercise.sets, { reps: 1, durationSeconds: undefined, weight: 0 }],
+        sets: [
+          ...currentExercise.sets,
+          { reps: 1, durationSeconds: undefined, weight: 0, completed: false },
+        ],
       };
       return { ...previous, exercises: nextExercises };
     });
@@ -261,14 +269,6 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
 
   const removeSet = (exerciseIndex: number, setIndex: number) => {
     const removedKey = getSetKey(exerciseIndex, setIndex);
-    setCompletedSetKeys((previous) => {
-      if (!previous.has(removedKey)) {
-        return previous;
-      }
-      const next = new Set(previous);
-      next.delete(removedKey);
-      return next;
-    });
     setSetTypeByKey((previous) => {
       if (!previous[removedKey]) {
         return previous;
@@ -423,7 +423,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                           (() => {
                             const setKey = getSetKey(exerciseIndex, setIndex);
                             const setType = setTypeByKey[setKey] ?? "normal";
-                            const isCompleted = completedSetKeys.has(setKey);
+                            const isCompleted = Boolean(set.completed);
                             return (
                           <div
                             key={`set-${exerciseIndex}-${setIndex}`}
@@ -573,13 +573,15 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                             <button
                               type="button"
                               onClick={() =>
-                                setCompletedSetKeys((previous) => {
-                                  const next = new Set(previous);
-                                  if (next.has(setKey)) {
-                                    next.delete(setKey);
-                                  } else {
-                                    next.add(setKey);
+                                setPayload((prev) => {
+                                  if (!prev) {
+                                    return prev;
                                   }
+                                  const next = { ...prev };
+                                  next.exercises[exerciseIndex].sets[setIndex] = {
+                                    ...next.exercises[exerciseIndex].sets[setIndex],
+                                    completed: !Boolean(next.exercises[exerciseIndex].sets[setIndex].completed),
+                                  };
                                   return next;
                                 })
                               }

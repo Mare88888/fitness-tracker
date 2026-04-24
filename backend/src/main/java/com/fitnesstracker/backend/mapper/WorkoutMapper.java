@@ -71,6 +71,7 @@ public class WorkoutMapper {
                 .reps(set.getReps())
                 .weight(set.getWeight())
                 .durationSeconds(set.getDurationSeconds())
+                .completed(set.getCompleted())
                 .build();
     }
 
@@ -106,6 +107,7 @@ public class WorkoutMapper {
                         .reps(setDto.reps())
                         .weight(setDto.weight())
                         .durationSeconds(setDto.durationSeconds())
+                        .completed(Boolean.TRUE.equals(setDto.completed()))
                         .exercise(exercise)
                         .build())
                 .toList());

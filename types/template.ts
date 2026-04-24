@@ -12,6 +12,7 @@ export type WorkoutTemplate = {
       reps: number | null;
       durationSeconds?: number | null;
       weight: number;
+      completed?: boolean | null;
     }[];
   }[];
 };
