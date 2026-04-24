@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+const REST_TIMER_SECONDS_KEY = "fitness_rest_timer_seconds_v1";
+
 type RestTimerProps = {
   defaultSeconds?: number;
   className?: string;
@@ -21,6 +23,32 @@ export function RestTimer({ defaultSeconds = 90, className = "", onComplete, sta
   const [secondsLeft, setSecondsLeft] = useState(safeDefaultSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const safeSelectedSeconds = Math.max(1, Math.floor(selectedSeconds));
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const raw = window.localStorage.getItem(REST_TIMER_SECONDS_KEY);
+    if (!raw) {
+      return;
+    }
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return;
+    }
+    const restored = Math.floor(parsed);
+    queueMicrotask(() => {
+      setSelectedSeconds(restored);
+      setSecondsLeft(restored);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem(REST_TIMER_SECONDS_KEY, String(safeSelectedSeconds));
+  }, [safeSelectedSeconds]);
 
   useEffect(() => {
     if (!isRunning) {
