@@ -4,6 +4,7 @@ export type Set = {
   durationSeconds?: number | null;
   weight: number;
   completed?: boolean | null;
+  type?: "normal" | "warmup" | "failure" | "drop" | null;
 };
 
 export type Exercise = {
@@ -28,6 +29,7 @@ export type CreateSetInput = {
   durationSeconds?: number;
   weight: number;
   completed?: boolean;
+  type?: "normal" | "warmup" | "failure" | "drop";
 };
 
 export type CreateExerciseInput = {

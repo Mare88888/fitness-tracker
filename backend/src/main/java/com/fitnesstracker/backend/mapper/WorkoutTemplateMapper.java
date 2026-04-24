@@ -80,6 +80,7 @@ public class WorkoutTemplateMapper {
                 .weight(set.getWeight())
                 .durationSeconds(set.getDurationSeconds())
                 .completed(set.getCompleted())
+                .type(set.getType())
                 .build();
     }
 
@@ -120,6 +121,7 @@ public class WorkoutTemplateMapper {
                     .weight(setDto.weight())
                     .durationSeconds(setDto.durationSeconds())
                     .completed(Boolean.TRUE.equals(setDto.completed()))
+                    .type(setDto.type() != null ? setDto.type() : "normal")
                     .position(i)
                     .exercise(exercise)
                     .build());

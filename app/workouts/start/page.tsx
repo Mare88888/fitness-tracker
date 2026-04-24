@@ -337,6 +337,7 @@ export default function StartWorkoutPage() {
             durationSeconds: useDuration ? durationSeconds : undefined,
             weight: Number(set.weight) || 0,
             completed: completedSetIds.has(set.id),
+            type: set.type,
           };
         }),
       })),
@@ -637,7 +638,7 @@ export default function StartWorkoutPage() {
           reps: set.reps != null ? String(set.reps) : "",
           durationSeconds: set.durationSeconds != null ? String(set.durationSeconds) : "",
           weight: String(set.weight),
-          type: "normal",
+          type: set.type ?? "normal",
         })),
       }))
     );

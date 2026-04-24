@@ -72,6 +72,7 @@ public class WorkoutMapper {
                 .weight(set.getWeight())
                 .durationSeconds(set.getDurationSeconds())
                 .completed(set.getCompleted())
+                .type(set.getType())
                 .build();
     }
 
@@ -108,6 +109,7 @@ public class WorkoutMapper {
                         .weight(setDto.weight())
                         .durationSeconds(setDto.durationSeconds())
                         .completed(Boolean.TRUE.equals(setDto.completed()))
+                        .type(setDto.type() != null ? setDto.type() : "normal")
                         .exercise(exercise)
                         .build())
                 .toList());

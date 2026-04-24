@@ -13,6 +13,7 @@ export type WorkoutTemplate = {
       durationSeconds?: number | null;
       weight: number;
       completed?: boolean | null;
+      type?: "normal" | "warmup" | "failure" | "drop" | null;
     }[];
   }[];
 };

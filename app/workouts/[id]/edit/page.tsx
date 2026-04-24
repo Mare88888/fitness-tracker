@@ -50,9 +50,6 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
-  const [setTypeByKey, setSetTypeByKey] = useState<
-    Record<string, "normal" | "warmup" | "failure" | "drop">
-  >({});
   const [activeSetTypeKey, setActiveSetTypeKey] = useState<string | null>(null);
 
   const getSetKey = (exerciseIndex: number, setIndex: number) => `${exerciseIndex}-${setIndex}`;
@@ -141,6 +138,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
               weight: set.weight,
               // Backward compatibility: older workouts may not include persisted completion yet.
               completed: set.completed ?? true,
+              type: set.type ?? "normal",
             })),
           })),
         });
@@ -230,7 +228,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
           {
             name: "",
             note: "",
-            sets: [{ reps: 1, durationSeconds: undefined, weight: 0, completed: false }],
+            sets: [{ reps: 1, durationSeconds: undefined, weight: 0, completed: false, type: "normal" }],
           },
         ],
       };
@@ -260,7 +258,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
         ...currentExercise,
         sets: [
           ...currentExercise.sets,
-          { reps: 1, durationSeconds: undefined, weight: 0, completed: false },
+          { reps: 1, durationSeconds: undefined, weight: 0, completed: false, type: "normal" },
         ],
       };
       return { ...previous, exercises: nextExercises };
@@ -268,15 +266,6 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   };
 
   const removeSet = (exerciseIndex: number, setIndex: number) => {
-    const removedKey = getSetKey(exerciseIndex, setIndex);
-    setSetTypeByKey((previous) => {
-      if (!previous[removedKey]) {
-        return previous;
-      }
-      const next = { ...previous };
-      delete next[removedKey];
-      return next;
-    });
     setPayload((previous) => {
       if (!previous) {
         return previous;
@@ -422,7 +411,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                         {exercise.sets.map((set, setIndex) => (
                           (() => {
                             const setKey = getSetKey(exerciseIndex, setIndex);
-                            const setType = setTypeByKey[setKey] ?? "normal";
+                            const setType = set.type ?? "normal";
                             const isCompleted = Boolean(set.completed);
                             return (
                           <div
@@ -448,7 +437,15 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "warmup" }));
+                                      setPayload((prev) => {
+                                        if (!prev) return prev;
+                                        const next = { ...prev };
+                                        next.exercises[exerciseIndex].sets[setIndex] = {
+                                          ...next.exercises[exerciseIndex].sets[setIndex],
+                                          type: "warmup",
+                                        };
+                                        return next;
+                                      });
                                       setActiveSetTypeKey(null);
                                     }}
                                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-amber-500/20"
@@ -459,7 +456,15 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "normal" }));
+                                      setPayload((prev) => {
+                                        if (!prev) return prev;
+                                        const next = { ...prev };
+                                        next.exercises[exerciseIndex].sets[setIndex] = {
+                                          ...next.exercises[exerciseIndex].sets[setIndex],
+                                          type: "normal",
+                                        };
+                                        return next;
+                                      });
                                       setActiveSetTypeKey(null);
                                     }}
                                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
@@ -470,7 +475,15 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "failure" }));
+                                      setPayload((prev) => {
+                                        if (!prev) return prev;
+                                        const next = { ...prev };
+                                        next.exercises[exerciseIndex].sets[setIndex] = {
+                                          ...next.exercises[exerciseIndex].sets[setIndex],
+                                          type: "failure",
+                                        };
+                                        return next;
+                                      });
                                       setActiveSetTypeKey(null);
                                     }}
                                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-rose-500/20"
@@ -481,7 +494,15 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "drop" }));
+                                      setPayload((prev) => {
+                                        if (!prev) return prev;
+                                        const next = { ...prev };
+                                        next.exercises[exerciseIndex].sets[setIndex] = {
+                                          ...next.exercises[exerciseIndex].sets[setIndex],
+                                          type: "drop",
+                                        };
+                                        return next;
+                                      });
                                       setActiveSetTypeKey(null);
                                     }}
                                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-sky-500/20"
