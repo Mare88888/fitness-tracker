@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
+import { formatSecondsToMMSS, parseDurationToSeconds } from "@/lib/duration-format";
 import { getTemplateById, updateTemplate } from "@/lib/services/template-service";
 import type { CreateWorkoutTemplateInput, WorkoutTemplate } from "@/types/template";
 import Link from "next/link";
@@ -278,12 +279,18 @@ export default function EditTemplatePage() {
                           >
                             {isTimedExerciseName(exercise.name) ? (
                               <input
-                                type="number"
-                                min={1}
-                                value={set.durationSeconds ?? ""}
-                                onChange={(event) => updateSet(exerciseIndex, setIndex, "durationSeconds", Number(event.target.value))}
+                                type="text"
+                                value={formatSecondsToMMSS(set.durationSeconds)}
+                                onChange={(event) =>
+                                  updateSet(
+                                    exerciseIndex,
+                                    setIndex,
+                                    "durationSeconds",
+                                    parseDurationToSeconds(event.target.value) ?? 0
+                                  )
+                                }
                                 className="field"
-                                placeholder="Time (sec)"
+                                placeholder="Time (mm:ss or sec)"
                               />
                             ) : (
                               <input

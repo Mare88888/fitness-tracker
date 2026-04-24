@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAuthUsername } from "@/lib/auth/token";
 import { formatDateTimeDDMMYYYY } from "@/lib/date-format";
+import { parseDurationToSeconds } from "@/lib/duration-format";
 import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
 import { ApiRequestError } from "@/lib/services/api-error";
@@ -319,8 +320,8 @@ export default function StartWorkoutPage() {
         name: exercise.name.trim(),
         sets: exercise.sets.map((set) => {
           const reps = Number(set.reps);
-          const durationSeconds = Number(set.durationSeconds);
-          const useDuration = Number.isFinite(durationSeconds) && durationSeconds > 0;
+          const durationSeconds = parseDurationToSeconds(set.durationSeconds);
+          const useDuration = durationSeconds != null;
           return {
             reps: useDuration ? undefined : Number.isFinite(reps) && reps > 0 ? reps : undefined,
             durationSeconds: useDuration ? durationSeconds : undefined,
@@ -343,10 +344,10 @@ export default function StartWorkoutPage() {
     const invalidSet = exercises.some((exercise) =>
       exercise.sets.some((set) => {
         const reps = Number(set.reps);
-        const durationSeconds = Number(set.durationSeconds);
+        const durationSeconds = parseDurationToSeconds(set.durationSeconds);
         const weight = Number(set.weight);
         const hasValidReps = Number.isFinite(reps) && reps > 0;
-        const hasValidDuration = Number.isFinite(durationSeconds) && durationSeconds > 0;
+        const hasValidDuration = durationSeconds != null && durationSeconds > 0;
         return Number.isNaN(weight) || weight < 0 || (!hasValidReps && !hasValidDuration);
       })
     );
@@ -1021,10 +1022,9 @@ export default function StartWorkoutPage() {
                                 {timedExercise ? (
                                   <>
                                     <input
-                                      type="number"
-                                      min={1}
-                                      inputMode="numeric"
-                                      placeholder="Time (sec)"
+                                      type="text"
+                                      inputMode="text"
+                                      placeholder="Time (mm:ss or sec)"
                                       value={set.durationSeconds}
                                       onChange={(event) =>
                                         updateSetField(exercise.id, set.id, "durationSeconds", event.target.value)

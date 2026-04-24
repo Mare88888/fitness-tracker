@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatSecondsToMMSS, parseDurationToSeconds } from "@/lib/duration-format";
 import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { getWorkoutById, updateWorkout } from "@/lib/services/workout-service";
@@ -332,24 +333,24 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                           <div key={`set-${exerciseIndex}-${setIndex}`} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
                             {isTimedExerciseName(exercise.name) ? (
                               <input
-                                type="number"
-                                min={1}
-                                value={set.durationSeconds ?? ""}
+                                type="text"
+                                value={formatSecondsToMMSS(set.durationSeconds)}
                                 onChange={(event) =>
                                   setPayload((prev) => {
                                     if (!prev) {
                                       return prev;
                                     }
                                     const next = { ...prev };
+                                    const parsedDuration = parseDurationToSeconds(event.target.value);
                                     next.exercises[exerciseIndex].sets[setIndex] = {
                                       ...next.exercises[exerciseIndex].sets[setIndex],
                                       reps: undefined,
-                                      durationSeconds: Number(event.target.value) || undefined,
+                                      durationSeconds: parsedDuration,
                                     };
                                     return next;
                                   })
                                 }
-                                placeholder="Time (sec)"
+                                placeholder="Time (mm:ss or sec)"
                                 className="field"
                               />
                             ) : (

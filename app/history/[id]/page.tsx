@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatSecondsToMMSS } from "@/lib/duration-format";
 import { createWorkout, deleteWorkout, getWorkoutById } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
@@ -176,7 +177,10 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                             <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                               {exercise.sets.map((set, setIndex) => (
                                 <li key={set.id}>
-                                  Set {setIndex + 1}: {set.reps != null ? `${set.reps} reps` : `${set.durationSeconds ?? 0}s`},
+                                  Set {setIndex + 1}:{" "}
+                                  {set.reps != null
+                                    ? `${set.reps} reps`
+                                    : `${formatSecondsToMMSS(set.durationSeconds)} (time)`},
                                   {" "}weight: {set.weight} kg
                                 </li>
                               ))}
