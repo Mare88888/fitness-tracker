@@ -50,6 +50,33 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
+  const [completedSetKeys, setCompletedSetKeys] = useState<Set<string>>(new Set());
+  const [setTypeByKey, setSetTypeByKey] = useState<
+    Record<string, "normal" | "warmup" | "failure" | "drop">
+  >({});
+  const [activeSetTypeKey, setActiveSetTypeKey] = useState<string | null>(null);
+
+  const getSetKey = (exerciseIndex: number, setIndex: number) => `${exerciseIndex}-${setIndex}`;
+
+  const getSetTypeLabel = (setType: "normal" | "warmup" | "failure" | "drop", setIndex: number) => {
+    if (setType === "warmup") return "W";
+    if (setType === "failure") return "F";
+    if (setType === "drop") return "D";
+    return String(setIndex + 1);
+  };
+
+  const getSetTypeButtonClass = (setType: "normal" | "warmup" | "failure" | "drop"): string => {
+    if (setType === "warmup") {
+      return "border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:border-amber-400";
+    }
+    if (setType === "failure") {
+      return "border-rose-500/60 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 hover:border-rose-400";
+    }
+    if (setType === "drop") {
+      return "border-sky-500/60 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 hover:border-sky-400";
+    }
+    return "border-zinc-500/60 bg-zinc-700/20 text-zinc-100 hover:bg-zinc-700/35 hover:border-zinc-400";
+  };
 
   const resolveMuscleGroup = (exerciseName: string): string => {
     const normalized = exerciseName.trim().toLowerCase();
@@ -233,6 +260,23 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   };
 
   const removeSet = (exerciseIndex: number, setIndex: number) => {
+    const removedKey = getSetKey(exerciseIndex, setIndex);
+    setCompletedSetKeys((previous) => {
+      if (!previous.has(removedKey)) {
+        return previous;
+      }
+      const next = new Set(previous);
+      next.delete(removedKey);
+      return next;
+    });
+    setSetTypeByKey((previous) => {
+      if (!previous[removedKey]) {
+        return previous;
+      }
+      const next = { ...previous };
+      delete next[removedKey];
+      return next;
+    });
     setPayload((previous) => {
       if (!previous) {
         return previous;
@@ -368,17 +412,98 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                         </button>
                       </div>
                       <div className="space-y-2">
-                        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                        <div className="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                          <span>Set</span>
                           <span>{isTimedExerciseName(exercise.name) ? "Time" : "Reps"}</span>
                           <span>Weight</span>
-                          <span></span>
+                          <span>Done</span>
                           <span></span>
                         </div>
                         {exercise.sets.map((set, setIndex) => (
+                          (() => {
+                            const setKey = getSetKey(exerciseIndex, setIndex);
+                            const setType = setTypeByKey[setKey] ?? "normal";
+                            const isCompleted = completedSetKeys.has(setKey);
+                            return (
                           <div
                             key={`set-${exerciseIndex}-${setIndex}`}
-                            className="surface-soft grid grid-cols-1 gap-2 p-2 sm:grid-cols-[1fr_1fr_auto]"
+                            className={`surface-soft grid grid-cols-1 gap-2 p-2 sm:grid-cols-[auto_1fr_1fr_auto_auto] sm:items-center ${
+                              isCompleted ? "set-row-complete" : ""
+                            }`}
                           >
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveSetTypeKey((previous) => (previous === setKey ? null : setKey))
+                                }
+                                className={`inline-flex min-w-[28px] cursor-pointer items-center justify-center rounded-md border px-2 py-1 text-xs font-semibold leading-none shadow-sm transition-colors ${getSetTypeButtonClass(setType)}`}
+                                aria-haspopup="menu"
+                                aria-expanded={activeSetTypeKey === setKey}
+                              >
+                                {getSetTypeLabel(setType, setIndex)}
+                              </button>
+                              {activeSetTypeKey === setKey && (
+                                <div className="absolute left-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-xl">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "warmup" }));
+                                      setActiveSetTypeKey(null);
+                                    }}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-amber-500/20"
+                                  >
+                                    <span>Warm Up Set</span>
+                                    <span className="font-semibold text-amber-400">W</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "normal" }));
+                                      setActiveSetTypeKey(null);
+                                    }}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                                  >
+                                    <span>Normal Set</span>
+                                    <span className="font-semibold text-zinc-300">{setIndex + 1}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "failure" }));
+                                      setActiveSetTypeKey(null);
+                                    }}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-rose-500/20"
+                                  >
+                                    <span>Failure Set</span>
+                                    <span className="font-semibold text-rose-400">F</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSetTypeByKey((previous) => ({ ...previous, [setKey]: "drop" }));
+                                      setActiveSetTypeKey(null);
+                                    }}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-200 hover:bg-sky-500/20"
+                                  >
+                                    <span>Drop Set</span>
+                                    <span className="font-semibold text-sky-400">D</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      removeSet(exerciseIndex, setIndex);
+                                      setActiveSetTypeKey(null);
+                                    }}
+                                    disabled={exercise.sets.length === 1}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-300 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    <span>Remove Set</span>
+                                    <span className="font-semibold text-red-400">X</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                             {isTimedExerciseName(exercise.name) ? (
                               <input
                                 type="text"
@@ -447,6 +572,24 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                             />
                             <button
                               type="button"
+                              onClick={() =>
+                                setCompletedSetKeys((previous) => {
+                                  const next = new Set(previous);
+                                  if (next.has(setKey)) {
+                                    next.delete(setKey);
+                                  } else {
+                                    next.add(setKey);
+                                  }
+                                  return next;
+                                })
+                              }
+                              className={`btn ${isCompleted ? "set-done-btn" : "btn-secondary"}`}
+                              aria-pressed={isCompleted}
+                            >
+                              ✓
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => removeSet(exerciseIndex, setIndex)}
                               disabled={exercise.sets.length === 1}
                               className="btn btn-secondary"
@@ -454,6 +597,8 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                               Remove set
                             </button>
                           </div>
+                            );
+                          })()
                         ))}
                       </div>
                       <button
