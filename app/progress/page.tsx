@@ -80,15 +80,6 @@ type DistributionSummary = {
   sets: number;
 };
 
-type PhotoReminderItem = {
-  id: number;
-  capturedAt: string;
-  reminderDate: string;
-  note?: string | null;
-  status: "overdue" | "today" | "soon" | "upcoming";
-  daysUntil: number;
-};
-
 function weekKey(dateString: string): string {
   const d = new Date(dateString);
   d.setHours(0, 0, 0, 0);
@@ -207,9 +198,7 @@ export default function ProgressPage() {
   const [photoCapturedAt, setPhotoCapturedAt] = useState(() => toDateInputValue(new Date()));
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [photoNote, setPhotoNote] = useState("");
-  const [photoReminderDate, setPhotoReminderDate] = useState("");
-  const [compareBeforeId, setCompareBeforeId] = useState<number | null>(null);
-  const [compareAfterId, setCompareAfterId] = useState<number | null>(null);
+  const [expandedPhotoIds, setExpandedPhotoIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -265,8 +254,6 @@ export default function ProgressPage() {
         setMeasurements(measurementData);
         setWorkouts(workoutData);
         setPhotos(photoData);
-        setCompareAfterId((previous) => previous ?? photoData[0]?.id ?? null);
-        setCompareBeforeId((previous) => previous ?? photoData[1]?.id ?? photoData[0]?.id ?? null);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to load progress data.";
         toast.error(message);
@@ -286,18 +273,6 @@ export default function ProgressPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (photos.length === 0) {
-      return;
-    }
-    if (compareAfterId == null) {
-      setCompareAfterId(photos[0].id);
-    }
-    if (compareBeforeId == null) {
-      setCompareBeforeId(photos[1]?.id ?? photos[0].id);
-    }
-  }, [photos, compareAfterId, compareBeforeId]);
 
   const fillFormFromEntry = (entry: BodyMeasurement) => {
     setDate(entry.date);
@@ -541,14 +516,10 @@ export default function ProgressPage() {
         capturedAt: photoCapturedAt,
         imageDataUrl: photoDataUrl,
         note: photoNote.trim() || undefined,
-        reminderDate: photoReminderDate || undefined,
       });
       setPhotos((previous) => [saved, ...previous].sort((a, b) => b.capturedAt.localeCompare(a.capturedAt)));
-      setCompareAfterId((previous) => previous ?? saved.id);
-      setCompareBeforeId((previous) => previous ?? saved.id);
       setPhotoDataUrl(null);
       setPhotoNote("");
-      setPhotoReminderDate("");
       setPhotoCapturedAt(toDateInputValue(new Date()));
       toast.success("Progress photo saved.");
     } catch (error) {
@@ -562,43 +533,19 @@ export default function ProgressPage() {
     try {
       await deleteProgressPhoto(id);
       setPhotos((previous) => previous.filter((entry) => entry.id !== id));
-      if (compareBeforeId === id) {
-        setCompareBeforeId(null);
-      }
-      if (compareAfterId === id) {
-        setCompareAfterId(null);
-      }
+      setExpandedPhotoIds((previous) => {
+        if (!previous.has(id)) {
+          return previous;
+        }
+        const next = new Set(previous);
+        next.delete(id);
+        return next;
+      });
       toast.success("Progress photo removed.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete progress photo.");
     }
   };
-
-  const compareBeforePhoto = photos.find((photo) => photo.id === compareBeforeId) ?? null;
-  const compareAfterPhoto = photos.find((photo) => photo.id === compareAfterId) ?? null;
-  const upcomingPhotoReminders = useMemo<PhotoReminderItem[]>(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return photos
-      .filter((photo) => Boolean(photo.reminderDate))
-      .map((photo) => {
-        const reminderDate = String(photo.reminderDate);
-        const reminder = new Date(reminderDate);
-        reminder.setHours(0, 0, 0, 0);
-        const daysUntil = Math.floor((reminder.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        const status: PhotoReminderItem["status"] =
-          daysUntil < 0 ? "overdue" : daysUntil === 0 ? "today" : daysUntil <= 3 ? "soon" : "upcoming";
-        return {
-          id: photo.id,
-          capturedAt: photo.capturedAt,
-          reminderDate,
-          note: photo.note,
-          status,
-          daysUntil,
-        };
-      })
-      .sort((a, b) => a.daysUntil - b.daysUntil);
-  }, [photos]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -779,132 +726,57 @@ export default function ProgressPage() {
                       <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
                       <span className="text-xs text-zinc-400">{photos.length} total</span>
                     </div>
-                    {upcomingPhotoReminders.length > 0 && (
-                      <div className="surface-soft mt-3 p-3">
-                        <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-300">
-                          Reminder timeline
-                        </h3>
-                        <ul className="mt-2 space-y-2">
-                          {upcomingPhotoReminders.slice(0, 5).map((item) => {
-                            const statusClass =
-                              item.status === "overdue"
-                                ? "border-red-500/40 bg-red-500/10 text-red-300"
-                                : item.status === "today"
-                                  ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
-                                  : item.status === "soon"
-                                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                                    : "border-zinc-600 bg-zinc-700/30 text-zinc-300";
-                            const statusLabel =
-                              item.status === "overdue"
-                                ? `${Math.abs(item.daysUntil)}d overdue`
-                                : item.status === "today"
-                                  ? "Today"
-                                  : item.status === "soon"
-                                    ? `In ${item.daysUntil}d`
-                                    : `In ${item.daysUntil}d`;
-                            return (
-                              <li
-                                key={`reminder-${item.id}`}
-                                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-800 px-2 py-1.5 text-xs"
-                              >
-                                <div className="text-zinc-200">
-                                  <p className="font-medium">
-                                    Reminder {formatDateDDMMYYYY(item.reminderDate)} for photo on{" "}
-                                    {formatDateDDMMYYYY(item.capturedAt)}
-                                  </p>
-                                  {item.note?.trim() ? (
-                                    <p className="text-zinc-400">{item.note}</p>
-                                  ) : null}
-                                </div>
-                                <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusClass}`}>
-                                  {statusLabel}
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    )}
                     {photos.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
                     ) : (
-                      <>
-                        <div className="mt-3 grid gap-3 md:grid-cols-2">
-                          <div className="surface-soft p-3">
-                            <label className="mb-1 block text-xs font-medium text-zinc-300">Before</label>
-                            <select
-                              value={compareBeforeId ?? ""}
-                              onChange={(event) => setCompareBeforeId(Number(event.target.value) || null)}
-                              className="field field-select"
-                            >
-                              <option value="">Select photo</option>
-                              {photos.map((photo) => (
-                                <option key={`before-${photo.id}`} value={photo.id}>
-                                  {formatDateDDMMYYYY(photo.capturedAt)}
-                                </option>
-                              ))}
-                            </select>
-                            {compareBeforePhoto ? (
-                              <img
-                                src={compareBeforePhoto.imageDataUrl}
-                                alt="Before progress"
-                                className="mt-2 h-56 w-full rounded-md object-cover"
-                              />
-                            ) : (
-                              <div className="mt-2 flex h-56 items-center justify-center rounded-md border border-zinc-800 text-xs text-zinc-500">
-                                Select a before photo
-                              </div>
-                            )}
-                          </div>
-                          <div className="surface-soft p-3">
-                            <label className="mb-1 block text-xs font-medium text-zinc-300">After</label>
-                            <select
-                              value={compareAfterId ?? ""}
-                              onChange={(event) => setCompareAfterId(Number(event.target.value) || null)}
-                              className="field field-select"
-                            >
-                              <option value="">Select photo</option>
-                              {photos.map((photo) => (
-                                <option key={`after-${photo.id}`} value={photo.id}>
-                                  {formatDateDDMMYYYY(photo.capturedAt)}
-                                </option>
-                              ))}
-                            </select>
-                            {compareAfterPhoto ? (
-                              <img
-                                src={compareAfterPhoto.imageDataUrl}
-                                alt="After progress"
-                                className="mt-2 h-56 w-full rounded-md object-cover"
-                              />
-                            ) : (
-                              <div className="mt-2 flex h-56 items-center justify-center rounded-md border border-zinc-800 text-xs text-zinc-500">
-                                Select an after photo
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <ul className="mt-3 space-y-2">
-                          {photos.slice(0, 6).map((photo) => (
+                      <ul className="mt-3 space-y-2">
+                        {photos.map((photo) => {
+                          const isExpanded = expandedPhotoIds.has(photo.id);
+                          return (
                             <li
                               key={photo.id}
-                              className="surface-soft flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs text-zinc-300"
+                              className="surface-soft px-3 py-2 text-xs text-zinc-300"
                             >
-                              <span>
-                                {formatDateDDMMYYYY(photo.capturedAt)}
-                                {photo.note?.trim() ? ` - ${photo.note}` : ""}
-                                {photo.reminderDate ? ` - reminder ${formatDateDDMMYYYY(photo.reminderDate)}` : ""}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleDeletePhoto(photo.id)}
-                                className="btn btn-danger px-2 py-1 text-xs"
-                              >
-                                Delete
-                              </button>
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedPhotoIds((previous) => {
+                                      const next = new Set(previous);
+                                      if (next.has(photo.id)) {
+                                        next.delete(photo.id);
+                                      } else {
+                                        next.add(photo.id);
+                                      }
+                                      return next;
+                                    })
+                                  }
+                                  className="text-left font-medium text-emerald-300 hover:underline"
+                                >
+                                  {formatDateDDMMYYYY(photo.capturedAt)}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePhoto(photo.id)}
+                                  className="btn btn-danger px-2 py-1 text-xs"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                              {photo.note?.trim() ? (
+                                <p className="mt-1 text-zinc-400">{photo.note}</p>
+                              ) : null}
+                              {isExpanded ? (
+                                <img
+                                  src={photo.imageDataUrl}
+                                  alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
+                                  className="mt-2 h-64 w-full rounded-md object-cover"
+                                />
+                              ) : null}
                             </li>
-                          ))}
-                        </ul>
-                      </>
+                          );
+                        })}
+                      </ul>
                     )}
                   </div>
 
@@ -1127,13 +999,6 @@ export default function ProgressPage() {
                 <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
                 <div className="mt-3 space-y-3">
                   <input type="date" value={photoCapturedAt} onChange={(event) => setPhotoCapturedAt(event.target.value)} className="field" />
-                  <input
-                    type="date"
-                    value={photoReminderDate}
-                    onChange={(event) => setPhotoReminderDate(event.target.value)}
-                    className="field"
-                    placeholder="Optional reminder date"
-                  />
                   <textarea
                     value={photoNote}
                     onChange={(event) => setPhotoNote(event.target.value)}
