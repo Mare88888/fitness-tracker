@@ -348,11 +348,11 @@ export default function StartWorkoutPage() {
 
   const getValidationError = (): string | null => {
     if (!workoutName.trim()) {
-      return "Workout name is required.";
+      return "Add a workout name.";
     }
 
     if (exercises.some((exercise) => !exercise.name.trim())) {
-      return "Each exercise must have a name.";
+      return "Name every exercise.";
     }
 
     const invalidSet = exercises.some((exercise) =>
@@ -367,7 +367,7 @@ export default function StartWorkoutPage() {
     );
 
     if (invalidSet) {
-      return "Each set needs reps > 0 or time > 0, and weight >= 0.";
+      return "Each set needs reps or time, plus weight (0+).";
     }
 
     return null;
@@ -485,7 +485,7 @@ export default function StartWorkoutPage() {
       } else {
         initialExercises = [...initialExercises, ...rows];
       }
-      toast.success(`Added ${pendingNames.length} exercise(s) from the library.`);
+      toast.success(`${pendingNames.length} added from library.`);
     }
 
     if (recoveredDraft || pendingNames.length > 0) {
@@ -505,7 +505,7 @@ export default function StartWorkoutPage() {
       setExercises(initialExercises);
       setHasRecoveredDraft(true);
       setDraftTimestamp(draftTs);
-      toast.info("Recovered your unsaved workout draft.");
+      toast.info("Draft restored.");
     } else if (pendingNames.length > 0) {
       setWorkoutName(initialName);
       setExercises(initialExercises);
@@ -541,7 +541,7 @@ export default function StartWorkoutPage() {
         setTemplates(templateData);
         setWeeklyPlan(weeklyPlanData);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to load templates.";
+        const message = error instanceof Error ? error.message : "Templates did not load.";
         toast.error(message);
       } finally {
         setIsLoadingTemplates(false);
@@ -609,21 +609,21 @@ export default function StartWorkoutPage() {
       return null;
     }
     if (draftSaveStatus === "saving") {
-      return "Saving draft...";
+      return "Saving...";
     }
     if (!draftTimestamp) {
-      return "Saved just now";
+      return "Draft saved";
     }
 
     const secondsAgo = Math.max(0, Math.floor((Date.now() - draftTimestamp) / 1000));
     if (secondsAgo < 5) {
-      return "Saved just now";
+      return "Draft saved";
     }
     if (secondsAgo < 60) {
-      return `Saved ${secondsAgo}s ago`;
+      return `Draft · ${secondsAgo}s`;
     }
     const minutesAgo = Math.floor(secondsAgo / 60);
-    return `Saved ${minutesAgo}m ago`;
+    return `Draft · ${minutesAgo}m`;
   };
 
   const discardRecoveredDraft = () => {
@@ -631,7 +631,7 @@ export default function StartWorkoutPage() {
     setWorkoutName("");
     setExercises([createExercise()]);
     setHasRecoveredDraft(false);
-    toast.success("Draft discarded.");
+    toast.success("Draft cleared.");
   };
 
   const applyTemplateById = (templateId: number, options?: { forceWorkoutName?: boolean }) => {
@@ -654,7 +654,7 @@ export default function StartWorkoutPage() {
         })),
       }))
     );
-    toast.success(`Template "${template.name}" applied.`);
+    toast.success(`Applied "${template.name}".`);
     return true;
   };
 
@@ -674,12 +674,12 @@ export default function StartWorkoutPage() {
       const todayPlan = weeklyPlan.find((plan) => plan.dayOfWeek === dayOfWeek);
       if (!todayPlan) {
         const dayLabel = TRAINING_DAYS.find((day) => day.dayOfWeek === dayOfWeek)?.label ?? "today";
-        toast.error(`No template assigned for ${dayLabel}.`);
+        toast.error(`Nothing planned for ${dayLabel}.`);
         return;
       }
       const applied = applyTemplateById(todayPlan.templateId, { forceWorkoutName: true });
       if (!applied) {
-        toast.error("Assigned template was not found. Refresh templates and try again.");
+        toast.error("That template is gone - refresh the list.");
         return;
       }
       setSelectedTemplateId(String(todayPlan.templateId));
@@ -695,7 +695,7 @@ export default function StartWorkoutPage() {
       return;
     }
     const suggestedName = workoutName.trim() ? `${workoutName.trim()} Template` : "New Template";
-    const templateName = window.prompt("Template name", suggestedName);
+    const templateName = window.prompt("Name this template", suggestedName);
     if (!templateName) {
       return;
     }
@@ -707,9 +707,9 @@ export default function StartWorkoutPage() {
         exercises: payload.exercises,
       });
       setTemplates((previous) => [...previous, createdTemplate].sort((a, b) => a.name.localeCompare(b.name)));
-      toast.success(`Template "${createdTemplate.name}" saved.`);
+      toast.success(`Template saved (${createdTemplate.name}).`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to save template.";
+      const message = error instanceof Error ? error.message : "Template did not save.";
       toast.error(message);
     } finally {
       setIsSavingTemplate(false);
@@ -727,9 +727,9 @@ export default function StartWorkoutPage() {
         const withoutCurrentDay = previous.filter((item) => item.dayOfWeek !== dayOfWeek);
         return [...withoutCurrentDay, updated].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
       });
-      toast.success("Weekly plan updated.");
+      toast.success("Plan saved.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update weekly plan.";
+      const message = error instanceof Error ? error.message : "Plan did not save.";
       toast.error(message);
     } finally {
       setIsUpdatingPlanDay(null);
@@ -755,8 +755,8 @@ export default function StartWorkoutPage() {
     try {
       const payload = buildCreateWorkoutPayload();
       const created = await createWorkout(payload);
-      setFeedbackMessage(`Workout created successfully (ID: ${created.id}).`);
-      toast.success(`Workout saved (ID: ${created.id})`);
+      setFeedbackMessage(`Saved workout #${created.id}.`);
+      toast.success(`Saved #${created.id}`);
       clearDraft();
       setHasRecoveredDraft(false);
     } catch (error) {
@@ -766,7 +766,7 @@ export default function StartWorkoutPage() {
         setWorkoutNameError(workoutNameValidation?.message ?? null);
         setValidationMessages(error.validationErrors.map((errorItem) => `${errorItem.field}: ${errorItem.message}`));
       }
-      const message = error instanceof Error ? error.message : "Failed to create workout.";
+      const message = error instanceof Error ? error.message : "Workout did not save.";
       setFeedbackError(message);
       toast.error(message);
     } finally {
@@ -817,10 +817,10 @@ export default function StartWorkoutPage() {
     try {
       const workouts = await getWorkouts();
       setLoadedWorkouts(workouts);
-      setFeedbackMessage(`Loaded ${workouts.length} workout(s) from backend.`);
-      toast.success(`Loaded ${workouts.length} workout(s)`);
+      setFeedbackMessage(`Loaded ${workouts.length} from server.`);
+      toast.success(`Loaded ${workouts.length}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to load workouts.";
+      const message = error instanceof Error ? error.message : "List did not load.";
       setFeedbackError(message);
       toast.error(message);
     } finally {
@@ -880,15 +880,15 @@ export default function StartWorkoutPage() {
                   {hasRecoveredDraft && (
                     <div className="rounded-md border border-amber-500/40 bg-amber-950/25 px-3 py-2 text-sm text-amber-100">
                       <p>
-                        Recovered draft
-                        {draftTimestamp ? ` from ${formatDateTimeDDMMYYYY(draftTimestamp)}` : ""}.
+                        Draft restored
+                        {draftTimestamp ? ` · ${formatDateTimeDDMMYYYY(draftTimestamp)}` : ""}.
                       </p>
                       <button
                         type="button"
                         onClick={discardRecoveredDraft}
                         className="mt-2 text-xs font-medium text-amber-200 underline underline-offset-2"
                       >
-                        Discard draft
+                        Clear draft
                       </button>
                     </div>
                   )}
@@ -904,7 +904,7 @@ export default function StartWorkoutPage() {
                       type="text"
                       value={workoutName}
                       onChange={(event) => setWorkoutName(event.target.value)}
-                      placeholder="e.g. Push Day"
+                      placeholder="Push day"
                       className="field"
                     />
                     {workoutNameError && <p className="mt-1 text-xs text-rose-300">{workoutNameError}</p>}
@@ -924,7 +924,7 @@ export default function StartWorkoutPage() {
                             <textarea
                               value={exercise.note}
                               onChange={(event) => updateExerciseNote(exercise.id, event.target.value)}
-                              placeholder="Exercise note (optional)"
+                              placeholder="Note (optional)"
                               className="field mb-3 min-h-[60px]"
                             />
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-400">
@@ -937,13 +937,11 @@ export default function StartWorkoutPage() {
                                 updateExerciseName(exercise.id, event.target.value)
                               }
                               list={EXERCISE_DATALIST_ID}
-                              placeholder="e.g. Bench Press"
+                              placeholder="Exercise name"
                               className="field"
                             />
                             {exercise.name.trim() && (
-                              <p className="mt-1 text-xs text-zinc-500">
-                                Muscle: {resolveMuscleGroup(exercise.name)}
-                              </p>
+                              <p className="mt-1 text-xs text-zinc-500">{resolveMuscleGroup(exercise.name)}</p>
                             )}
                             {exerciseNameErrors[exercise.id] && (
                               <p className="mt-1 text-xs text-rose-300">{exerciseNameErrors[exercise.id]}</p>
@@ -1061,7 +1059,7 @@ export default function StartWorkoutPage() {
                                     <input
                                       type="text"
                                       inputMode="text"
-                                      placeholder="Time (mm:ss or sec)"
+                                      placeholder="mm:ss or seconds"
                                       value={set.durationSeconds}
                                       onChange={(event) =>
                                         updateSetField(exercise.id, set.id, "durationSeconds", event.target.value)
@@ -1146,12 +1144,9 @@ export default function StartWorkoutPage() {
                   <div className="surface-card p-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-zinc-100">Ready to save?</p>
-                        <p className="text-xs text-zinc-300">
-                          {formValidationError
-                            ? "Fix validation issues before saving."
-                            : "Your workout is valid and ready to store."}
-                        </p>
+                        {!formValidationError && (
+                          <p className="text-xs text-zinc-300">Tap Save workout when ready.</p>
+                        )}
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <button
@@ -1168,7 +1163,7 @@ export default function StartWorkoutPage() {
                           disabled={isLoadingWorkouts}
                           className="btn btn-secondary w-full sm:w-auto"
                         >
-                          {isLoadingWorkouts ? "Loading..." : "Load workouts (integration test)"}
+                          {isLoadingWorkouts ? "Loading..." : "Load workouts (test)"}
                         </button>
                       </div>
                     </div>
@@ -1180,7 +1175,7 @@ export default function StartWorkoutPage() {
                   )}
                   <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Templates</h2>
-                    <p className="mt-1 text-xs text-zinc-400">Save and apply templates fast.</p>
+                    <p className="mt-1 text-xs text-zinc-400">Pick from list or save as new.</p>
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                       <select
                         value={selectedTemplateId}
@@ -1200,7 +1195,7 @@ export default function StartWorkoutPage() {
                         disabled={!selectedTemplateId || isLoadingTemplates}
                         className="btn btn-secondary"
                       >
-                        Start from template
+                        Apply template
                       </button>
                       <button
                         type="button"
@@ -1208,14 +1203,14 @@ export default function StartWorkoutPage() {
                         disabled={isSavingTemplate}
                         className="btn btn-secondary"
                       >
-                        {isSavingTemplate ? "Saving template..." : "Save as template"}
+                        {isSavingTemplate ? "Saving..." : "Save as template"}
                       </button>
                     </div>
                   </div>
 
                   <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
-                    <p className="mt-1 text-xs text-zinc-400">Assign templates to days.</p>
+                    <p className="mt-1 text-xs text-zinc-400">One template per weekday.</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       {TRAINING_DAYS.map((day) => {
                         const dayPlan = weeklyPlan.find((item) => item.dayOfWeek === day.dayOfWeek);
@@ -1245,7 +1240,7 @@ export default function StartWorkoutPage() {
                       disabled={isStartingTodaysPlan || isLoadingTemplates}
                       className="btn btn-secondary mt-3"
                     >
-                      {isStartingTodaysPlan ? "Starting..." : "Start today's planned workout"}
+                      {isStartingTodaysPlan ? "Starting..." : "Use today's plan"}
                     </button>
                   </div>
 
@@ -1275,7 +1270,7 @@ export default function StartWorkoutPage() {
                       <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
                         {loadedWorkouts.map((workout) => (
                           <li key={workout.id}>
-                            #{workout.id} - {workout.name} ({workout.exercises.length} exercise(s))
+                            #{workout.id} · {workout.name} · {workout.exercises.length} ex
                           </li>
                         ))}
                       </ul>
