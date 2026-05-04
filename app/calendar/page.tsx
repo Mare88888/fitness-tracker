@@ -279,21 +279,6 @@ export default function CalendarPage() {
                 </div>
               ) : (
                 <div className="mt-6 space-y-6">
-                  <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700/60 bg-zinc-900/30 px-3 py-3 sm:items-center sm:justify-between">
-                    <p className="w-full text-xs font-medium text-zinc-500 sm:w-auto">Quick links</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Link href="/workouts/start" className="btn btn-primary text-xs">
-                        Start workout
-                      </Link>
-                      <Link href="/" className="btn btn-secondary text-xs">
-                        Dashboard
-                      </Link>
-                      <Link href="/history" className="btn btn-secondary text-xs">
-                        History
-                      </Link>
-                    </div>
-                  </div>
-
                   <div className="surface-card">
                     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <button

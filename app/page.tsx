@@ -537,24 +537,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700/60 bg-zinc-900/30 px-3 py-3 sm:items-center sm:justify-between">
-                    <p className="w-full text-xs font-medium text-zinc-500 sm:w-auto sm:pr-4">Quick actions</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Link href="/workouts/start" className="btn btn-primary text-xs">
-                        Start workout
-                      </Link>
-                      <Link href="/calendar" className="btn btn-secondary text-xs">
-                        Calendar
-                      </Link>
-                      <Link href="/progress" className="btn btn-secondary text-xs">
-                        Body progress
-                      </Link>
-                      <Link href="/history" className="btn btn-secondary text-xs">
-                        History
-                      </Link>
-                    </div>
-                  </div>
-
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-100">Next best set</h2>
