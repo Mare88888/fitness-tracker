@@ -80,6 +80,15 @@ type DistributionSummary = {
   sets: number;
 };
 
+type PhotoReminderItem = {
+  id: number;
+  capturedAt: string;
+  reminderDate: string;
+  note?: string | null;
+  status: "overdue" | "today" | "soon" | "upcoming";
+  daysUntil: number;
+};
+
 function weekKey(dateString: string): string {
   const d = new Date(dateString);
   d.setHours(0, 0, 0, 0);
@@ -569,6 +578,29 @@ export default function ProgressPage() {
 
   const compareBeforePhoto = photos.find((photo) => photo.id === compareBeforeId) ?? null;
   const compareAfterPhoto = photos.find((photo) => photo.id === compareAfterId) ?? null;
+  const upcomingPhotoReminders = useMemo<PhotoReminderItem[]>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return photos
+      .filter((photo) => Boolean(photo.reminderDate))
+      .map((photo) => {
+        const reminderDate = String(photo.reminderDate);
+        const reminder = new Date(reminderDate);
+        reminder.setHours(0, 0, 0, 0);
+        const daysUntil = Math.floor((reminder.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const status: PhotoReminderItem["status"] =
+          daysUntil < 0 ? "overdue" : daysUntil === 0 ? "today" : daysUntil <= 3 ? "soon" : "upcoming";
+        return {
+          id: photo.id,
+          capturedAt: photo.capturedAt,
+          reminderDate,
+          note: photo.note,
+          status,
+          daysUntil,
+        };
+      })
+      .sort((a, b) => a.daysUntil - b.daysUntil);
+  }, [photos]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -749,6 +781,52 @@ export default function ProgressPage() {
                       <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
                       <span className="text-xs text-zinc-400">{photos.length} total</span>
                     </div>
+                    {upcomingPhotoReminders.length > 0 && (
+                      <div className="surface-soft mt-3 p-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-300">
+                          Reminder timeline
+                        </h3>
+                        <ul className="mt-2 space-y-2">
+                          {upcomingPhotoReminders.slice(0, 5).map((item) => {
+                            const statusClass =
+                              item.status === "overdue"
+                                ? "border-red-500/40 bg-red-500/10 text-red-300"
+                                : item.status === "today"
+                                  ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                                  : item.status === "soon"
+                                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                                    : "border-zinc-600 bg-zinc-700/30 text-zinc-300";
+                            const statusLabel =
+                              item.status === "overdue"
+                                ? `${Math.abs(item.daysUntil)}d overdue`
+                                : item.status === "today"
+                                  ? "Today"
+                                  : item.status === "soon"
+                                    ? `In ${item.daysUntil}d`
+                                    : `In ${item.daysUntil}d`;
+                            return (
+                              <li
+                                key={`reminder-${item.id}`}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-800 px-2 py-1.5 text-xs"
+                              >
+                                <div className="text-zinc-200">
+                                  <p className="font-medium">
+                                    Reminder {formatDateDDMMYYYY(item.reminderDate)} for photo from{" "}
+                                    {formatDateTimeDDMMYYYY(item.capturedAt)}
+                                  </p>
+                                  {item.note?.trim() ? (
+                                    <p className="text-zinc-400">{item.note}</p>
+                                  ) : null}
+                                </div>
+                                <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusClass}`}>
+                                  {statusLabel}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
                     {photos.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
                     ) : (
