@@ -518,6 +518,11 @@ export default function ProgressPage() {
         note: photoNote.trim() || undefined,
       });
       setPhotos((previous) => [saved, ...previous].sort((a, b) => b.capturedAt.localeCompare(a.capturedAt)));
+      setExpandedPhotoIds((previous) => {
+        const next = new Set(previous);
+        next.add(saved.id);
+        return next;
+      });
       setPhotoDataUrl(null);
       setPhotoNote("");
       setPhotoCapturedAt(toDateInputValue(new Date()));
@@ -724,7 +729,7 @@ export default function ProgressPage() {
                   <div className="surface-card">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
-                      <span className="text-xs text-zinc-400">{photos.length} total</span>
+                      <span className="text-xs text-zinc-400">{photos.length} total - click date to expand</span>
                     </div>
                     {photos.length === 0 ? (
                       <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
