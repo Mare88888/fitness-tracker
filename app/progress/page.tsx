@@ -4,15 +4,21 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { formatDateDDMMYYYY } from "@/lib/date-format";
+import { formatDateDDMMYYYY, formatDateTimeDDMMYYYY } from "@/lib/date-format";
 import {
   deleteBodyMeasurement,
   getBodyMeasurements,
   upsertBodyMeasurement,
 } from "@/lib/services/body-measurement-service";
+import {
+  createProgressPhoto,
+  deleteProgressPhoto,
+  getProgressPhotos,
+} from "@/lib/services/progress-photo-service";
 import { getWorkouts } from "@/lib/services/workout-service";
 import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preferences";
 import type { BodyMeasurement } from "@/types/body-measurement";
+import type { ProgressPhoto } from "@/types/progress-photo";
 import type { Workout } from "@/types/workout";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -155,11 +161,22 @@ function formatDelta(value: number, suffix = ""): string {
   return `${sign}${rounded}${suffix}`;
 }
 
+function toDateTimeLocalValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
 export default function ProgressPage() {
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
+  const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [metric, setMetric] = useState<MetricKey>("weight");
   const [timeframe, setTimeframe] = useState<Timeframe>("90d");
@@ -180,6 +197,12 @@ export default function ProgressPage() {
   const [chest, setChest] = useState("");
   const [leftArm, setLeftArm] = useState("");
   const [rightArm, setRightArm] = useState("");
+  const [photoCapturedAt, setPhotoCapturedAt] = useState(() => toDateTimeLocalValue(new Date()));
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoNote, setPhotoNote] = useState("");
+  const [photoReminderDate, setPhotoReminderDate] = useState("");
+  const [compareBeforeId, setCompareBeforeId] = useState<number | null>(null);
+  const [compareAfterId, setCompareAfterId] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -227,12 +250,16 @@ export default function ProgressPage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [measurementData, workoutData] = await Promise.all([
+        const [measurementData, workoutData, photoData] = await Promise.all([
           getBodyMeasurements(),
           getWorkouts(),
+          getProgressPhotos(),
         ]);
         setMeasurements(measurementData);
         setWorkouts(workoutData);
+        setPhotos(photoData);
+        setCompareAfterId((previous) => previous ?? photoData[0]?.id ?? null);
+        setCompareBeforeId((previous) => previous ?? photoData[1]?.id ?? photoData[0]?.id ?? null);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to load progress data.";
         toast.error(message);
@@ -252,6 +279,18 @@ export default function ProgressPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (photos.length === 0) {
+      return;
+    }
+    if (compareAfterId == null) {
+      setCompareAfterId(photos[0].id);
+    }
+    if (compareBeforeId == null) {
+      setCompareBeforeId(photos[1]?.id ?? photos[0].id);
+    }
+  }, [photos, compareAfterId, compareBeforeId]);
 
   const fillFormFromEntry = (entry: BodyMeasurement) => {
     setDate(entry.date);
@@ -462,6 +501,75 @@ export default function ProgressPage() {
     }
   };
 
+  const handlePhotoFileChange = async (file: File | null) => {
+    if (!file) {
+      setPhotoDataUrl(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      return;
+    }
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(new Error("Failed to read photo."));
+      reader.readAsDataURL(file);
+    });
+    setPhotoDataUrl(dataUrl);
+  };
+
+  const handleSavePhoto = async () => {
+    if (!photoDataUrl) {
+      toast.error("Please select a photo.");
+      return;
+    }
+    if (!photoCapturedAt) {
+      toast.error("Capture timestamp is required.");
+      return;
+    }
+    setIsSavingPhoto(true);
+    try {
+      const saved = await createProgressPhoto({
+        capturedAt: photoCapturedAt,
+        imageDataUrl: photoDataUrl,
+        note: photoNote.trim() || undefined,
+        reminderDate: photoReminderDate || undefined,
+      });
+      setPhotos((previous) => [saved, ...previous].sort((a, b) => b.capturedAt.localeCompare(a.capturedAt)));
+      setCompareAfterId((previous) => previous ?? saved.id);
+      setCompareBeforeId((previous) => previous ?? saved.id);
+      setPhotoDataUrl(null);
+      setPhotoNote("");
+      setPhotoReminderDate("");
+      setPhotoCapturedAt(toDateTimeLocalValue(new Date()));
+      toast.success("Progress photo saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save progress photo.");
+    } finally {
+      setIsSavingPhoto(false);
+    }
+  };
+
+  const handleDeletePhoto = async (id: number) => {
+    try {
+      await deleteProgressPhoto(id);
+      setPhotos((previous) => previous.filter((entry) => entry.id !== id));
+      if (compareBeforeId === id) {
+        setCompareBeforeId(null);
+      }
+      if (compareAfterId === id) {
+        setCompareAfterId(null);
+      }
+      toast.success("Progress photo removed.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete progress photo.");
+    }
+  };
+
+  const compareBeforePhoto = photos.find((photo) => photo.id === compareBeforeId) ?? null;
+  const compareAfterPhoto = photos.find((photo) => photo.id === compareAfterId) ?? null;
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="flex min-h-screen">
@@ -633,6 +741,94 @@ export default function ProgressPage() {
                           </tbody>
                         </table>
                       </div>
+                    )}
+                  </div>
+
+                  <div className="surface-card">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
+                      <span className="text-xs text-zinc-400">{photos.length} total</span>
+                    </div>
+                    {photos.length === 0 ? (
+                      <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
+                    ) : (
+                      <>
+                        <div className="mt-3 grid gap-3 md:grid-cols-2">
+                          <div className="surface-soft p-3">
+                            <label className="mb-1 block text-xs font-medium text-zinc-300">Before</label>
+                            <select
+                              value={compareBeforeId ?? ""}
+                              onChange={(event) => setCompareBeforeId(Number(event.target.value) || null)}
+                              className="field field-select"
+                            >
+                              <option value="">Select photo</option>
+                              {photos.map((photo) => (
+                                <option key={`before-${photo.id}`} value={photo.id}>
+                                  {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                </option>
+                              ))}
+                            </select>
+                            {compareBeforePhoto ? (
+                              <img
+                                src={compareBeforePhoto.imageDataUrl}
+                                alt="Before progress"
+                                className="mt-2 h-56 w-full rounded-md object-cover"
+                              />
+                            ) : (
+                              <div className="mt-2 flex h-56 items-center justify-center rounded-md border border-zinc-800 text-xs text-zinc-500">
+                                Select a before photo
+                              </div>
+                            )}
+                          </div>
+                          <div className="surface-soft p-3">
+                            <label className="mb-1 block text-xs font-medium text-zinc-300">After</label>
+                            <select
+                              value={compareAfterId ?? ""}
+                              onChange={(event) => setCompareAfterId(Number(event.target.value) || null)}
+                              className="field field-select"
+                            >
+                              <option value="">Select photo</option>
+                              {photos.map((photo) => (
+                                <option key={`after-${photo.id}`} value={photo.id}>
+                                  {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                </option>
+                              ))}
+                            </select>
+                            {compareAfterPhoto ? (
+                              <img
+                                src={compareAfterPhoto.imageDataUrl}
+                                alt="After progress"
+                                className="mt-2 h-56 w-full rounded-md object-cover"
+                              />
+                            ) : (
+                              <div className="mt-2 flex h-56 items-center justify-center rounded-md border border-zinc-800 text-xs text-zinc-500">
+                                Select an after photo
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <ul className="mt-3 space-y-2">
+                          {photos.slice(0, 6).map((photo) => (
+                            <li
+                              key={photo.id}
+                              className="surface-soft flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs text-zinc-300"
+                            >
+                              <span>
+                                {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                {photo.note?.trim() ? ` - ${photo.note}` : ""}
+                                {photo.reminderDate ? ` - reminder ${formatDateDDMMYYYY(photo.reminderDate)}` : ""}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePhoto(photo.id)}
+                                className="btn btn-danger px-2 py-1 text-xs"
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
                     )}
                   </div>
 
@@ -850,6 +1046,50 @@ export default function ProgressPage() {
                       Cancel edit
                     </button>
                   )}
+                </div>
+                <div className="my-5 border-t border-zinc-800" />
+                <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
+                <div className="mt-3 space-y-3">
+                  <input
+                    type="datetime-local"
+                    value={photoCapturedAt}
+                    onChange={(event) => setPhotoCapturedAt(event.target.value)}
+                    className="field"
+                  />
+                  <input
+                    type="date"
+                    value={photoReminderDate}
+                    onChange={(event) => setPhotoReminderDate(event.target.value)}
+                    className="field"
+                    placeholder="Optional reminder date"
+                  />
+                  <textarea
+                    value={photoNote}
+                    onChange={(event) => setPhotoNote(event.target.value)}
+                    placeholder="Optional note (lighting, weight, mood...)"
+                    className="field min-h-[72px]"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => void handlePhotoFileChange(event.target.files?.[0] ?? null)}
+                    className="field file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1 file:text-xs file:font-medium file:text-zinc-100"
+                  />
+                  {photoDataUrl && (
+                    <img
+                      src={photoDataUrl}
+                      alt="Selected progress preview"
+                      className="h-40 w-full rounded-md object-cover"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSavePhoto}
+                    disabled={isSavingPhoto}
+                    className="btn btn-primary w-full"
+                  >
+                    {isSavingPhoto ? "Saving photo..." : "Save photo"}
+                  </button>
                 </div>
               </section>
             </div>
