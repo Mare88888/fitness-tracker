@@ -128,7 +128,10 @@ export function Navbar() {
           >
             Menu
           </button>
-          <div className="text-lg font-semibold text-emerald-300">{APP_NAME}</div>
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-500/80">Fitness app</p>
+            <div className="text-lg font-semibold tracking-tight text-emerald-300">{APP_NAME}</div>
+          </div>
         </div>
         <div className="relative ml-auto" ref={menuRef}>
           <button
@@ -146,6 +149,9 @@ export function Navbar() {
               id="profile-menu"
               className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-zinc-700 bg-zinc-900 p-1 shadow-lg"
             >
+              <p className="px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+                Appearance & account
+              </p>
               <button
                 type="button"
                 onClick={() => applyTheme(isDarkApplied ? "light" : "dark")}

@@ -20,7 +20,8 @@ export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 border-r border-zinc-800 bg-zinc-950/90 backdrop-blur md:flex md:flex-col">
       <div className="border-b border-zinc-800 px-6 py-5">
-        <h2 className="text-lg font-semibold text-emerald-300">{APP_NAME}</h2>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-500/80">Fitness app</p>
+        <h2 className="mt-1 text-lg font-semibold tracking-tight text-emerald-300">{APP_NAME}</h2>
       </div>
       <nav className="px-4 py-4">
         <ul className="space-y-1">
@@ -31,7 +32,7 @@ export function Sidebar() {
                 aria-current={pathname === item.href ? "page" : undefined}
                 className={`block rounded-md px-3 py-2 text-sm font-medium transition ${
                   pathname === item.href
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-emerald-600 text-white shadow-sm"
                     : "text-zinc-300 hover:bg-zinc-800 hover:text-emerald-300"
                 }`}
               >
