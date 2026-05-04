@@ -562,7 +562,7 @@ export default function Home() {
                     <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-100">Next best set</h2>
                       <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                        Suggested loads from your latest sets — use as a starting point, not a prescription.
+                        Suggested loads from your latest sets - use as a starting point, not a prescription.
                       </p>
                       {analytics.nextBestSetSuggestions.length === 0 ? (
                         <p className="mt-4 text-sm text-zinc-400">Log more sets to see suggestions.</p>
@@ -598,7 +598,7 @@ export default function Home() {
                         Exercises with five or more sessions without an estimated 1RM improvement.
                       </p>
                       {analytics.plateauAlerts.length === 0 ? (
-                        <p className="mt-4 text-sm text-zinc-400">No plateau flags right now — keep the momentum.</p>
+                        <p className="mt-4 text-sm text-zinc-400">No plateau flags right now - keep the momentum.</p>
                       ) : (
                         <ul className="mt-4 max-h-[min(28rem,55vh)] space-y-2 overflow-y-auto pr-1 text-sm">
                           {analytics.plateauAlerts.map((item) => (

@@ -1011,7 +1011,7 @@ export default function ProgressPage() {
                                           <option value="">None</option>
                                           {measurementsSortedForPhotoLink.map((entry) => (
                                             <option key={entry.id} value={String(entry.id)}>
-                                              {formatDateDDMMYYYY(entry.date)} —{" "}
+                                              {formatDateDDMMYYYY(entry.date)} -{" "}
                                               {formatBodyMeasurementSummary(entry)}
                                             </option>
                                           ))}
@@ -1139,7 +1139,7 @@ export default function ProgressPage() {
                         <option value="">None</option>
                         {measurementsSortedForPhotoLink.map((entry) => (
                           <option key={entry.id} value={String(entry.id)}>
-                            {formatDateDDMMYYYY(entry.date)} — {formatBodyMeasurementSummary(entry)}
+                            {formatDateDDMMYYYY(entry.date)} - {formatBodyMeasurementSummary(entry)}
                           </option>
                         ))}
                       </select>

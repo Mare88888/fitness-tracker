@@ -460,7 +460,7 @@ export default function CalendarPage() {
 
                   <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-100">Last 21 days</h2>
-                    <p className="mt-1 text-xs text-zinc-400">One square per day — left is oldest, right is today.</p>
+                    <p className="mt-1 text-xs text-zinc-400">One square per day - left is oldest, right is today.</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <div className="flex flex-wrap gap-1" role="img" aria-label="Workout days in the last 21 days">
                         {recentStreakStrip.map((day) => (

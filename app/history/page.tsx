@@ -219,7 +219,7 @@ export default function HistoryPage() {
                   </div>
                   {isFiltered && (
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/80 pt-4">
-                      <p className="text-xs text-zinc-500">Filters active — adjust fields above or clear dates/search.</p>
+                      <p className="text-xs text-zinc-500">Filters active - adjust fields above or clear dates/search.</p>
                       <button
                         type="button"
                         onClick={() => {
