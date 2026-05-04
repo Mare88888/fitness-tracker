@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { formatDateDDMMYYYY, formatDateTimeDDMMYYYY } from "@/lib/date-format";
+import { formatDateDDMMYYYY } from "@/lib/date-format";
 import {
   deleteBodyMeasurement,
   getBodyMeasurements,
@@ -170,13 +170,11 @@ function formatDelta(value: number, suffix = ""): string {
   return `${sign}${rounded}${suffix}`;
 }
 
-function toDateTimeLocalValue(date: Date): string {
+function toDateInputValue(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const minute = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day}T${hour}:${minute}`;
+  return `${year}-${month}-${day}`;
 }
 
 export default function ProgressPage() {
@@ -206,7 +204,7 @@ export default function ProgressPage() {
   const [chest, setChest] = useState("");
   const [leftArm, setLeftArm] = useState("");
   const [rightArm, setRightArm] = useState("");
-  const [photoCapturedAt, setPhotoCapturedAt] = useState(() => toDateTimeLocalValue(new Date()));
+  const [photoCapturedAt, setPhotoCapturedAt] = useState(() => toDateInputValue(new Date()));
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [photoNote, setPhotoNote] = useState("");
   const [photoReminderDate, setPhotoReminderDate] = useState("");
@@ -534,7 +532,7 @@ export default function ProgressPage() {
       return;
     }
     if (!photoCapturedAt) {
-      toast.error("Capture timestamp is required.");
+      toast.error("Photo date is required.");
       return;
     }
     setIsSavingPhoto(true);
@@ -551,7 +549,7 @@ export default function ProgressPage() {
       setPhotoDataUrl(null);
       setPhotoNote("");
       setPhotoReminderDate("");
-      setPhotoCapturedAt(toDateTimeLocalValue(new Date()));
+      setPhotoCapturedAt(toDateInputValue(new Date()));
       toast.success("Progress photo saved.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save progress photo.");
@@ -811,8 +809,8 @@ export default function ProgressPage() {
                               >
                                 <div className="text-zinc-200">
                                   <p className="font-medium">
-                                    Reminder {formatDateDDMMYYYY(item.reminderDate)} for photo from{" "}
-                                    {formatDateTimeDDMMYYYY(item.capturedAt)}
+                                    Reminder {formatDateDDMMYYYY(item.reminderDate)} for photo on{" "}
+                                    {formatDateDDMMYYYY(item.capturedAt)}
                                   </p>
                                   {item.note?.trim() ? (
                                     <p className="text-zinc-400">{item.note}</p>
@@ -842,7 +840,7 @@ export default function ProgressPage() {
                               <option value="">Select photo</option>
                               {photos.map((photo) => (
                                 <option key={`before-${photo.id}`} value={photo.id}>
-                                  {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                  {formatDateDDMMYYYY(photo.capturedAt)}
                                 </option>
                               ))}
                             </select>
@@ -868,7 +866,7 @@ export default function ProgressPage() {
                               <option value="">Select photo</option>
                               {photos.map((photo) => (
                                 <option key={`after-${photo.id}`} value={photo.id}>
-                                  {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                  {formatDateDDMMYYYY(photo.capturedAt)}
                                 </option>
                               ))}
                             </select>
@@ -892,7 +890,7 @@ export default function ProgressPage() {
                               className="surface-soft flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs text-zinc-300"
                             >
                               <span>
-                                {formatDateTimeDDMMYYYY(photo.capturedAt)}
+                                {formatDateDDMMYYYY(photo.capturedAt)}
                                 {photo.note?.trim() ? ` - ${photo.note}` : ""}
                                 {photo.reminderDate ? ` - reminder ${formatDateDDMMYYYY(photo.reminderDate)}` : ""}
                               </span>
@@ -1128,12 +1126,7 @@ export default function ProgressPage() {
                 <div className="my-5 border-t border-zinc-800" />
                 <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
                 <div className="mt-3 space-y-3">
-                  <input
-                    type="datetime-local"
-                    value={photoCapturedAt}
-                    onChange={(event) => setPhotoCapturedAt(event.target.value)}
-                    className="field"
-                  />
+                  <input type="date" value={photoCapturedAt} onChange={(event) => setPhotoCapturedAt(event.target.value)} className="field" />
                   <input
                     type="date"
                     value={photoReminderDate}

@@ -4,6 +4,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\BodyMeasurementController.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\ExerciseCatalogController.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\HealthController.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\ProgressPhotoController.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\TemplateController.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\controller\WorkoutController.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\AuthResponse.java
@@ -12,6 +13,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ExerciseDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ExerciseSetDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\LoginRequest.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ProgressPhotoDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\RegisterRequest.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WeeklyPlanAssignmentRequest.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WeeklyPlanDto.java
@@ -27,6 +29,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\BodyMeasurement.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\Exercise.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\ExerciseCatalog.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\ProgressPhoto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\RefreshToken.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\Set.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\model\TemplateExercise.java
@@ -37,6 +40,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\AppUserRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\BodyMeasurementRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\ExerciseCatalogRepository.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\ProgressPhotoRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\RefreshTokenRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WeeklyPlanRepository.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\repository\WorkoutRepository.java
@@ -50,6 +54,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\BodyMeasurementService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\ExerciseCatalogService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\HealthService.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\ProgressPhotoService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\RefreshTokenService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\WorkoutService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\WorkoutTemplateService.java

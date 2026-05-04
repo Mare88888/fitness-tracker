@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +29,7 @@ public class ProgressPhoto {
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime capturedAt;
+    private LocalDate capturedAt;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String imageDataUrl;
