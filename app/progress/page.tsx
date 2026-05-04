@@ -908,7 +908,7 @@ export default function ProgressPage() {
                                       return next;
                                     })
                                   }
-                                  className="cursor-pointer text-left font-medium text-emerald-300 hover:underline"
+                                  className="cursor-pointer text-left text-sm font-semibold text-emerald-300 hover:underline"
                                 >
                                   {formatDateDDMMYYYY(photo.capturedAt)}
                                 </button>
@@ -921,7 +921,7 @@ export default function ProgressPage() {
                                 </button>
                               </div>
                               {photo.note?.trim() ? (
-                                <p className="mt-1 text-zinc-400">{photo.note}</p>
+                                <p className="mt-1 text-[13px] text-zinc-400">{photo.note}</p>
                               ) : null}
                               {isExpanded ? (
                                 <img
