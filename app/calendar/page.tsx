@@ -4,6 +4,8 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { APP_NAME } from "@/lib/constants";
 import { formatDateDDMMYYYY } from "@/lib/date-format";
 import { getWorkouts } from "@/lib/services/workout-service";
 import { getWeeklyPlan } from "@/lib/services/template-service";
@@ -213,20 +215,42 @@ export default function CalendarPage() {
           <Navbar />
           <PageContainer>
             <section className="surface-page">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Calendar</h1>
-                <div className="flex gap-2">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
+
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
+                  <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Calendar</h1>
+                  <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+                    See training days, routine plan coverage, and streaks. Tap a highlighted day to jump to that
+                    session.
+                  </p>
+                </div>
+                <div
+                  className="inline-flex shrink-0 rounded-lg border border-zinc-700/80 bg-zinc-950/80 p-0.5 shadow-inner"
+                  role="group"
+                  aria-label="Calendar view"
+                >
                   <button
                     type="button"
                     onClick={() => setView("month")}
-                    className={`btn ${view === "month" ? "btn-primary" : "btn-secondary"}`}
+                    className={`rounded-md px-4 py-2 text-xs font-semibold transition-colors ${
+                      view === "month"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
                   >
                     Month
                   </button>
                   <button
                     type="button"
                     onClick={() => setView("week")}
-                    className={`btn ${view === "week" ? "btn-primary" : "btn-secondary"}`}
+                    className={`rounded-md px-4 py-2 text-xs font-semibold transition-colors ${
+                      view === "week"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
                   >
                     Week
                   </button>
@@ -234,62 +258,130 @@ export default function CalendarPage() {
               </div>
 
               {isLoading ? (
-                <p className="mt-4 text-sm text-zinc-300">Loading calendar...</p>
+                <div className="mt-6 space-y-4">
+                  <div className="surface-card flex flex-wrap items-center justify-between gap-3">
+                    <Skeleton className="h-9 w-24 rounded-md" />
+                    <Skeleton className="h-5 w-40 max-w-full" />
+                    <Skeleton className="h-9 w-24 rounded-md" />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[0, 1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-22 w-full rounded-xl border border-zinc-800/80" />
+                    ))}
+                  </div>
+                  <Skeleton className="h-72 w-full rounded-xl border border-zinc-800/80" />
+                </div>
               ) : workouts.length === 0 ? (
-                <div className="mt-4">
+                <div className="mt-6">
                   <EmptyState
                     title="No workouts logged yet"
-                    description="Log workouts to see completion, missed plan days, and streaks."
+                    description="Log sessions to see your calendar heatmap, streak strip, and planned-day hints."
+                    actionLabel="Start workout"
+                    actionHref="/workouts/start"
                   />
                 </div>
               ) : (
-                <div className="mt-4 space-y-4">
-                  <div className="surface-card flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <button type="button" onClick={goPrev} className="btn btn-secondary px-2 py-1">
-                        Prev
-                      </button>
-                      <button type="button" onClick={goNext} className="btn btn-secondary px-2 py-1">
-                        Next
-                      </button>
-                    </div>
-                    <p className="text-sm font-semibold text-zinc-100">{titleLabel}</p>
-                  </div>
-
-                  <div className="surface-card grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="surface-soft px-3 py-2">
-                      <p className="text-xs text-zinc-400">Planned days</p>
-                      <p className="text-xl font-semibold text-zinc-100">{periodStats.plannedDays}</p>
-                    </div>
-                    <div className="surface-soft px-3 py-2">
-                      <p className="text-xs text-zinc-400">Completed planned</p>
-                      <p className="text-xl font-semibold text-emerald-300">{periodStats.completedPlannedDays}</p>
-                    </div>
-                    <div className="surface-soft px-3 py-2">
-                      <p className="text-xs text-zinc-400">Missed planned</p>
-                      <p className="text-xl font-semibold text-rose-300">{periodStats.missed}</p>
-                    </div>
-                    <div className="surface-soft px-3 py-2">
-                      <p className="text-xs text-zinc-400">Current streak</p>
-                      <p className="text-xl font-semibold text-zinc-100">
-                        {streak} day{streak === 1 ? "" : "s"}
-                      </p>
-                      <p className="text-[11px] text-zinc-500">Goal: {weeklyGoal}/week</p>
+                <div className="mt-6 space-y-6">
+                  <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700/60 bg-zinc-900/30 px-3 py-3 sm:items-center sm:justify-between">
+                    <p className="w-full text-xs font-medium text-zinc-500 sm:w-auto">Quick links</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href="/workouts/start" className="btn btn-primary text-xs">
+                        Start workout
+                      </Link>
+                      <Link href="/" className="btn btn-secondary text-xs">
+                        Dashboard
+                      </Link>
+                      <Link href="/history" className="btn btn-secondary text-xs">
+                        History
+                      </Link>
                     </div>
                   </div>
 
                   <div className="surface-card">
-                    <div className="mb-2 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <button
+                        type="button"
+                        onClick={goPrev}
+                        className="btn btn-secondary order-2 px-3 py-2 text-xs sm:order-1"
+                        aria-label={view === "month" ? "Previous month" : "Previous week"}
+                      >
+                        ← Previous
+                      </button>
+                      <p className="order-1 text-center text-sm font-semibold text-zinc-100 sm:order-2 sm:px-4">
+                        {titleLabel}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={goNext}
+                        className="btn btn-secondary order-3 px-3 py-2 text-xs"
+                        aria-label={view === "month" ? "Next month" : "Next week"}
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="surface-card transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Planned days</p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-zinc-100">
+                        {periodStats.plannedDays}
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500">Days in view with a routine template.</p>
+                    </div>
+                    <div className="surface-card transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                        Completed planned
+                      </p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-emerald-300">
+                        {periodStats.completedPlannedDays}
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500">You logged at least one workout.</p>
+                    </div>
+                    <div className="surface-card transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Missed planned</p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-rose-300">
+                        {periodStats.missed}
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500">Past planned days with no session.</p>
+                    </div>
+                    <div className="surface-card transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                        Current streak
+                      </p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-zinc-100">
+                        {streak}
+                        <span className="ml-1 text-base font-medium text-zinc-500">
+                          day{streak === 1 ? "" : "s"}
+                        </span>
+                      </p>
+                      <p className="mt-2 text-[11px] text-zinc-500">Weekly goal: {weeklyGoal} sessions.</p>
+                    </div>
+                  </div>
+
+                  <div className="surface-card">
+                    <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                      <div>
+                        <h2 className="text-sm font-semibold text-zinc-100">
+                          {view === "month" ? "Month view" : "Week view"}
+                        </h2>
+                        <p className="mt-0.5 text-xs text-zinc-400">
+                          Green = logged · Outline = today · Red tint = missed plan
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-500 sm:gap-2">
                       {dayLabels.map((label) => (
                         <span key={label}>{label}</span>
                       ))}
                     </div>
-                    <div className="grid grid-cols-7 gap-y-3 text-center">
+                    <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
                       {days.map((day) => (
                         <div
                           key={day.dateKey}
-                          className={`flex min-h-[40px] items-center justify-center text-sm ${day.inCurrentMonth ? "text-zinc-200" : "text-zinc-600"
-                            }`}
+                          className={`flex min-h-11 items-center justify-center text-sm ${
+                            day.inCurrentMonth ? "text-zinc-200" : "text-zinc-600"
+                          }`}
                         >
                           <button
                             type="button"
@@ -302,13 +394,17 @@ export default function CalendarPage() {
                             ]
                               .filter(Boolean)
                               .join(" | ")}
-                            className={`inline-flex h-8 w-8 items-center justify-center rounded-full font-semibold transition ${day.workoutCount > 0
-                              ? "bg-green-400 text-zinc-950 hover:bg-green-300 cursor-pointer"
-                              : day.isToday
-                                ? "border border-emerald-500 text-emerald-300"
+                            className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                              day.workoutCount > 0
+                                ? "cursor-pointer bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                                : day.isToday
+                                  ? "border-2 border-emerald-500/80 text-emerald-200"
+                                  : "text-zinc-400 hover:bg-zinc-800/80"
+                            } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""} ${
+                              selectedDateKey === day.dateKey
+                                ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-zinc-950"
                                 : ""
-                              } ${day.isMissedPlannedDay && day.workoutCount === 0 ? "text-rose-300" : ""} ${selectedDateKey === day.dateKey ? "ring-2 ring-emerald-200" : ""
-                              }`}
+                            }`}
                           >
                             {day.date.getDate()}
                           </button>
@@ -317,18 +413,21 @@ export default function CalendarPage() {
                     </div>
                   </div>
 
-                  {selectedDateKey && (
+                  {selectedDateKey ? (
                     <div className="surface-card">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-semibold text-zinc-100">
-                          Workouts on {formatDateDDMMYYYY(selectedDateKey)}
-                        </h2>
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <h2 className="text-sm font-semibold text-zinc-100">
+                            {formatDateDDMMYYYY(selectedDateKey)}
+                          </h2>
+                          <p className="text-xs text-zinc-400">Sessions you logged on this day.</p>
+                        </div>
                         <button
                           type="button"
                           onClick={() => setSelectedDateKey(null)}
-                          className="btn btn-secondary px-2 py-1 text-xs"
+                          className="btn btn-ghost px-3 py-1.5 text-xs"
                         >
-                          Clear
+                          Clear selection
                         </button>
                       </div>
                       {selectedDayWorkouts.length === 0 ? (
@@ -338,15 +437,18 @@ export default function CalendarPage() {
                           {selectedDayWorkouts.map((workout) => (
                             <li
                               key={workout.id}
-                              className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm"
+                              className="surface-soft flex flex-wrap items-center justify-between gap-3 border-zinc-700/50 px-3 py-3 text-sm transition-colors hover:border-zinc-600"
                             >
-                              <div>
+                              <div className="min-w-0">
                                 <p className="font-semibold text-zinc-100">{workout.name}</p>
                                 <p className="text-xs text-zinc-400">
                                   {workout.exercises.length} exercise{workout.exercises.length === 1 ? "" : "s"}
                                 </p>
                               </div>
-                              <Link href={`/history/${workout.id}`} className="btn btn-secondary px-2 py-1 text-xs">
+                              <Link
+                                href={`/history/${workout.id}`}
+                                className="btn btn-secondary shrink-0 px-3 py-1.5 text-xs"
+                              >
                                 View
                               </Link>
                             </li>
@@ -354,18 +456,31 @@ export default function CalendarPage() {
                         </ul>
                       )}
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="surface-card">
-                    <h2 className="text-sm font-semibold text-zinc-100">Streak visualization (last 21 days)</h2>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {recentStreakStrip.map((day) => (
-                        <span
-                          key={day.key}
-                          title={formatDateDDMMYYYY(day.key)}
-                          className={`h-3 w-3 rounded-sm ${day.hasWorkout ? "bg-emerald-500" : "bg-zinc-700"}`}
-                        />
-                      ))}
+                    <h2 className="text-sm font-semibold text-zinc-100">Last 21 days</h2>
+                    <p className="mt-1 text-xs text-zinc-400">One square per day — left is oldest, right is today.</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <div className="flex flex-wrap gap-1" role="img" aria-label="Workout days in the last 21 days">
+                        {recentStreakStrip.map((day) => (
+                          <span
+                            key={day.key}
+                            title={formatDateDDMMYYYY(day.key)}
+                            className={`h-3.5 w-3.5 rounded-sm sm:h-4 sm:w-4 ${
+                              day.hasWorkout ? "bg-emerald-500" : "bg-zinc-700"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" /> Workout
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-sm bg-zinc-700" /> Rest
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
