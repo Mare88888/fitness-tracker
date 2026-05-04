@@ -14,6 +14,8 @@ public record ProgressPhotoDto(
         String imageDataUrl,
         @Size(max = 400, message = "Photo note cannot exceed 400 characters.")
         String note,
-        LocalDate reminderDate
+        LocalDate reminderDate,
+        Long bodyMeasurementId,
+        BodyMeasurementDto linkedMeasurement
 ) {
 }

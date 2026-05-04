@@ -168,6 +168,17 @@ function toDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function formatBodyMeasurementSummary(entry: BodyMeasurement): string {
+  const parts = [
+    entry.weight != null ? `W ${entry.weight}kg` : null,
+    entry.waist != null ? `Waist ${entry.waist}cm` : null,
+    entry.chest != null ? `Chest ${entry.chest}cm` : null,
+    entry.leftArm != null ? `L arm ${entry.leftArm}cm` : null,
+    entry.rightArm != null ? `R arm ${entry.rightArm}cm` : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" | ") : "No values recorded";
+}
+
 export default function ProgressPage() {
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
   const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
@@ -198,7 +209,13 @@ export default function ProgressPage() {
   const [photoCapturedAt, setPhotoCapturedAt] = useState(() => toDateInputValue(new Date()));
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [photoNote, setPhotoNote] = useState("");
+  const [photoLinkedMeasurementId, setPhotoLinkedMeasurementId] = useState("");
   const [expandedPhotoIds, setExpandedPhotoIds] = useState<Set<number>>(new Set());
+
+  const measurementsSortedForPhotoLink = useMemo(
+    () => [...measurements].sort((a, b) => b.date.localeCompare(a.date)),
+    [measurements],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -512,10 +529,15 @@ export default function ProgressPage() {
     }
     setIsSavingPhoto(true);
     try {
+      const linkedNumeric =
+        photoLinkedMeasurementId.trim() === "" ? undefined : Number(photoLinkedMeasurementId);
       const saved = await createProgressPhoto({
         capturedAt: photoCapturedAt,
         imageDataUrl: photoDataUrl,
         note: photoNote.trim() || undefined,
+        ...(linkedNumeric != null && !Number.isNaN(linkedNumeric)
+          ? { bodyMeasurementId: linkedNumeric }
+          : {}),
       });
       setPhotos((previous) => [saved, ...previous].sort((a, b) => b.capturedAt.localeCompare(a.capturedAt)));
       setExpandedPhotoIds((previous) => {
@@ -525,6 +547,7 @@ export default function ProgressPage() {
       });
       setPhotoDataUrl(null);
       setPhotoNote("");
+      setPhotoLinkedMeasurementId("");
       setPhotoCapturedAt(toDateInputValue(new Date()));
       toast.success("Progress photo saved.");
     } catch (error) {
@@ -843,17 +866,7 @@ export default function ProgressPage() {
                             <li key={entry.id} className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm">
                               <div className="text-zinc-200">
                                 <p className="font-medium">{entry.formattedDate ?? formatDateDDMMYYYY(entry.date)}</p>
-                                <p className="text-xs text-zinc-400">
-                                  {[
-                                    entry.weight != null ? `W ${entry.weight}kg` : null,
-                                    entry.waist != null ? `Waist ${entry.waist}cm` : null,
-                                    entry.chest != null ? `Chest ${entry.chest}cm` : null,
-                                    entry.leftArm != null ? `L arm ${entry.leftArm}cm` : null,
-                                    entry.rightArm != null ? `R arm ${entry.rightArm}cm` : null,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" | ")}
-                                </p>
+                                <p className="text-xs text-zinc-400">{formatBodyMeasurementSummary(entry)}</p>
                               </div>
                               <button
                                 type="button"
@@ -924,11 +937,27 @@ export default function ProgressPage() {
                                 <p className="mt-1 text-[13px] text-zinc-400">{photo.note}</p>
                               ) : null}
                               {isExpanded ? (
-                                <img
-                                  src={photo.imageDataUrl}
-                                  alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
-                                  className="mt-2 h-64 w-full rounded-md object-cover"
-                                />
+                                <>
+                                  <img
+                                    src={photo.imageDataUrl}
+                                    alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
+                                    className="mt-2 h-64 w-full rounded-md object-cover"
+                                  />
+                                  {photo.linkedMeasurement ? (
+                                    <div className="mt-2 rounded-md border border-zinc-700/80 bg-zinc-900/40 px-3 py-2">
+                                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                                        Linked measurements
+                                      </p>
+                                      <p className="mt-1 text-[13px] font-medium text-zinc-200">
+                                        {photo.linkedMeasurement.formattedDate ??
+                                          formatDateDDMMYYYY(photo.linkedMeasurement.date)}
+                                      </p>
+                                      <p className="mt-0.5 text-[13px] text-zinc-400">
+                                        {formatBodyMeasurementSummary(photo.linkedMeasurement)}
+                                      </p>
+                                    </div>
+                                  ) : null}
+                                </>
                               ) : null}
                             </li>
                           );
@@ -1007,6 +1036,23 @@ export default function ProgressPage() {
                   <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
                   <div className="mt-3 space-y-3">
                     <input type="date" value={photoCapturedAt} onChange={(event) => setPhotoCapturedAt(event.target.value)} className="field" />
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-zinc-300">
+                        Link measurement (optional)
+                      </label>
+                      <select
+                        value={photoLinkedMeasurementId}
+                        onChange={(event) => setPhotoLinkedMeasurementId(event.target.value)}
+                        className="field field-select"
+                      >
+                        <option value="">None</option>
+                        {measurementsSortedForPhotoLink.map((entry) => (
+                          <option key={entry.id} value={String(entry.id)}>
+                            {formatDateDDMMYYYY(entry.date)} — {formatBodyMeasurementSummary(entry)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <textarea
                       value={photoNote}
                       onChange={(event) => setPhotoNote(event.target.value)}

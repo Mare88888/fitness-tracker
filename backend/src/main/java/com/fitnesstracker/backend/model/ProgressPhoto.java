@@ -40,6 +40,10 @@ public class ProgressPhoto {
     private LocalDate reminderDate;
 
     @ManyToOne
+    @JoinColumn(name = "body_measurement_id")
+    private BodyMeasurement linkedMeasurement;
+
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private AppUser owner;
 }
