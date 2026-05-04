@@ -908,7 +908,7 @@ export default function ProgressPage() {
                                       return next;
                                     })
                                   }
-                                  className="text-left font-medium text-emerald-300 hover:underline"
+                                  className="cursor-pointer text-left font-medium text-emerald-300 hover:underline"
                                 >
                                   {formatDateDDMMYYYY(photo.capturedAt)}
                                 </button>
