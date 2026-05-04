@@ -1283,7 +1283,7 @@ export default function StartWorkoutPage() {
                   ) : (
                     <EmptyState
                       title="No workouts loaded"
-                      description="Use 'Load workouts' - fetch your saved workouts from the backend."
+                      description="Use Load workouts above."
                     />
                   )}
                 </div>

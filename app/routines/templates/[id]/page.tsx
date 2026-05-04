@@ -227,7 +227,7 @@ export default function EditTemplatePage() {
               </div>
 
               {isLoading || !template ? (
-                <p className="text-sm text-zinc-400">Loading template...</p>
+                <p className="text-sm text-zinc-400">Loading...</p>
               ) : (
                 <div className="space-y-4">
                   <div>

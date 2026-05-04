@@ -129,7 +129,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
               {!isLoading && !error && !workout && (
                 <EmptyState
                   title="Workout not found"
-                  description="The workout may be deleted - or the URL is incorrect."
+                  description="Missing or deleted - try history again."
                   actionLabel="Back to history"
                   actionHref="/history"
                 />
@@ -144,9 +144,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                         <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
                           {workout.name}
                         </h1>
-                        <p className="mt-1 text-sm text-zinc-400">
-                          Date: {workout.formattedDate ?? workout.date}
-                        </p>
+                        <p className="mt-1 text-sm text-zinc-400">{workout.formattedDate ?? workout.date}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <span className="rounded-full border border-zinc-700 bg-zinc-800/70 px-2 py-1 text-xs font-medium text-zinc-300">
                             {workout.exercises.length} exercise{workout.exercises.length === 1 ? "" : "s"}
@@ -177,7 +175,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                   {workout.exercises.length === 0 ? (
                     <EmptyState
                       title="No exercises in this workout"
-                      description="Add exercises when creating workouts - then details appear here."
+                      description="This log has no moves yet."
                     />
                   ) : (
                     <div className="space-y-3">
@@ -234,9 +232,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
         isOpen={isDeleteModalOpen && Boolean(workout)}
         title="Delete workout?"
         description={
-          workout
-            ? `This will delete ${workout.name}. You can still undo from the toast.`
-            : ""
+          workout ? `Removes ${workout.name}. Undo from the toast.` : ""
         }
         confirmLabel="Delete"
         cancelLabel="Cancel"

@@ -118,9 +118,7 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
           {isSubmitting ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
         {!isFormValid && (
-          <p className="text-xs text-zinc-500">
-            Username must be at least 3 characters and password at least 6 characters.
-          </p>
+          <p className="text-xs text-zinc-500">Username 3+ chars, password 6+.</p>
         )}
 
         {success && (
@@ -142,13 +140,21 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
         )}
 
         <p className="text-sm text-zinc-400">
-          {isLogin ? "No account yet?" : "Already have an account?"}{" "}
-          <Link
-            href={isLogin ? "/auth/register" : "/auth/login"}
-            className="font-medium text-zinc-100 underline-offset-4 hover:underline"
-          >
-            {isLogin ? "Create one" : "Login"}
-          </Link>
+          {isLogin ? (
+            <>
+              New here?{" "}
+              <Link href="/auth/register" className="font-medium text-zinc-100 underline-offset-4 hover:underline">
+                Register
+              </Link>
+            </>
+          ) : (
+            <>
+              Have an account?{" "}
+              <Link href="/auth/login" className="font-medium text-zinc-100 underline-offset-4 hover:underline">
+                Login
+              </Link>
+            </>
+          )}
         </p>
       </form>
     </section>

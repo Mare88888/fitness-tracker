@@ -302,7 +302,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
               </Link>
               <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
               <h1 className="text-2xl font-semibold text-zinc-100">Edit workout</h1>
-              {isLoading && <p className="mt-3 text-sm text-zinc-400">Loading workout...</p>}
+              {isLoading && <p className="mt-3 text-sm text-zinc-400">Loading...</p>}
               {error && (
                 <p className="mt-3 rounded-md border border-rose-500/40 bg-rose-950/25 px-3 py-2 text-sm text-rose-100">
                   {error}
@@ -310,7 +310,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
               )}
               {!isLoading && !payload && !error && (
                 <div className="mt-4">
-                  <EmptyState title="Workout not found" description="Unable to edit this workout." />
+                  <EmptyState title="Workout not found" description="Bad link or it was removed." />
                 </div>
               )}
               {!isLoading && payload && (
@@ -646,7 +646,7 @@ export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
                   </button>
                   <div className="surface-card flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm text-zinc-300">
-                      {formValidationError ? "Fix validation issues before saving." : "Ready to save changes."}
+                      {formValidationError ? "Fix errors to enable save." : "Ready to save."}
                     </p>
                     <button
                       type="button"

@@ -96,7 +96,7 @@ export default function RoutinesPage() {
                     {templates.length === 0 ? (
                       <EmptyState
                         title="No templates yet"
-                        description="Create templates on the Start Workout page."
+                        description="Save one from Start Workout."
                       />
                     ) : (
                       <ul className="mt-2 space-y-2 text-sm text-zinc-300">
@@ -136,7 +136,7 @@ export default function RoutinesPage() {
                     {weeklyPlan.length === 0 ? (
                       <EmptyState
                         title="No weekly plan yet"
-                        description="Assign templates to days on the Start Workout page."
+                        description="Set weekdays on Start Workout."
                       />
                     ) : (
                       <ul className="mt-2 space-y-2 text-sm text-zinc-300">
@@ -163,7 +163,7 @@ export default function RoutinesPage() {
         title="Delete template?"
         description={
           templatePendingDelete
-            ? `This will remove "${templatePendingDelete.name}" and any weekly plan assignment using it.`
+            ? `Removes "${templatePendingDelete.name}" and weekday picks.`
             : ""
         }
         confirmLabel="Delete"
