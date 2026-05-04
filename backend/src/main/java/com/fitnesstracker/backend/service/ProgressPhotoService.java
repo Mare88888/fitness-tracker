@@ -1,6 +1,7 @@
 package com.fitnesstracker.backend.service;
 
 import com.fitnesstracker.backend.dto.BodyMeasurementDto;
+import com.fitnesstracker.backend.dto.PatchProgressPhotoMeasurementDto;
 import com.fitnesstracker.backend.dto.ProgressPhotoDto;
 import com.fitnesstracker.backend.model.AppUser;
 import com.fitnesstracker.backend.model.BodyMeasurement;
@@ -9,6 +10,7 @@ import com.fitnesstracker.backend.repository.AppUserRepository;
 import com.fitnesstracker.backend.repository.BodyMeasurementRepository;
 import com.fitnesstracker.backend.repository.ProgressPhotoRepository;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +54,17 @@ public class ProgressPhotoService {
         return bodyMeasurementRepository
                 .findByIdAndOwner(measurementId, owner)
                 .orElseThrow(() -> new IllegalArgumentException("Measurement not found or does not belong to you."));
+    }
+
+    @Transactional
+    public Optional<ProgressPhotoDto> patchLinkedMeasurement(
+            Long photoId, PatchProgressPhotoMeasurementDto dto, String username) {
+        AppUser currentUser = getCurrentUser(username);
+        return progressPhotoRepository.findByIdAndOwner(photoId, currentUser).map(photo -> {
+            BodyMeasurement linked = resolveLinkedMeasurement(dto.bodyMeasurementId(), currentUser);
+            photo.setLinkedMeasurement(linked);
+            return toDto(progressPhotoRepository.save(photo));
+        });
     }
 
     @Transactional

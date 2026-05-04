@@ -17,3 +17,8 @@ export type CreateProgressPhotoInput = {
   reminderDate?: string;
   bodyMeasurementId?: number | null;
 };
+
+/** PATCH body: pass `null` to clear the link. */
+export type PatchProgressPhotoLinkedMeasurementInput = {
+  bodyMeasurementId: number | null;
+};

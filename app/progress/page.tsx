@@ -14,6 +14,7 @@ import {
   createProgressPhoto,
   deleteProgressPhoto,
   getProgressPhotos,
+  patchProgressPhotoLinkedMeasurement,
 } from "@/lib/services/progress-photo-service";
 import { getWorkouts } from "@/lib/services/workout-service";
 import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preferences";
@@ -211,6 +212,8 @@ export default function ProgressPage() {
   const [photoNote, setPhotoNote] = useState("");
   const [photoLinkedMeasurementId, setPhotoLinkedMeasurementId] = useState("");
   const [expandedPhotoIds, setExpandedPhotoIds] = useState<Set<number>>(new Set());
+  const [photoLinkDraftByPhotoId, setPhotoLinkDraftByPhotoId] = useState<Partial<Record<number, string>>>({});
+  const [updatingPhotoLinkId, setUpdatingPhotoLinkId] = useState<number | null>(null);
 
   const measurementsSortedForPhotoLink = useMemo(
     () => [...measurements].sort((a, b) => b.date.localeCompare(a.date)),
@@ -569,9 +572,47 @@ export default function ProgressPage() {
         next.delete(id);
         return next;
       });
+      setPhotoLinkDraftByPhotoId((previous) => {
+        const next = { ...previous };
+        delete next[id];
+        return next;
+      });
       toast.success("Progress photo removed.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete progress photo.");
+    }
+  };
+
+  const handleSavePhotoLinkedMeasurement = async (photo: ProgressPhoto) => {
+    const savedId =
+      photo.bodyMeasurementId != null && !Number.isNaN(photo.bodyMeasurementId)
+        ? String(photo.bodyMeasurementId)
+        : "";
+    const draft =
+      photoLinkDraftByPhotoId[photo.id] !== undefined ? photoLinkDraftByPhotoId[photo.id]! : savedId;
+    const linkedNumeric = draft.trim() === "" ? null : Number(draft);
+    if (linkedNumeric != null && Number.isNaN(linkedNumeric)) {
+      toast.error("Invalid measurement selection.");
+      return;
+    }
+    setUpdatingPhotoLinkId(photo.id);
+    try {
+      const updated = await patchProgressPhotoLinkedMeasurement(photo.id, {
+        bodyMeasurementId: linkedNumeric,
+      });
+      setPhotos((previous) =>
+        previous.map((entry) => (entry.id === photo.id ? updated : entry)),
+      );
+      setPhotoLinkDraftByPhotoId((previous) => {
+        const next = { ...previous };
+        delete next[photo.id];
+        return next;
+      });
+      toast.success(linkedNumeric == null ? "Measurement link removed." : "Measurement link updated.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update measurement link.");
+    } finally {
+      setUpdatingPhotoLinkId(null);
     }
   };
 
@@ -902,6 +943,14 @@ export default function ProgressPage() {
                       <ul className="mt-3 space-y-2">
                         {photos.map((photo) => {
                           const isExpanded = expandedPhotoIds.has(photo.id);
+                          const savedMeasurementLink =
+                            photo.bodyMeasurementId != null ? String(photo.bodyMeasurementId) : "";
+                          const draftMeasurementLink =
+                            photoLinkDraftByPhotoId[photo.id] !== undefined
+                              ? photoLinkDraftByPhotoId[photo.id]
+                              : savedMeasurementLink;
+                          const measurementLinkUnchanged =
+                            draftMeasurementLink === savedMeasurementLink;
                           return (
                             <li
                               key={photo.id}
@@ -943,20 +992,62 @@ export default function ProgressPage() {
                                     alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
                                     className="mt-2 h-64 w-full rounded-md object-cover"
                                   />
-                                  {photo.linkedMeasurement ? (
-                                    <div className="mt-2 rounded-md border border-zinc-700/80 bg-zinc-900/40 px-3 py-2">
-                                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-                                        Linked measurements
-                                      </p>
-                                      <p className="mt-1 text-[13px] font-medium text-zinc-200">
-                                        {photo.linkedMeasurement.formattedDate ??
-                                          formatDateDDMMYYYY(photo.linkedMeasurement.date)}
-                                      </p>
-                                      <p className="mt-0.5 text-[13px] text-zinc-400">
-                                        {formatBodyMeasurementSummary(photo.linkedMeasurement)}
-                                      </p>
+                                  <div className="mt-2 space-y-2">
+                                    <div className="flex flex-wrap items-end gap-2">
+                                      <div className="min-w-[min(100%,220px)] flex-1">
+                                        <label className="mb-1 block text-[11px] font-medium text-zinc-400">
+                                          Linked measurement
+                                        </label>
+                                        <select
+                                          value={draftMeasurementLink}
+                                          onChange={(event) =>
+                                            setPhotoLinkDraftByPhotoId((previous) => ({
+                                              ...previous,
+                                              [photo.id]: event.target.value,
+                                            }))
+                                          }
+                                          className="field field-select text-xs"
+                                        >
+                                          <option value="">None</option>
+                                          {measurementsSortedForPhotoLink.map((entry) => (
+                                            <option key={entry.id} value={String(entry.id)}>
+                                              {formatDateDDMMYYYY(entry.date)} —{" "}
+                                              {formatBodyMeasurementSummary(entry)}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        disabled={
+                                          measurementLinkUnchanged ||
+                                          updatingPhotoLinkId === photo.id
+                                        }
+                                        onClick={() => void handleSavePhotoLinkedMeasurement(photo)}
+                                        className="btn btn-secondary px-3 py-2 text-xs shrink-0"
+                                      >
+                                        {updatingPhotoLinkId === photo.id ? "Saving..." : "Save link"}
+                                      </button>
                                     </div>
-                                  ) : null}
+                                    {photo.linkedMeasurement ? (
+                                      <div className="rounded-md border border-zinc-700/80 bg-zinc-900/40 px-3 py-2">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                                          Saved measurements
+                                        </p>
+                                        <p className="mt-1 text-[13px] font-medium text-zinc-200">
+                                          {photo.linkedMeasurement.formattedDate ??
+                                            formatDateDDMMYYYY(photo.linkedMeasurement.date)}
+                                        </p>
+                                        <p className="mt-0.5 text-[13px] text-zinc-400">
+                                          {formatBodyMeasurementSummary(photo.linkedMeasurement)}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-[12px] text-zinc-500">
+                                        No measurement linked. Choose one above and click Save link.
+                                      </p>
+                                    )}
+                                  </div>
                                 </>
                               ) : null}
                             </li>

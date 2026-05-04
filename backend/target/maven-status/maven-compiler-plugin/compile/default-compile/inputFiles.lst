@@ -13,6 +13,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ExerciseDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ExerciseSetDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\LoginRequest.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\PatchProgressPhotoMeasurementDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\ProgressPhotoDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\RegisterRequest.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WeeklyPlanAssignmentRequest.java

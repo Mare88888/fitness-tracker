@@ -62,6 +62,7 @@ com\fitnesstracker\backend\mapper\WorkoutTemplateMapper.class
 com\fitnesstracker\backend\controller\HealthController.class
 com\fitnesstracker\backend\config\SecurityConfig.class
 com\fitnesstracker\backend\dto\ProgressPhotoDto.class
+com\fitnesstracker\backend\dto\PatchProgressPhotoMeasurementDto.class
 com\fitnesstracker\backend\security\JwtService.class
 com\fitnesstracker\backend\model\Workout$WorkoutBuilder.class
 com\fitnesstracker\backend\service\WorkoutService.class
