@@ -69,10 +69,8 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
         {isLogin ? "Login" : "Register"}
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-        {isLogin
-          ? "Sign in to access protected workout endpoints."
-          : "Create an account to start tracking workouts securely."}
+      <p className="mt-2 text-sm text-zinc-400">
+        {isLogin ? "Sign in to sync workouts." : "Pick a username and password to get started."}
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={(event) => void handleSubmit(event)}>

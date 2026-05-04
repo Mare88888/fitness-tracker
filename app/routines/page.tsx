@@ -76,9 +76,7 @@ export default function RoutinesPage() {
               <div className="relative space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Routines & templates</h1>
-                <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                  Maintain reusable templates and weekly assignments.
-                </p>
+                <p className="max-w-xl text-sm text-zinc-400">Templates and weekly slots.</p>
               </div>
 
               {isLoading ? (

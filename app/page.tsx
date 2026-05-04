@@ -448,10 +448,7 @@ export default function Home() {
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                     <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Dashboard</h1>
-                    <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                      Training load, streaks, and progression in one place. Trend compares your last five logged
-                      sessions to the window before that.
-                    </p>
+                    <p className="max-w-xl text-sm text-zinc-400">Volume, streaks, and PRs at a glance.</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
                     <div
@@ -481,7 +478,7 @@ export default function Home() {
                 <div className="mt-6">
                   <EmptyState
                     title="No workouts yet"
-                    description="Log a few sessions - then you can track trends, PRs, and weekly adherence here."
+                    description="Log workouts to see this page fill in."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />
@@ -508,7 +505,7 @@ export default function Home() {
                           day{analytics.currentStreak === 1 ? "" : "s"}
                         </span>
                       </p>
-                      <p className="mt-2 text-xs text-zinc-500">Consecutive days with at least one workout.</p>
+                      <p className="mt-2 text-xs text-zinc-500">Days in a row with a workout.</p>
                     </div>
                     <div className="surface-card group transition-colors hover:border-zinc-500/60">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Avg volume / workout</p>
@@ -516,7 +513,7 @@ export default function Home() {
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
                         <span className="ml-1 text-base font-medium text-zinc-500">kg</span>
                       </p>
-                      <p className="mt-2 text-xs text-zinc-500">Mean session volume across your history.</p>
+                      <p className="mt-2 text-xs text-zinc-500">Per logged session.</p>
                     </div>
                     <div className="surface-card group transition-colors hover:border-zinc-500/60">
                       <div className="flex items-start justify-between gap-2">
@@ -535,7 +532,7 @@ export default function Home() {
                         />
                       </div>
                       <p className="mt-2 text-[11px] leading-snug text-zinc-500">
-                        Goal weeks (last 4): {analytics.weeksHitTarget}/4 on target
+                        Last 4 weeks on goal: {analytics.weeksHitTarget}/4
                       </p>
                     </div>
                   </div>
@@ -561,9 +558,7 @@ export default function Home() {
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-100">Next best set</h2>
-                      <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                        Suggested loads from your latest sets - use as a starting point, not a prescription.
-                      </p>
+                      <p className="mt-1 text-xs text-zinc-400">From your latest sets - rough targets only.</p>
                       {analytics.nextBestSetSuggestions.length === 0 ? (
                         <p className="mt-4 text-sm text-zinc-400">Log more sets to see suggestions.</p>
                       ) : (
@@ -585,7 +580,6 @@ export default function Home() {
                                   Next {item.suggestedWeight} kg × {item.suggestedReps}
                                 </span>
                               </div>
-                              <p className="mt-2 text-xs leading-relaxed text-zinc-500">{item.rationale}</p>
                             </li>
                           ))}
                         </ul>
@@ -594,11 +588,9 @@ export default function Home() {
 
                     <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-100">Plateau watch</h2>
-                      <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                        Exercises with five or more sessions without an estimated 1RM improvement.
-                      </p>
+                      <p className="mt-1 text-xs text-zinc-400">5+ sessions with no est. 1RM bump.</p>
                       {analytics.plateauAlerts.length === 0 ? (
-                        <p className="mt-4 text-sm text-zinc-400">No plateau flags right now - keep the momentum.</p>
+                        <p className="mt-4 text-sm text-zinc-400">No flags right now.</p>
                       ) : (
                         <ul className="mt-4 max-h-[min(28rem,55vh)] space-y-2 overflow-y-auto pr-1 text-sm">
                           {analytics.plateauAlerts.map((item) => (
@@ -607,7 +599,7 @@ export default function Home() {
                               className="rounded-lg border border-amber-800/40 bg-amber-950/20 p-3 transition-colors hover:border-amber-700/50"
                             >
                               <p className="font-medium text-zinc-100">{item.exercise}</p>
-                              <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+                              <p className="mt-1 text-xs text-amber-100/80">
                                 {item.sessionsWithoutPr} sessions without PR · best est. 1RM{" "}
                                 <span className="tabular-nums font-medium text-zinc-200">
                                   {item.currentBest.toFixed(1)} kg
@@ -625,7 +617,7 @@ export default function Home() {
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <h2 className="text-sm font-semibold text-zinc-100">PR tracking</h2>
-                          <p className="mt-0.5 text-xs text-zinc-400">Top lifts by estimated one-rep max.</p>
+                          <p className="mt-0.5 text-xs text-zinc-400">By est. 1RM.</p>
                         </div>
                         <Link href="/history" className="btn btn-ghost shrink-0 px-3 py-1.5 text-xs">
                           View history →
@@ -658,7 +650,7 @@ export default function Home() {
 
                     <div className="surface-card">
                       <h2 className="text-sm font-semibold text-zinc-100">Muscle group volume</h2>
-                      <p className="mt-1 text-xs text-zinc-400">Share of total volume (kg) by muscle group.</p>
+                      <p className="mt-1 text-xs text-zinc-400">Volume share by group.</p>
                       {analytics.muscleSummary.length === 0 ? (
                         <p className="mt-4 text-sm text-zinc-400">No muscle-group data yet.</p>
                       ) : (
@@ -707,9 +699,7 @@ export default function Home() {
                         <h2 className="text-sm font-semibold text-zinc-100">
                           {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
                         </h2>
-                        <p className="mt-1 text-xs text-zinc-400">
-                          Daily peaks in the selected window (up to 10 most recent points shown).
-                        </p>
+                        <p className="mt-1 text-xs text-zinc-400">Up to 10 recent days in range.</p>
                       </div>
                       <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                         <label className="sr-only" htmlFor="dashboard-timeframe">

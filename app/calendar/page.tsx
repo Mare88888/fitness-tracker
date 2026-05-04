@@ -222,10 +222,7 @@ export default function CalendarPage() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                   <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Calendar</h1>
-                  <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                    See training days, routine plan coverage, and streaks. Tap a highlighted day to jump to that
-                    session.
-                  </p>
+                  <p className="max-w-xl text-sm text-zinc-400">Training days, plan coverage, streaks.</p>
                 </div>
                 <div
                   className="inline-flex shrink-0 rounded-lg border border-zinc-700/80 bg-zinc-950/80 p-0.5 shadow-inner"
@@ -275,7 +272,7 @@ export default function CalendarPage() {
                 <div className="mt-6">
                   <EmptyState
                     title="No workouts logged yet"
-                    description="Log sessions to see your calendar heatmap, streak strip, and planned-day hints."
+                    description="Log a workout to see the grid and stats."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />
@@ -327,7 +324,7 @@ export default function CalendarPage() {
                       <p className="mt-1.5 text-2xl font-semibold tabular-nums text-zinc-100">
                         {periodStats.plannedDays}
                       </p>
-                      <p className="mt-2 text-xs text-zinc-500">Days in view with a routine template.</p>
+                      <p className="mt-2 text-xs text-zinc-500">With a planned template.</p>
                     </div>
                     <div className="surface-card transition-colors hover:border-zinc-500/60">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
@@ -336,14 +333,14 @@ export default function CalendarPage() {
                       <p className="mt-1.5 text-2xl font-semibold tabular-nums text-emerald-300">
                         {periodStats.completedPlannedDays}
                       </p>
-                      <p className="mt-2 text-xs text-zinc-500">You logged at least one workout.</p>
+                      <p className="mt-2 text-xs text-zinc-500">You trained that day.</p>
                     </div>
                     <div className="surface-card transition-colors hover:border-zinc-500/60">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Missed planned</p>
                       <p className="mt-1.5 text-2xl font-semibold tabular-nums text-rose-300">
                         {periodStats.missed}
                       </p>
-                      <p className="mt-2 text-xs text-zinc-500">Past planned days with no session.</p>
+                      <p className="mt-2 text-xs text-zinc-500">Past planned day, no session logged.</p>
                     </div>
                     <div className="surface-card transition-colors hover:border-zinc-500/60">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
@@ -355,7 +352,7 @@ export default function CalendarPage() {
                           day{streak === 1 ? "" : "s"}
                         </span>
                       </p>
-                      <p className="mt-2 text-[11px] text-zinc-500">Weekly goal: {weeklyGoal} sessions.</p>
+                      <p className="mt-2 text-[11px] text-zinc-500">Goal: {weeklyGoal}/week.</p>
                     </div>
                   </div>
 
@@ -365,9 +362,7 @@ export default function CalendarPage() {
                         <h2 className="text-sm font-semibold text-zinc-100">
                           {view === "month" ? "Month view" : "Week view"}
                         </h2>
-                        <p className="mt-0.5 text-xs text-zinc-400">
-                          Green = logged · Outline = today · Red tint = missed plan
-                        </p>
+                        <p className="mt-0.5 text-xs text-zinc-400">Green = log · ring = today · rose = missed</p>
                       </div>
                     </div>
                     <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-500 sm:gap-2">
@@ -420,7 +415,6 @@ export default function CalendarPage() {
                           <h2 className="text-sm font-semibold text-zinc-100">
                             {formatDateDDMMYYYY(selectedDateKey)}
                           </h2>
-                          <p className="text-xs text-zinc-400">Sessions you logged on this day.</p>
                         </div>
                         <button
                           type="button"
@@ -460,7 +454,7 @@ export default function CalendarPage() {
 
                   <div className="surface-card">
                     <h2 className="text-sm font-semibold text-zinc-100">Last 21 days</h2>
-                    <p className="mt-1 text-xs text-zinc-400">One square per day - left is oldest, right is today.</p>
+                    <p className="mt-1 text-xs text-zinc-400">Oldest left - today right.</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
                       <div className="flex flex-wrap gap-1" role="img" aria-label="Workout days in the last 21 days">
                         {recentStreakStrip.map((day) => (

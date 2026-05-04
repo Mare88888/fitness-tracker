@@ -54,15 +54,13 @@ export default function SettingsPage() {
               <div className="relative space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Settings</h1>
-                <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                  Tune how your progress is measured across dashboard, calendar, and planning views.
-                </p>
+                <p className="max-w-xl text-sm text-zinc-400">Weekly goal feeds dashboard and calendar.</p>
               </div>
 
               <div className="surface-card mt-6">
                 <h2 className="text-sm font-semibold text-zinc-100">Weekly training goal</h2>
                 <p className="mt-1 text-xs text-zinc-500">
-                  Stored per user ({username ?? "anonymous"}). Used by adherence scoring and weekly summaries.
+                  For {username ?? "anonymous"} - drives adherence bars.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {[2, 3, 4, 5, 6].map((goal) => (

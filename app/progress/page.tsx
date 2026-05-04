@@ -676,7 +676,7 @@ export default function ProgressPage() {
                       <div className="mt-3">
                         <EmptyState
                           title="No measurements yet"
-                          description="Add your first entry to see trend and adherence overlays."
+                          description="Save a measurement to plot trends here."
                         />
                       </div>
                     ) : (
@@ -935,10 +935,10 @@ export default function ProgressPage() {
                   <div className="surface-card">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
-                      <span className="text-xs text-zinc-400">{photos.length} total - click date to expand</span>
+                      <span className="text-xs text-zinc-400">{photos.length} - tap date to expand</span>
                     </div>
                     {photos.length === 0 ? (
-                      <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
+                      <p className="mt-2 text-sm text-zinc-300">No photos yet - use the form on the right.</p>
                     ) : (
                       <ul className="mt-3 space-y-2">
                         {photos.map((photo) => {
@@ -1043,9 +1043,7 @@ export default function ProgressPage() {
                                         </p>
                                       </div>
                                     ) : (
-                                      <p className="text-[12px] text-zinc-500">
-                                        No measurement linked. Choose one above and click Save link.
-                                      </p>
+                                      <p className="text-[12px] text-zinc-500">None linked - pick above, Save link.</p>
                                     )}
                                   </div>
                                 </>

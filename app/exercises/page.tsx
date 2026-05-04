@@ -137,9 +137,7 @@ export default function ExerciseLibraryPage() {
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                   <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Exercise library</h1>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                    Search exercises, filter by muscle, star favorites, and add to your workout in one click.
-                  </p>
+                  <p className="mt-2 text-sm text-zinc-400">Search, filter, star, add to Start Workout.</p>
                 </div>
                 <Link
                   href="/workouts/start"
@@ -192,7 +190,7 @@ export default function ExerciseLibraryPage() {
                 <div className="mt-8">
                   <EmptyState
                     title="No exercises match"
-                    description="Try a different search - or clear filters."
+                    description="Widen search or clear filters."
                   />
                   <div className="mt-3 flex justify-center">
                     <button

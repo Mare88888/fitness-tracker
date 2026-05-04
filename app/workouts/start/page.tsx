@@ -844,9 +844,7 @@ export default function StartWorkoutPage() {
                   <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
                     Start Workout
                   </h1>
-                  <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                    Build your session, track set completion, and save templates as you go.
-                  </p>
+                  <p className="max-w-xl text-sm text-zinc-400">Log sets, finish, save as a template.</p>
                 </div>
 
                 <div className="relative space-y-6">

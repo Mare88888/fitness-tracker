@@ -148,9 +148,7 @@ export default function HistoryPage() {
               <div className="relative space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Workout history</h1>
-                <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-                  Search and filter past sessions, open details, or edit a copy. Deletes can be undone from the toast.
-                </p>
+                <p className="max-w-xl text-sm text-zinc-400">Search, filter, open, edit. Undo deletes from the toast.</p>
               </div>
 
               {!isLoading && !error && workouts.length > 0 && (
@@ -219,7 +217,7 @@ export default function HistoryPage() {
                   </div>
                   {isFiltered && (
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/80 pt-4">
-                      <p className="text-xs text-zinc-500">Filters active - adjust fields above or clear dates/search.</p>
+                      <p className="text-xs text-zinc-500">Filters on - reset to see all.</p>
                       <button
                         type="button"
                         onClick={() => {
@@ -258,7 +256,7 @@ export default function HistoryPage() {
                 <div className="mt-6">
                   <EmptyState
                     title="No workouts yet"
-                    description="Start your first workout - then your history shows up here."
+                    description="Finish a workout to populate this list."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />
@@ -318,7 +316,7 @@ export default function HistoryPage() {
                 <div className="mt-6">
                   <EmptyState
                     title="No matching workouts"
-                    description="Try another search - or reset filters to see everything."
+                    description="Nothing matches - try reset filters."
                   />
                 </div>
               )}
@@ -359,7 +357,7 @@ export default function HistoryPage() {
         title="Delete workout?"
         description={
           pendingDelete
-            ? `This will delete ${pendingDelete.name}. You can still undo from the toast.`
+            ? `Removes ${pendingDelete.name}. Undo from the toast.`
             : ""
         }
         confirmLabel="Delete"
