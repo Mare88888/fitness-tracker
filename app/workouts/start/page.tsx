@@ -135,6 +135,7 @@ function normalizeExercises(exercises: WorkoutExercise[] | undefined): WorkoutEx
 
 export default function StartWorkoutPage() {
   const [sessionStartedAt] = useState(() => Date.now());
+  const [sessionNow, setSessionNow] = useState(() => Date.now());
   const [workoutName, setWorkoutName] = useState("");
   const [exercises, setExercises] = useState<WorkoutExercise[]>([createExercise()]);
   const [completedSetIds, setCompletedSetIds] = useState<Set<string>>(new Set());
@@ -373,12 +374,22 @@ export default function StartWorkoutPage() {
 
   const formValidationError = getValidationError();
   const canSaveWorkout = !isSaving && !formValidationError;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSessionNow(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
   const sessionDurationLabel = useMemo(() => {
-    const totalSeconds = Math.max(0, Math.floor((Date.now() - sessionStartedAt) / 1000));
+    const totalSeconds = Math.max(0, Math.floor((sessionNow - sessionStartedAt) / 1000));
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}m ${seconds}s`;
-  }, [sessionStartedAt]);
+  }, [sessionNow, sessionStartedAt]);
   const liveTotalSets = useMemo(
     () => exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0),
     [exercises]

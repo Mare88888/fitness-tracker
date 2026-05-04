@@ -2,10 +2,6 @@ Highest-impact next additions
 
 Program builder (goal-based plans): let users choose goal/days/equipment and auto-generate a 4-8 week plan.
 
-Exercise notes + RPE/RIR per set: capture effort quality, not just load/reps/time; unlock much smarter progression logic.
-
-Calendar view: month/week workout + plan adherence view (missed sessions, streak visualization).
-
 Deload + fatigue management: auto-suggest lighter weeks when plateau/fatigue signals accumulate.
 
 Progress photos (private): timestamped comparison with optional reminders; huge motivation feature.
