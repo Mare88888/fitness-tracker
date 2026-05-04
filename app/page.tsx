@@ -381,6 +381,7 @@ export default function Home() {
     return {
       totalVolume,
       totalSets,
+      workoutCount: workouts.length,
       currentStreak,
       avgVolumePerWorkout,
       trendPct,
@@ -412,17 +413,24 @@ export default function Home() {
   const trendLabel = `${analytics.trendPct >= 0 ? "+" : ""}${analytics.trendPct.toFixed(1)}%`;
   const trendToneClass =
     analytics.trendPct > 0
-      ? "border-emerald-300/70 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
+      ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-200"
       : analytics.trendPct < 0
-        ? "border-rose-300/70 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300"
-        : "border-zinc-300 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300";
+        ? "border-rose-500/35 bg-rose-500/10 text-rose-200"
+        : "border-zinc-600 bg-zinc-800/60 text-zinc-300";
 
   const adherenceToneClass =
     analytics.adherenceScore >= 100
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-emerald-300"
       : analytics.adherenceScore >= 60
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-rose-600 dark:text-rose-400";
+        ? "text-amber-300"
+        : "text-rose-300";
+
+  const adherenceBarClass =
+    analytics.adherenceScore >= 100
+      ? "bg-emerald-500"
+      : analytics.adherenceScore >= 60
+        ? "bg-amber-500"
+        : "bg-rose-500";
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -431,91 +439,153 @@ export default function Home() {
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <Navbar />
           <PageContainer>
-            <section className="surface-page p-6">
+            <section className="surface-page">
               <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
 
               <div className="relative">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">
-                      {APP_NAME} Analytics Dashboard
-                    </h1>
+                <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Dashboard</h1>
+                    <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+                      Training load, streaks, and progression in one place. Trend compares your last five logged
+                      sessions to the window before that.
+                    </p>
                   </div>
-                  <div
-                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${trendToneClass}`}
-                    title="Trend compares recent sessions to previous window."
-                  >
-                    Trend {trendLabel}
+                  <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+                    <div
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tabular-nums ${trendToneClass}`}
+                      title="Trend compares recent sessions to previous window."
+                    >
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">Momentum</span>
+                      <span>{trendLabel}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {isLoading ? (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
+                <div className="mt-6 space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[0, 1, 2, 3].map((key) => (
+                      <Skeleton key={key} className="h-22 w-full rounded-xl border border-zinc-800/80 bg-zinc-900/50" />
+                    ))}
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <Skeleton className="h-48 w-full rounded-xl border border-zinc-800/80 bg-zinc-900/50" />
+                    <Skeleton className="h-48 w-full rounded-xl border border-zinc-800/80 bg-zinc-900/50" />
+                  </div>
                 </div>
               ) : workouts.length === 0 ? (
-                <div className="mt-4">
+                <div className="mt-6">
                   <EmptyState
                     title="No workouts yet"
-                    description="Start logging workouts to unlock analytics."
+                    description="Log a few sessions to see volume trends, PRs, and weekly adherence here."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />
                 </div>
               ) : (
-                <div className="mt-4 space-y-4">
+                <div className="mt-6 space-y-6">
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="surface-card">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Total volume</p>
-                      <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="surface-card group transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Total volume</p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-zinc-100">
                         {Math.round(analytics.totalVolume).toLocaleString()}
+                        <span className="ml-1 text-base font-medium text-zinc-500">kg</span>
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500">
+                        {analytics.workoutCount} workout{analytics.workoutCount === 1 ? "" : "s"} ·{" "}
+                        {analytics.totalSets.toLocaleString()} sets logged
                       </p>
                     </div>
-                    <div className="surface-card">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Current streak</p>
-                      <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-                        {analytics.currentStreak} day{analytics.currentStreak === 1 ? "" : "s"}
+                    <div className="surface-card group transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Current streak</p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-zinc-100">
+                        {analytics.currentStreak}
+                        <span className="ml-1.5 text-base font-medium text-zinc-500">
+                          day{analytics.currentStreak === 1 ? "" : "s"}
+                        </span>
                       </p>
+                      <p className="mt-2 text-xs text-zinc-500">Consecutive days with at least one workout.</p>
                     </div>
-                    <div className="surface-card">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Avg volume / workout</p>
-                      <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="surface-card group transition-colors hover:border-zinc-500/60">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Avg volume / workout</p>
+                      <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-zinc-100">
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
+                        <span className="ml-1 text-base font-medium text-zinc-500">kg</span>
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500">Mean session volume across your history.</p>
+                    </div>
+                    <div className="surface-card group transition-colors hover:border-zinc-500/60">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Weekly adherence</p>
+                        <p className={`text-lg font-semibold tabular-nums leading-none ${adherenceToneClass}`}>
+                          {analytics.adherenceScore}%
+                        </p>
+                      </div>
+                      <p className="mt-1.5 text-xs text-zinc-400">
+                        {analytics.workoutsThisWeek} of {analytics.weeklyTarget} workouts this week
+                      </p>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+                        <div
+                          className={`h-full rounded-full transition-all ${adherenceBarClass}`}
+                          style={{ width: `${Math.min(100, analytics.adherenceScore)}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-[11px] leading-snug text-zinc-500">
+                        Goal weeks (last 4): {analytics.weeksHitTarget}/4 on target
                       </p>
                     </div>
-                    <div className="surface-card">
-                      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-300">Weekly adherence</p>
-                      <p className={`mt-1 text-2xl font-semibold ${adherenceToneClass}`}>
-                        {analytics.adherenceScore}%
-                      </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-300">
-                        {analytics.workoutsThisWeek}/{analytics.weeklyTarget} workouts this week
-                      </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 rounded-xl border border-zinc-700/60 bg-zinc-900/30 px-3 py-3 sm:items-center sm:justify-between">
+                    <p className="w-full text-xs font-medium text-zinc-500 sm:w-auto sm:pr-4">Quick actions</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href="/workouts/start" className="btn btn-primary text-xs">
+                        Start workout
+                      </Link>
+                      <Link href="/calendar" className="btn btn-secondary text-xs">
+                        Calendar
+                      </Link>
+                      <Link href="/progress" className="btn btn-secondary text-xs">
+                        Body progress
+                      </Link>
+                      <Link href="/history" className="btn btn-secondary text-xs">
+                        History
+                      </Link>
                     </div>
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="surface-card">
-                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Next best set suggestions</h2>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        Auto-suggested overload targets from your latest top sets.
+                      <h2 className="text-sm font-semibold text-zinc-100">Next best set</h2>
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+                        Suggested loads from your latest sets — use as a starting point, not a prescription.
                       </p>
                       {analytics.nextBestSetSuggestions.length === 0 ? (
-                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">Not enough data yet.</p>
+                        <p className="mt-4 text-sm text-zinc-400">Log more sets to see suggestions.</p>
                       ) : (
-                        <ul className="mt-2 space-y-2 text-sm">
+                        <ul className="mt-4 max-h-[min(28rem,55vh)] space-y-2 overflow-y-auto pr-1 text-sm">
                           {analytics.nextBestSetSuggestions.map((item) => (
-                            <li key={item.exercise} className="surface-soft p-3">
-                              <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
-                              <p className="text-zinc-600 dark:text-zinc-400">
-                                Last: {item.basedOnWeight} kg x {item.basedOnReps} reps {"->"} Next: {item.suggestedWeight} kg x {item.suggestedReps} reps
-                              </p>
-                              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{item.rationale}</p>
+                            <li
+                              key={item.exercise}
+                              className="surface-soft border-zinc-700/50 p-3 transition-colors hover:border-emerald-900/40 hover:bg-zinc-900/90"
+                            >
+                              <p className="font-medium text-zinc-100">{item.exercise}</p>
+                              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400">
+                                <span className="rounded-md bg-zinc-800/80 px-2 py-0.5 font-medium text-zinc-300">
+                                  Last {item.basedOnWeight} kg × {item.basedOnReps}
+                                </span>
+                                <span className="text-zinc-600" aria-hidden>
+                                  →
+                                </span>
+                                <span className="rounded-md border border-emerald-800/50 bg-emerald-950/30 px-2 py-0.5 font-medium text-emerald-200/95">
+                                  Next {item.suggestedWeight} kg × {item.suggestedReps}
+                                </span>
+                              </div>
+                              <p className="mt-2 text-xs leading-relaxed text-zinc-500">{item.rationale}</p>
                             </li>
                           ))}
                         </ul>
@@ -523,49 +593,61 @@ export default function Home() {
                     </div>
 
                     <div className="surface-card">
-                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Plateau detection</h2>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        Flags exercises with no estimated 1RM PR in 5+ sessions.
+                      <h2 className="text-sm font-semibold text-zinc-100">Plateau watch</h2>
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+                        Exercises with five or more sessions without an estimated 1RM improvement.
                       </p>
                       {analytics.plateauAlerts.length === 0 ? (
-                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                          No current plateau alerts. Great momentum.
-                        </p>
+                        <p className="mt-4 text-sm text-zinc-400">No plateau flags right now — keep the momentum.</p>
                       ) : (
-                        <ul className="mt-2 space-y-2 text-sm">
+                        <ul className="mt-4 max-h-[min(28rem,55vh)] space-y-2 overflow-y-auto pr-1 text-sm">
                           {analytics.plateauAlerts.map((item) => (
-                            <li key={item.exercise} className="rounded-lg border border-amber-900/50 bg-amber-950/25 p-3">
-                              <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.exercise}</p>
-                              <p className="text-zinc-600 dark:text-zinc-400">
-                                {item.sessionsWithoutPr} sessions without PR (best est. 1RM {item.currentBest.toFixed(1)})
+                            <li
+                              key={item.exercise}
+                              className="rounded-lg border border-amber-800/40 bg-amber-950/20 p-3 transition-colors hover:border-amber-700/50"
+                            >
+                              <p className="font-medium text-zinc-100">{item.exercise}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+                                {item.sessionsWithoutPr} sessions without PR · best est. 1RM{" "}
+                                <span className="tabular-nums font-medium text-zinc-200">
+                                  {item.currentBest.toFixed(1)} kg
+                                </span>
                               </p>
                             </li>
                           ))}
                         </ul>
                       )}
-                      <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                        Weekly target hit in {analytics.weeksHitTarget}/4 recent weeks.
-                      </p>
                     </div>
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="surface-card">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">PR tracking</h2>
-                        <Link href="/history" className="btn btn-ghost px-2 py-1 text-xs">
-                          View history
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h2 className="text-sm font-semibold text-zinc-100">PR tracking</h2>
+                          <p className="mt-0.5 text-xs text-zinc-400">Top lifts by estimated one-rep max.</p>
+                        </div>
+                        <Link href="/history" className="btn btn-ghost shrink-0 px-3 py-1.5 text-xs">
+                          View history →
                         </Link>
                       </div>
                       {analytics.topPrs.length === 0 ? (
-                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No PR data yet.</p>
+                        <p className="mt-4 text-sm text-zinc-400">No PR data yet.</p>
                       ) : (
-                        <ul className="mt-2 space-y-2 text-sm">
+                        <ul className="mt-4 space-y-2 text-sm">
                           {analytics.topPrs.map((record) => (
-                            <li key={record.exercise} className="surface-soft p-3">
-                              <p className="font-medium text-zinc-900 dark:text-zinc-100">{record.exercise}</p>
-                              <p className="text-zinc-600 dark:text-zinc-400">
-                                Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} | Top set {record.maxWeight} kg |{" "}
+                            <li
+                              key={record.exercise}
+                              className="surface-soft border-zinc-700/50 p-3 transition-colors hover:border-zinc-600"
+                            >
+                              <p className="font-medium text-zinc-100">{record.exercise}</p>
+                              <p className="mt-1 text-xs text-zinc-400">
+                                <span className="font-medium text-emerald-300/90">
+                                  Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} kg
+                                </span>
+                                <span className="text-zinc-600"> · </span>
+                                Top set {record.maxWeight} kg
+                                <span className="text-zinc-600"> · </span>
                                 {formatDateDDMMYYYY(record.achievedOn)}
                               </p>
                             </li>
@@ -575,11 +657,12 @@ export default function Home() {
                     </div>
 
                     <div className="surface-card">
-                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Muscle-group summary</h2>
+                      <h2 className="text-sm font-semibold text-zinc-100">Muscle group volume</h2>
+                      <p className="mt-1 text-xs text-zinc-400">Share of total volume (kg) by muscle group.</p>
                       {analytics.muscleSummary.length === 0 ? (
-                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No muscle-group data yet.</p>
+                        <p className="mt-4 text-sm text-zinc-400">No muscle-group data yet.</p>
                       ) : (
-                        <div className="surface-soft mt-2 h-72 p-2">
+                        <div className="surface-soft mt-4 h-72 rounded-lg p-2 sm:h-80">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                               data={analytics.muscleSummary.map((item) => ({
@@ -605,7 +688,10 @@ export default function Home() {
                                   backgroundColor: chartTheme.tooltipBg,
                                   color: chartTheme.text,
                                 }}
-                                formatter={(value) => [`${Number(value ?? 0).toLocaleString()} volume`, "Volume"]}
+                                formatter={(value) => [
+                                  `${Number(value ?? 0).toLocaleString()} kg`,
+                                  "Session volume",
+                                ]}
                               />
                               <Bar dataKey="volumeRounded" name="Volume" fill={chartTheme.bar} radius={[6, 6, 0, 0]} />
                             </BarChart>
@@ -616,33 +702,54 @@ export default function Home() {
                   </div>
 
                   <div className="surface-card">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">
-                        {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
-                      </h2>
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <h2 className="text-sm font-semibold text-zinc-100">
+                          {trendMetric === "volume" ? "Volume over time" : "Estimated 1RM over time"}
+                        </h2>
+                        <p className="mt-1 text-xs text-zinc-400">
+                          Daily peaks in the selected window (up to 10 most recent points shown).
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                        <label className="sr-only" htmlFor="dashboard-timeframe">
+                          Timeframe
+                        </label>
                         <select
+                          id="dashboard-timeframe"
                           value={timeframe}
                           onChange={(event) => setTimeframe(event.target.value as Timeframe)}
-                          className="field field-select w-auto px-2 py-1 text-xs font-medium"
+                          className="field field-select w-full min-w-30 py-2 text-xs font-medium sm:w-auto"
                         >
-                          <option value="7d">7d</option>
-                          <option value="30d">30d</option>
-                          <option value="90d">90d</option>
-                          <option value="all">All</option>
+                          <option value="7d">Last 7 days</option>
+                          <option value="30d">Last 30 days</option>
+                          <option value="90d">Last 90 days</option>
+                          <option value="all">All time</option>
                         </select>
-                        <div className="flex overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
+                        <div
+                          className="inline-flex rounded-lg border border-zinc-700/80 bg-zinc-950/80 p-0.5 shadow-inner"
+                          role="group"
+                          aria-label="Trend metric"
+                        >
                           <button
                             type="button"
                             onClick={() => setTrendMetric("volume")}
-                            className={`px-2 py-1 text-xs ${trendMetric === "volume" ? "btn btn-primary" : "btn btn-secondary"}`}
+                            className={`rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
+                              trendMetric === "volume"
+                                ? "bg-emerald-600 text-white shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
                           >
                             Volume
                           </button>
                           <button
                             type="button"
                             onClick={() => setTrendMetric("estimated1rm")}
-                            className={`px-2 py-1 text-xs ${trendMetric === "estimated1rm" ? "btn btn-primary" : "btn btn-secondary"}`}
+                            className={`rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
+                              trendMetric === "estimated1rm"
+                                ? "bg-emerald-600 text-white shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
                           >
                             Est. 1RM
                           </button>
@@ -650,9 +757,9 @@ export default function Home() {
                       </div>
                     </div>
                     {analytics.latestVolumePoints.length === 0 ? (
-                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">No volume trend yet.</p>
+                      <p className="mt-4 text-sm text-zinc-400">No trend data in this range yet.</p>
                     ) : (
-                      <div className="surface-soft mt-2 h-80 p-2">
+                      <div className="surface-soft mt-4 h-72 rounded-lg p-2 sm:h-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={analytics.latestVolumePoints.map((point) => ({
@@ -677,9 +784,9 @@ export default function Home() {
                               }}
                               formatter={(value) => [
                                 trendMetric === "volume"
-                                  ? `${Number(value ?? 0).toLocaleString()} volume`
-                                  : `${Number(value ?? 0).toLocaleString()} est. 1RM`,
-                                trendMetric === "volume" ? "Volume" : "Estimated 1RM",
+                                  ? `${Number(value ?? 0).toLocaleString()} kg`
+                                  : `${Number(value ?? 0).toLocaleString()} kg`,
+                                trendMetric === "volume" ? "Day volume" : "Est. 1RM (peak)",
                               ]}
                             />
                             <Line
