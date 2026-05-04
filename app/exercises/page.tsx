@@ -118,7 +118,7 @@ export default function ExerciseLibraryPage() {
 
   const handleAddToWorkout = (name: string) => {
     queueExercisesForStartWorkout([name]);
-    toast.success(`"${name}" added — opening Start Workout.`);
+    toast.success(`"${name}" added - opening Start Workout.`);
     router.push("/workouts/start");
   };
 
@@ -192,7 +192,7 @@ export default function ExerciseLibraryPage() {
                 <div className="mt-8">
                   <EmptyState
                     title="No exercises match"
-                    description="Try a different search or clear filters."
+                    description="Try a different search - or clear filters."
                   />
                   <div className="mt-3 flex justify-center">
                     <button

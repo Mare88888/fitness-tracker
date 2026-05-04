@@ -481,7 +481,7 @@ export default function Home() {
                 <div className="mt-6">
                   <EmptyState
                     title="No workouts yet"
-                    description="Log a few sessions to see volume trends, PRs, and weekly adherence here."
+                    description="Log a few sessions - then you can track trends, PRs, and weekly adherence here."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />

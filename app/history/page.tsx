@@ -258,7 +258,7 @@ export default function HistoryPage() {
                 <div className="mt-6">
                   <EmptyState
                     title="No workouts yet"
-                    description="Start your first workout to see your history here."
+                    description="Start your first workout - then your history shows up here."
                     actionLabel="Start workout"
                     actionHref="/workouts/start"
                   />
@@ -318,7 +318,7 @@ export default function HistoryPage() {
                 <div className="mt-6">
                   <EmptyState
                     title="No matching workouts"
-                    description="Try another search, or reset filters to see everything again."
+                    description="Try another search - or reset filters to see everything."
                   />
                 </div>
               )}

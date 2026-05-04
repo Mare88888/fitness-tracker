@@ -129,7 +129,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
               {!isLoading && !error && !workout && (
                 <EmptyState
                   title="Workout not found"
-                  description="The workout may have been deleted or the URL is incorrect."
+                  description="The workout may be deleted - or the URL is incorrect."
                   actionLabel="Back to history"
                   actionHref="/history"
                 />
@@ -177,7 +177,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                   {workout.exercises.length === 0 ? (
                     <EmptyState
                       title="No exercises in this workout"
-                      description="Add exercises while creating workouts to see details here."
+                      description="Add exercises when creating workouts - then details appear here."
                     />
                   ) : (
                     <div className="space-y-3">
