@@ -727,65 +727,6 @@ export default function ProgressPage() {
                   </div>
 
                   <div className="surface-card">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
-                      <span className="text-xs text-zinc-400">{photos.length} total - click date to expand</span>
-                    </div>
-                    {photos.length === 0 ? (
-                      <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
-                    ) : (
-                      <ul className="mt-3 space-y-2">
-                        {photos.map((photo) => {
-                          const isExpanded = expandedPhotoIds.has(photo.id);
-                          return (
-                            <li
-                              key={photo.id}
-                              className="surface-soft px-3 py-2 text-xs text-zinc-300"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setExpandedPhotoIds((previous) => {
-                                      const next = new Set(previous);
-                                      if (next.has(photo.id)) {
-                                        next.delete(photo.id);
-                                      } else {
-                                        next.add(photo.id);
-                                      }
-                                      return next;
-                                    })
-                                  }
-                                  className="text-left font-medium text-emerald-300 hover:underline"
-                                >
-                                  {formatDateDDMMYYYY(photo.capturedAt)}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeletePhoto(photo.id)}
-                                  className="btn btn-danger px-2 py-1 text-xs"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                              {photo.note?.trim() ? (
-                                <p className="mt-1 text-zinc-400">{photo.note}</p>
-                              ) : null}
-                              {isExpanded ? (
-                                <img
-                                  src={photo.imageDataUrl}
-                                  alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
-                                  className="mt-2 h-64 w-full rounded-md object-cover"
-                                />
-                              ) : null}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
-
-                  <div className="surface-card">
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="text-sm font-semibold text-zinc-100">Muscle distribution</h2>
                       <select
@@ -933,6 +874,65 @@ export default function ProgressPage() {
                               </button>
                             </li>
                           ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="surface-card">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h2 className="text-sm font-semibold text-zinc-100">Progress photos</h2>
+                      <span className="text-xs text-zinc-400">{photos.length} total - click date to expand</span>
+                    </div>
+                    {photos.length === 0 ? (
+                      <p className="mt-2 text-sm text-zinc-300">No photos yet. Add your first check-in on the right.</p>
+                    ) : (
+                      <ul className="mt-3 space-y-2">
+                        {photos.map((photo) => {
+                          const isExpanded = expandedPhotoIds.has(photo.id);
+                          return (
+                            <li
+                              key={photo.id}
+                              className="surface-soft px-3 py-2 text-xs text-zinc-300"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedPhotoIds((previous) => {
+                                      const next = new Set(previous);
+                                      if (next.has(photo.id)) {
+                                        next.delete(photo.id);
+                                      } else {
+                                        next.add(photo.id);
+                                      }
+                                      return next;
+                                    })
+                                  }
+                                  className="text-left font-medium text-emerald-300 hover:underline"
+                                >
+                                  {formatDateDDMMYYYY(photo.capturedAt)}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePhoto(photo.id)}
+                                  className="btn btn-danger px-2 py-1 text-xs"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                              {photo.note?.trim() ? (
+                                <p className="mt-1 text-zinc-400">{photo.note}</p>
+                              ) : null}
+                              {isExpanded ? (
+                                <img
+                                  src={photo.imageDataUrl}
+                                  alt={`Progress photo ${formatDateDDMMYYYY(photo.capturedAt)}`}
+                                  className="mt-2 h-64 w-full rounded-md object-cover"
+                                />
+                              ) : null}
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </div>
