@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
+import { APP_NAME } from "@/lib/constants";
 import { formatSecondsToMMSS, parseDurationToSeconds } from "@/lib/duration-format";
 import { getTemplateById, updateTemplate } from "@/lib/services/template-service";
 import type { CreateWorkoutTemplateInput, WorkoutTemplate } from "@/types/template";
@@ -210,8 +211,13 @@ export default function EditTemplatePage() {
           <Navbar />
           <PageContainer>
             <section className="surface-page">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
               <div className="mb-4 flex items-center justify-between gap-3">
-                <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Edit template</h1>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
+                  <h1 className="text-2xl font-semibold text-zinc-100">Edit template</h1>
+                </div>
                 <Link
                   href="/routines"
                   className="btn btn-secondary"
@@ -221,11 +227,11 @@ export default function EditTemplatePage() {
               </div>
 
               {isLoading || !template ? (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">Loading template...</p>
+                <p className="text-sm text-zinc-400">Loading template...</p>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-200">Template name</label>
+                    <label className="mb-1 block text-sm font-medium text-zinc-300">Template name</label>
                     <input
                       value={template.name}
                       onChange={(event) => setTemplate((prev) => (prev ? { ...prev, name: event.target.value } : prev))}

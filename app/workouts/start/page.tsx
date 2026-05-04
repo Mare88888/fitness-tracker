@@ -5,6 +5,7 @@ import { PageContainer } from "@/components/page-container";
 import { RestTimer } from "@/components/rest-timer";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { APP_NAME } from "@/lib/constants";
 import { getAuthUsername } from "@/lib/auth/token";
 import { formatDateTimeDDMMYYYY } from "@/lib/date-format";
 import { parseDurationToSeconds } from "@/lib/duration-format";
@@ -835,13 +836,17 @@ export default function StartWorkoutPage() {
           <Navbar />
           <PageContainer>
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <section className="surface-page p-4 sm:p-6">
+              <section className="surface-page">
                 <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-500/10" />
-                <div className="mb-6">
+                <div className="mb-6 space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                   <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
                     Start Workout
                   </h1>
+                  <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+                    Build your session, track set completion, and save templates as you go.
+                  </p>
                 </div>
 
                 <div className="relative space-y-6">
@@ -875,7 +880,7 @@ export default function StartWorkoutPage() {
                     <p className="text-xs text-zinc-500 dark:text-zinc-300">{getDraftStatusLabel()}</p>
                   )}
                   {hasRecoveredDraft && (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    <div className="rounded-md border border-amber-500/40 bg-amber-950/25 px-3 py-2 text-sm text-amber-100">
                       <p>
                         Recovered draft
                         {draftTimestamp ? ` from ${formatDateTimeDDMMYYYY(draftTimestamp)}` : ""}.
@@ -883,7 +888,7 @@ export default function StartWorkoutPage() {
                       <button
                         type="button"
                         onClick={discardRecoveredDraft}
-                        className="mt-2 text-xs font-medium underline underline-offset-2"
+                        className="mt-2 text-xs font-medium text-amber-200 underline underline-offset-2"
                       >
                         Discard draft
                       </button>
@@ -904,7 +909,7 @@ export default function StartWorkoutPage() {
                       placeholder="e.g. Push Day"
                       className="field"
                     />
-                    {workoutNameError && <p className="mt-1 text-xs text-red-600">{workoutNameError}</p>}
+                    {workoutNameError && <p className="mt-1 text-xs text-rose-300">{workoutNameError}</p>}
                   </div>
 
                   <div className="space-y-4">
@@ -938,12 +943,12 @@ export default function StartWorkoutPage() {
                               className="field"
                             />
                             {exercise.name.trim() && (
-                              <p className="mt-1 text-xs text-zinc-400">
+                              <p className="mt-1 text-xs text-zinc-500">
                                 Muscle: {resolveMuscleGroup(exercise.name)}
                               </p>
                             )}
                             {exerciseNameErrors[exercise.id] && (
-                              <p className="mt-1 text-xs text-red-600">{exerciseNameErrors[exercise.id]}</p>
+                              <p className="mt-1 text-xs text-rose-300">{exerciseNameErrors[exercise.id]}</p>
                             )}
                           </div>
                           <button
@@ -1049,7 +1054,7 @@ export default function StartWorkoutPage() {
                                   className="field"
                                 />
                                 {setFieldErrors[set.id]?.weight && (
-                                  <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.weight}</p>
+                                  <p className="mt-1 text-xs text-rose-300">{setFieldErrors[set.id]?.weight}</p>
                                 )}
                               </div>
                               <div>
@@ -1066,7 +1071,7 @@ export default function StartWorkoutPage() {
                                       className="field"
                                     />
                                     {setFieldErrors[set.id]?.durationSeconds && (
-                                      <p className="mt-1 text-xs text-red-600">
+                                      <p className="mt-1 text-xs text-rose-300">
                                         {setFieldErrors[set.id]?.durationSeconds}
                                       </p>
                                     )}
@@ -1085,7 +1090,7 @@ export default function StartWorkoutPage() {
                                       className="field"
                                     />
                                     {setFieldErrors[set.id]?.reps && (
-                                      <p className="mt-1 text-xs text-red-600">{setFieldErrors[set.id]?.reps}</p>
+                                      <p className="mt-1 text-xs text-rose-300">{setFieldErrors[set.id]?.reps}</p>
                                     )}
                                   </>
                                 )}
@@ -1247,17 +1252,17 @@ export default function StartWorkoutPage() {
                   </div>
 
                   {feedbackMessage && (
-                    <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    <p className="rounded-md border border-emerald-500/40 bg-emerald-950/25 px-3 py-2 text-sm text-emerald-100">
                       {feedbackMessage}
                     </p>
                   )}
                   {feedbackError && (
-                    <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    <p className="rounded-md border border-rose-500/40 bg-rose-950/25 px-3 py-2 text-sm text-rose-100">
                       {feedbackError}
                     </p>
                   )}
                   {validationMessages.length > 0 && (
-                    <ul className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    <ul className="rounded-md border border-rose-500/40 bg-rose-950/25 px-3 py-2 text-sm text-rose-100">
                       {validationMessages.map((message) => (
                         <li key={message}>- {message}</li>
                       ))}

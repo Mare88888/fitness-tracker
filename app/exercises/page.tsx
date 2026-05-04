@@ -4,6 +4,8 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { APP_NAME } from "@/lib/constants";
 import {
   getFavoriteExerciseNamesSnapshot,
   subscribeExerciseFavorites,
@@ -128,11 +130,15 @@ export default function ExerciseLibraryPage() {
           <Navbar />
           <PageContainer>
             <section className="surface-page">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
+
+              <div className="relative flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Exercise Library</h1>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    Search exercises, filter by muscle, star favorites, and add one to your workout in one click.
+                  <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
+                  <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Exercise library</h1>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                    Search exercises, filter by muscle, star favorites, and add to your workout in one click.
                   </p>
                 </div>
                 <Link
@@ -149,7 +155,7 @@ export default function ExerciseLibraryPage() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by name or muscle…"
-                  className="field min-w-[200px] flex-1"
+                  className="field min-w-50 flex-1"
                   aria-label="Search exercises"
                 />
                 <select
@@ -165,19 +171,23 @@ export default function ExerciseLibraryPage() {
                     </option>
                   ))}
                 </select>
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
                   <input
                     type="checkbox"
                     checked={favoritesOnly}
                     onChange={(event) => setFavoritesOnly(event.target.checked)}
-                    className="rounded border-zinc-300 dark:border-zinc-600"
+                    className="rounded border-zinc-600 bg-zinc-900"
                   />
                   Favorites only
                 </label>
               </div>
 
               {isLoadingCatalog ? (
-                <p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">Loading exercise catalog...</p>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-28 w-full rounded-xl border border-zinc-800/80" />
+                  ))}
+                </div>
               ) : filtered.length === 0 ? (
                 <div className="mt-8">
                   <EmptyState
@@ -205,11 +215,11 @@ export default function ExerciseLibraryPage() {
                     return (
                       <li
                         key={exercise.name}
-                        className="surface-card flex flex-col gap-3"
+                        className="surface-card flex flex-col gap-3 transition-colors hover:border-zinc-500/60"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{exercise.name}</p>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">{exercise.muscleGroup}</p>
+                          <p className="font-medium text-zinc-100">{exercise.name}</p>
+                          <p className="text-sm text-zinc-400">{exercise.muscleGroup}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button
@@ -218,7 +228,7 @@ export default function ExerciseLibraryPage() {
                             className={`rounded-md border px-3 py-1.5 text-sm font-medium transition ${
                               starred
                                 ? "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-200"
-                                : "border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                                : "border-zinc-600 text-zinc-300 hover:bg-zinc-800"
                             }`}
                             aria-pressed={starred}
                             aria-label={starred ? "Remove from favorites" : "Add to favorites"}

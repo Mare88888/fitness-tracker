@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { APP_NAME } from "@/lib/constants";
 import { formatSecondsToMMSS } from "@/lib/duration-format";
 import { createWorkout, deleteWorkout, getWorkoutById } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
@@ -101,9 +102,11 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
           <Navbar />
           <PageContainer>
             <section className="surface-page">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
               <Link
                 href="/history"
-                className="mb-4 inline-block text-sm font-medium text-zinc-700 underline-offset-4 hover:underline dark:text-zinc-300"
+                className="mb-4 inline-block text-sm font-medium text-zinc-300 underline-offset-4 hover:underline"
               >
                 Back to history
               </Link>
@@ -118,7 +121,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
               )}
 
               {error && (
-                <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p className="rounded-md border border-rose-500/40 bg-rose-950/25 px-3 py-2 text-sm text-rose-100">
                   {error}
                 </p>
               )}
@@ -137,6 +140,7 @@ export default function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) 
                   <header className="surface-card">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
+                        <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
                         <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
                           {workout.name}
                         </h1>

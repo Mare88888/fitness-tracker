@@ -5,6 +5,8 @@ import { PageContainer } from "@/components/page-container";
 import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { APP_NAME } from "@/lib/constants";
 import { deleteTemplate, getTemplates, getWeeklyPlan } from "@/lib/services/template-service";
 import Link from "next/link";
 import type { WorkoutTemplate } from "@/types/template";
@@ -71,17 +73,24 @@ export default function RoutinesPage() {
               <div className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
 
-              <div className="relative">
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Routines & Templates</h1>
+              <div className="relative space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/90">{APP_NAME}</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">Routines & templates</h1>
+                <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+                  Maintain reusable templates and weekly assignments.
+                </p>
               </div>
 
               {isLoading ? (
-                <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">Loading routines...</p>
+                <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                  <Skeleton className="h-56 w-full rounded-xl border border-zinc-800/80" />
+                  <Skeleton className="h-56 w-full rounded-xl border border-zinc-800/80" />
+                </div>
               ) : (
-                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <div className="mt-6 grid gap-4 lg:grid-cols-2">
                   <div className="surface-card">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Templates</h2>
+                      <h2 className="text-sm font-semibold tracking-wide text-zinc-100">Templates</h2>
                       <span className="rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-xs font-medium text-zinc-300">
                         {templates.length}
                       </span>
@@ -92,27 +101,27 @@ export default function RoutinesPage() {
                         description="Create templates on the Start Workout page."
                       />
                     ) : (
-                      <ul className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                      <ul className="mt-2 space-y-2 text-sm text-zinc-300">
                         {templates.map((template) => (
                           <li
                             key={template.id}
-                            className="surface-soft px-3 py-2"
+                            className="surface-soft border-zinc-700/50 px-3 py-2 transition-colors hover:border-zinc-600"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium">
-                                {template.name} ({template.exercises.length} exercises)
+                                {template.name} ({template.exercises.length} exercise{template.exercises.length === 1 ? "" : "s"})
                               </span>
                               <div className="flex items-center gap-2">
                                 <Link
                                   href={`/routines/templates/${template.id}`}
-                                  className="btn btn-secondary px-2 py-1 text-xs"
+                                  className="btn btn-secondary px-3 py-1.5 text-xs"
                                 >
                                   Edit
                                 </Link>
                                 <button
                                   type="button"
                                   onClick={() => setTemplatePendingDelete(template)}
-                                  className="btn btn-danger px-2 py-1 text-xs"
+                                  className="btn btn-danger px-3 py-1.5 text-xs"
                                 >
                                   Delete
                                 </button>
@@ -125,18 +134,18 @@ export default function RoutinesPage() {
                   </div>
 
                   <div className="surface-card">
-                    <h2 className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">Weekly plan</h2>
+                    <h2 className="text-sm font-semibold tracking-wide text-zinc-100">Weekly plan</h2>
                     {weeklyPlan.length === 0 ? (
                       <EmptyState
                         title="No weekly plan yet"
                         description="Assign templates to days on the Start Workout page."
                       />
                     ) : (
-                      <ul className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                      <ul className="mt-2 space-y-2 text-sm text-zinc-300">
                         {weeklyPlan.map((entry) => (
                           <li
                             key={entry.id}
-                            className="surface-soft px-3 py-2"
+                            className="surface-soft border-zinc-700/50 px-3 py-2 transition-colors hover:border-zinc-600"
                           >
                             <span className="font-medium">{dayLabels[entry.dayOfWeek] ?? `Day ${entry.dayOfWeek}`}</span>:{" "}
                             {entry.templateName}
