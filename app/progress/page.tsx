@@ -940,99 +940,103 @@ export default function ProgressPage() {
                 </div>
               </section>
 
-              <section className="surface-card xl:sticky xl:top-6">
-                <h2 className="text-sm font-semibold text-zinc-100">
-                  {editingEntryId ? "Edit measurement" : "Add measurement"}
-                </h2>
-                <div className="mt-3 space-y-3">
-                  <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="field" />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    value={weight}
-                    onChange={(event) => setWeight(event.target.value)}
-                    className="field"
-                    placeholder="Weight (kg)"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    value={waist}
-                    onChange={(event) => setWaist(event.target.value)}
-                    className="field"
-                    placeholder="Waist (cm)"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    value={chest}
-                    onChange={(event) => setChest(event.target.value)}
-                    className="field"
-                    placeholder="Chest (cm)"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    value={leftArm}
-                    onChange={(event) => setLeftArm(event.target.value)}
-                    className="field"
-                    placeholder="Left arm (cm)"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    value={rightArm}
-                    onChange={(event) => setRightArm(event.target.value)}
-                    className="field"
-                    placeholder="Right arm (cm)"
-                  />
-                  <button type="button" onClick={handleSave} disabled={isSaving} className="btn btn-primary w-full">
-                    {isSaving ? "Saving..." : editingEntryId ? "Update entry" : "Save entry"}
-                  </button>
-                  {editingEntryId && (
-                    <button type="button" onClick={resetForm} className="btn btn-secondary w-full">
-                      Cancel edit
-                    </button>
-                  )}
-                </div>
-                <div className="my-5 border-t border-zinc-800" />
-                <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
-                <div className="mt-3 space-y-3">
-                  <input type="date" value={photoCapturedAt} onChange={(event) => setPhotoCapturedAt(event.target.value)} className="field" />
-                  <textarea
-                    value={photoNote}
-                    onChange={(event) => setPhotoNote(event.target.value)}
-                    placeholder="Optional note (lighting, weight, mood...)"
-                    className="field min-h-[72px]"
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => void handlePhotoFileChange(event.target.files?.[0] ?? null)}
-                    className="field file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1 file:text-xs file:font-medium file:text-zinc-100"
-                  />
-                  {photoDataUrl && (
-                    <img
-                      src={photoDataUrl}
-                      alt="Selected progress preview"
-                      className="h-40 w-full rounded-md object-cover"
+              <div className="space-y-4 xl:sticky xl:top-6">
+                <section className="surface-card">
+                  <h2 className="text-sm font-semibold text-zinc-100">
+                    {editingEntryId ? "Edit measurement" : "Add measurement"}
+                  </h2>
+                  <div className="mt-3 space-y-3">
+                    <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="field" />
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={weight}
+                      onChange={(event) => setWeight(event.target.value)}
+                      className="field"
+                      placeholder="Weight (kg)"
                     />
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleSavePhoto}
-                    disabled={isSavingPhoto}
-                    className="btn btn-primary w-full"
-                  >
-                    {isSavingPhoto ? "Saving photo..." : "Save photo"}
-                  </button>
-                </div>
-              </section>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={waist}
+                      onChange={(event) => setWaist(event.target.value)}
+                      className="field"
+                      placeholder="Waist (cm)"
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={chest}
+                      onChange={(event) => setChest(event.target.value)}
+                      className="field"
+                      placeholder="Chest (cm)"
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={leftArm}
+                      onChange={(event) => setLeftArm(event.target.value)}
+                      className="field"
+                      placeholder="Left arm (cm)"
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={rightArm}
+                      onChange={(event) => setRightArm(event.target.value)}
+                      className="field"
+                      placeholder="Right arm (cm)"
+                    />
+                    <button type="button" onClick={handleSave} disabled={isSaving} className="btn btn-primary w-full">
+                      {isSaving ? "Saving..." : editingEntryId ? "Update entry" : "Save entry"}
+                    </button>
+                    {editingEntryId && (
+                      <button type="button" onClick={resetForm} className="btn btn-secondary w-full">
+                        Cancel edit
+                      </button>
+                    )}
+                  </div>
+                </section>
+
+                <section className="surface-card">
+                  <h3 className="text-sm font-semibold text-zinc-100">Add progress photo</h3>
+                  <div className="mt-3 space-y-3">
+                    <input type="date" value={photoCapturedAt} onChange={(event) => setPhotoCapturedAt(event.target.value)} className="field" />
+                    <textarea
+                      value={photoNote}
+                      onChange={(event) => setPhotoNote(event.target.value)}
+                      placeholder="Optional note (lighting, weight, mood...)"
+                      className="field min-h-[72px]"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => void handlePhotoFileChange(event.target.files?.[0] ?? null)}
+                      className="field file:mr-3 file:rounded-md file:border-0 file:bg-zinc-700 file:px-3 file:py-1 file:text-xs file:font-medium file:text-zinc-100"
+                    />
+                    {photoDataUrl && (
+                      <img
+                        src={photoDataUrl}
+                        alt="Selected progress preview"
+                        className="h-40 w-full rounded-md object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSavePhoto}
+                      disabled={isSavingPhoto}
+                      className="btn btn-primary w-full"
+                    >
+                      {isSavingPhoto ? "Saving photo..." : "Save photo"}
+                    </button>
+                  </div>
+                </section>
+              </div>
             </div>
           </PageContainer>
         </div>
