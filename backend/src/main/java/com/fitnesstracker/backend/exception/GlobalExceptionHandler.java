@@ -4,11 +4,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -69,7 +70,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.TOO_MANY_REQUESTS,
                 exception.getMessage(),
                 request,
-                Collections.emptyList()
+                Collections.emptyList(),
+                exception.getRetryAfterSeconds()
         );
     }
 
@@ -82,7 +84,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.LOCKED,
                 exception.getMessage(),
                 request,
-                Collections.emptyList()
+                Collections.emptyList(),
+                exception.getRetryAfterSeconds()
         );
     }
 
@@ -146,5 +149,25 @@ public class GlobalExceptionHandler {
                 validationErrors
         );
         return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildErrorResponse(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request,
+            List<FieldValidationError> validationErrors,
+            long retryAfterSeconds
+    ) {
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                request.getRequestURI(),
+                validationErrors
+        );
+        return ResponseEntity.status(status)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(Math.max(1, retryAfterSeconds)))
+                .body(errorResponse);
     }
 }
