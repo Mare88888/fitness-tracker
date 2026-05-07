@@ -26,6 +26,12 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
 
   const isLogin = mode === "login";
   const isFormValid = username.trim().length >= 3 && password.trim().length >= 6;
+  const formatRetryAfterHint = (seconds?: number): string | null => {
+    if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) {
+      return null;
+    }
+    return `Try again in ${Math.floor(seconds)}s.`;
+  };
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
@@ -48,14 +54,18 @@ export function AuthFormCard({ mode }: AuthFormCardProps) {
       toast.success(`Welcome, ${authResponse.username}`);
       router.push("/workouts/start");
     } catch (authError) {
+      let message = authError instanceof Error ? authError.message : "Authentication failed.";
       if (authError instanceof ApiRequestError) {
         const usernameValidation = authError.validationErrors.find((errorItem) => errorItem.field === "username");
         const passwordValidation = authError.validationErrors.find((errorItem) => errorItem.field === "password");
         setUsernameError(usernameValidation?.message ?? null);
         setPasswordError(passwordValidation?.message ?? null);
         setValidationMessages(authError.validationErrors.map((errorItem) => errorItem.message));
+        const retryHint = formatRetryAfterHint(authError.retryAfterSeconds);
+        if (retryHint && (authError.status === 423 || authError.status === 429)) {
+          message = `${message} ${retryHint}`;
+        }
       }
-      const message = authError instanceof Error ? authError.message : "Authentication failed.";
       setError(message);
       toast.error(message);
     } finally {
