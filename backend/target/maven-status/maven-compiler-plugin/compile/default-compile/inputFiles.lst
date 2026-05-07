@@ -20,7 +20,9 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WeeklyPlanDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WorkoutDto.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\dto\WorkoutTemplateDto.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\AccountLockedException.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\ApiErrorResponse.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\AuthRateLimitException.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\FieldValidationError.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\exception\GlobalExceptionHandler.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\FitnessTrackerBackendApplication.java
@@ -51,6 +53,7 @@ D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\JwtAuthenticationFilter.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\JwtService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\security\SpaCsrfTokenRequestHandler.java
+D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\AuthProtectionService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\AuthService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\BodyMeasurementService.java
 D:\Programming Projects\fitness-tracker\backend\src\main\java\com\fitnesstracker\backend\service\ExerciseCatalogService.java

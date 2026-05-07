@@ -60,6 +60,32 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AuthRateLimitException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthRateLimitException(
+            AuthRateLimitException exception,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.TOO_MANY_REQUESTS,
+                exception.getMessage(),
+                request,
+                Collections.emptyList()
+        );
+    }
+
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccountLockedException(
+            AccountLockedException exception,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.LOCKED,
+                exception.getMessage(),
+                request,
+                Collections.emptyList()
+        );
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException exception,

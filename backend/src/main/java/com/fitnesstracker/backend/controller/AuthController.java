@@ -58,9 +58,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpServletRequest,
             HttpServletResponse response
     ) {
-        AuthResponse loginResponse = authService.login(request);
+        AuthResponse loginResponse = authService.login(request, resolveClientKey(httpServletRequest));
         AppUser user = authService.getUserByUsername(loginResponse.username());
         attachAuthCookies(response, user);
         return ResponseEntity.ok(loginResponse);
@@ -129,5 +130,16 @@ public class AuthController {
             }
         }
         return null;
+    }
+
+    private String resolveClientKey(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            String[] parts = forwardedFor.split(",");
+            if (parts.length > 0 && !parts[0].isBlank()) {
+                return parts[0].trim();
+            }
+        }
+        return request.getRemoteAddr();
     }
 }

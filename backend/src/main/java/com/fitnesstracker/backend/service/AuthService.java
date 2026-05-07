@@ -8,6 +8,7 @@ import com.fitnesstracker.backend.repository.AppUserRepository;
 import com.fitnesstracker.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final AuthProtectionService authProtectionService;
 
     public AuthResponse register(RegisterRequest request) {
         String username = request.username().trim();
@@ -41,12 +43,19 @@ public class AuthService {
         return new AuthResponse(username);
     }
 
-    public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
-
-        String username = authentication.getName();
-        return new AuthResponse(username);
+    public AuthResponse login(LoginRequest request, String clientKey) {
+        String username = request.username() == null ? "" : request.username().trim();
+        authProtectionService.guardLoginAttempt(username, clientKey);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, request.password()));
+            String authenticatedUsername = authentication.getName();
+            authProtectionService.markSuccessfulLogin(authenticatedUsername);
+            return new AuthResponse(authenticatedUsername);
+        } catch (BadCredentialsException exception) {
+            authProtectionService.markFailedLogin(username);
+            throw exception;
+        }
     }
 
     public AppUser getUserByUsername(String username) {
