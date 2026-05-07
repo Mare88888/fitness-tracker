@@ -89,6 +89,21 @@ Frontend runs on `http://localhost:3000`.
 - Backend fails to start with DB connection errors
   - Ensure `docker compose up -d` is running and Postgres container is healthy
 
+## Auth protection behavior
+
+Login endpoints include brute-force protection:
+
+- Per-client + username rate limiting
+- Temporary account lockout after repeated failed logins
+
+When limits are hit, backend returns:
+
+- `429 Too Many Requests` (rate limit)
+- `423 Locked` (temporary account lockout)
+- `Retry-After` response header with remaining wait time in seconds
+
+Frontend login/register surfaces this as `Try again in Xs.` when available.
+
 ## Optional: production-style local run
 
 Frontend in production mode:
