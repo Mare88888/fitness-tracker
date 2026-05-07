@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fitness Tracker - Local Testing Guide
 
-## Getting Started
+This repository contains:
 
-First, run the development server:
+- `app/` + `lib/`: Next.js frontend
+- `backend/`: Spring Boot backend API
+- Postgres database (via Docker Compose)
+
+For testing, you need all three running: frontend, backend, and database.
+
+## Prerequisites
+
+- Node.js 20+
+- npm
+- Java 17
+- Maven
+- Docker Desktop
+
+## 1) Clone and install frontend dependencies
+
+```bash
+git clone <your-repo-url>
+cd fitness-tracker
+npm install
+```
+
+## 2) Create frontend environment file
+
+Create `.env.local` in the project root:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+Without this variable, the frontend cannot call the backend API.
+
+## 3) Start Postgres
+
+From the project root:
+
+```bash
+docker compose up -d
+```
+
+This starts Postgres on `localhost:5432` with default credentials already matching backend defaults.
+
+## 4) Start backend
+
+In a new terminal:
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+Backend runs on `http://localhost:8080`.
+
+Health endpoint:
+
+```text
+http://localhost:8080/actuator/health/readiness
+```
+
+## 5) Start frontend
+
+In another terminal at the project root:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontend runs on `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 6) Quick test flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Open `http://localhost:3000`
+2. Register a user
+3. Login
+4. Go to Start Workout
+5. Save a workout
+6. Confirm it appears in History and Calendar
 
-## Learn More
+## Common issues
 
-To learn more about Next.js, take a look at the following resources:
+- `NEXT_PUBLIC_API_BASE_URL is not configured`
+  - Add `.env.local` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`
+- Login/register fails immediately
+  - Check backend is running on port `8080`
+- Backend fails to start with DB connection errors
+  - Ensure `docker compose up -d` is running and Postgres container is healthy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Optional: production-style local run
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend in production mode:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm run start
+```
