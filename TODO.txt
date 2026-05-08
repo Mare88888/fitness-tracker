@@ -17,11 +17,7 @@ Session/device management: show logged-in devices + revoke sessions.
 
 Forgot/reset password + email verification: needed for real-user adoption.
 
-Rate limiting + lockout policy on auth: protect against brute force.
-
 Notifications/reminders: “planned workout today” + consistency nudges.
-
-In-app onboarding/tutorial: first-time setup flow (goal, split, weekly target, preferred units).
 
 Role-based admin tools: catalog moderation, duplicate merge, typo cleanup.
 

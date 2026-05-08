@@ -43,7 +43,7 @@ export function getOnboardingPreferences(): OnboardingPreferences | null {
 }
 
 export function completeOnboarding(input: Omit<OnboardingPreferences, "completedAt">): OnboardingPreferences {
-  const normalizedWeeklyTarget = Math.min(6, Math.max(2, Math.round(input.weeklyTarget)));
+  const normalizedWeeklyTarget = Math.min(7, Math.max(1, Math.round(input.weeklyTarget)));
   const payload: OnboardingPreferences = {
     ...input,
     weeklyTarget: normalizedWeeklyTarget,

@@ -21,11 +21,11 @@ export function getWeeklyGoal(): number {
   if (!Number.isFinite(parsed)) {
     return DEFAULT_WEEKLY_GOAL;
   }
-  return Math.min(6, Math.max(2, Math.round(parsed)));
+  return Math.min(7, Math.max(1, Math.round(parsed)));
 }
 
 export function setWeeklyGoal(goal: number): number {
-  const next = Math.min(6, Math.max(2, Math.round(goal)));
+  const next = Math.min(7, Math.max(1, Math.round(goal)));
   if (typeof window === "undefined") {
     return next;
   }

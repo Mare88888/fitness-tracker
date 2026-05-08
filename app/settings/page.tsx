@@ -101,7 +101,7 @@ export default function SettingsPage() {
                   For {username ?? "anonymous"} - drives adherence bars.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {[2, 3, 4, 5, 6].map((goal) => (
+                  {[1, 2, 3, 4, 5, 6, 7].map((goal) => (
                     <button
                       key={goal}
                       type="button"

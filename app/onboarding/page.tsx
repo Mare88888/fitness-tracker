@@ -94,8 +94,8 @@ export default function OnboardingPage() {
                   <span className="mb-2 block text-sm font-medium text-zinc-300">Weekly target</span>
                   <input
                     type="number"
-                    min={2}
-                    max={6}
+                    min={1}
+                    max={7}
                     value={weeklyTarget}
                     onChange={(event) => setWeeklyTarget(Number(event.target.value) || 4)}
                     className="field"
