@@ -11,6 +11,11 @@ import { formatDateTimeDDMMYYYY } from "@/lib/date-format";
 import { parseDurationToSeconds } from "@/lib/duration-format";
 import { writeExerciseCatalogCache } from "@/lib/exercise-catalog-cache";
 import { takePendingExercisesForStartWorkout } from "@/lib/exercise-insert-queue";
+import {
+  getOnboardingPreferences,
+  subscribeOnboardingChanges,
+  type PreferredUnitSystem,
+} from "@/lib/onboarding-preferences";
 import { ApiRequestError } from "@/lib/services/api-error";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
 import { createWorkout, getWorkouts } from "@/lib/services/workout-service";
@@ -162,6 +167,7 @@ export default function StartWorkoutPage() {
   const [isStartingTodaysPlan, setIsStartingTodaysPlan] = useState(false);
   const [catalogItems, setCatalogItems] = useState<ExerciseCatalogItem[]>([]);
   const [activeSetTypeMenuId, setActiveSetTypeMenuId] = useState<string | null>(null);
+  const [preferredUnits, setPreferredUnits] = useState<PreferredUnitSystem>("metric");
   const autosaveTimeoutRef = useRef<number | null>(null);
 
   const getSetTypeLabel = (set: WorkoutSet, setIndex: number): string => {
@@ -551,6 +557,15 @@ export default function StartWorkoutPage() {
   }, []);
 
   useEffect(() => {
+    const syncPreferredUnits = () => {
+      const prefs = getOnboardingPreferences();
+      setPreferredUnits(prefs?.preferredUnits ?? "metric");
+    };
+    syncPreferredUnits();
+    return subscribeOnboardingChanges(syncPreferredUnits);
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -857,7 +872,9 @@ export default function StartWorkoutPage() {
                         </div>
                         <div>
                           <p className="text-zinc-400">Volume</p>
-                          <p className="text-base font-semibold text-zinc-100">{liveTotalVolume} kg</p>
+                          <p className="text-base font-semibold text-zinc-100">
+                            {liveTotalVolume} {preferredUnits === "imperial" ? "lb" : "kg"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-zinc-400">Sets</p>
@@ -960,7 +977,7 @@ export default function StartWorkoutPage() {
                         <div className="mb-2 grid grid-cols-[auto_1fr_1fr_1fr_auto_auto] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                           <span>Set</span>
                           <span>Previous</span>
-                          <span>Kg</span>
+                          <span>{preferredUnits === "imperial" ? "Lb" : "Kg"}</span>
                           <span>Reps/Time</span>
                           <span>Done</span>
                           <span></span>
@@ -1042,7 +1059,7 @@ export default function StartWorkoutPage() {
                                   min={0}
                                   step="0.5"
                                   inputMode="decimal"
-                                  placeholder="Kg"
+                                  placeholder={preferredUnits === "imperial" ? "Lb" : "Kg"}
                                   value={set.weight}
                                   onChange={(event) =>
                                     updateSetField(exercise.id, set.id, "weight", event.target.value)

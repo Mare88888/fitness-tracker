@@ -6,6 +6,11 @@ import { Sidebar } from "@/components/sidebar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDateDDMMYYYY } from "@/lib/date-format";
 import {
+  getOnboardingPreferences,
+  subscribeOnboardingChanges,
+  type PreferredUnitSystem,
+} from "@/lib/onboarding-preferences";
+import {
   deleteBodyMeasurement,
   getBodyMeasurements,
   upsertBodyMeasurement,
@@ -41,13 +46,17 @@ import { toast } from "sonner";
 type MetricKey = "weight" | "waist" | "chest" | "leftArm" | "rightArm";
 type Timeframe = "30d" | "90d" | "all";
 
-const metricOptions: { value: MetricKey; label: string; unit: string }[] = [
-  { value: "weight", label: "Weight", unit: "kg" },
-  { value: "waist", label: "Waist", unit: "cm" },
-  { value: "chest", label: "Chest", unit: "cm" },
-  { value: "leftArm", label: "Left arm", unit: "cm" },
-  { value: "rightArm", label: "Right arm", unit: "cm" },
-];
+function metricOptionsForUnits(units: PreferredUnitSystem): { value: MetricKey; label: string; unit: string }[] {
+  const weightUnit = units === "imperial" ? "lb" : "kg";
+  const lengthUnit = units === "imperial" ? "in" : "cm";
+  return [
+    { value: "weight", label: "Weight", unit: weightUnit },
+    { value: "waist", label: "Waist", unit: lengthUnit },
+    { value: "chest", label: "Chest", unit: lengthUnit },
+    { value: "leftArm", label: "Left arm", unit: lengthUnit },
+    { value: "rightArm", label: "Right arm", unit: lengthUnit },
+  ];
+}
 
 type ProgressPoint = {
   date: string;
@@ -169,13 +178,15 @@ function toDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function formatBodyMeasurementSummary(entry: BodyMeasurement): string {
+function formatBodyMeasurementSummary(entry: BodyMeasurement, units: PreferredUnitSystem): string {
+  const weightUnit = units === "imperial" ? "lb" : "kg";
+  const lengthUnit = units === "imperial" ? "in" : "cm";
   const parts = [
-    entry.weight != null ? `W ${entry.weight}kg` : null,
-    entry.waist != null ? `Waist ${entry.waist}cm` : null,
-    entry.chest != null ? `Chest ${entry.chest}cm` : null,
-    entry.leftArm != null ? `L arm ${entry.leftArm}cm` : null,
-    entry.rightArm != null ? `R arm ${entry.rightArm}cm` : null,
+    entry.weight != null ? `W ${entry.weight}${weightUnit}` : null,
+    entry.waist != null ? `Waist ${entry.waist}${lengthUnit}` : null,
+    entry.chest != null ? `Chest ${entry.chest}${lengthUnit}` : null,
+    entry.leftArm != null ? `L arm ${entry.leftArm}${lengthUnit}` : null,
+    entry.rightArm != null ? `R arm ${entry.rightArm}${lengthUnit}` : null,
   ].filter(Boolean);
   return parts.length > 0 ? parts.join(" | ") : "No values recorded";
 }
@@ -214,6 +225,7 @@ export default function ProgressPage() {
   const [expandedPhotoIds, setExpandedPhotoIds] = useState<Set<number>>(new Set());
   const [photoLinkDraftByPhotoId, setPhotoLinkDraftByPhotoId] = useState<Partial<Record<number, string>>>({});
   const [updatingPhotoLinkId, setUpdatingPhotoLinkId] = useState<number | null>(null);
+  const [preferredUnits, setPreferredUnits] = useState<PreferredUnitSystem>("metric");
 
   const measurementsSortedForPhotoLink = useMemo(
     () => [...measurements].sort((a, b) => b.date.localeCompare(a.date)),
@@ -291,6 +303,15 @@ export default function ProgressPage() {
   }, []);
 
   useEffect(() => {
+    const syncPreferredUnits = () => {
+      const prefs = getOnboardingPreferences();
+      setPreferredUnits(prefs?.preferredUnits ?? "metric");
+    };
+    syncPreferredUnits();
+    return subscribeOnboardingChanges(syncPreferredUnits);
+  }, []);
+
+  useEffect(() => {
     setIsMounted(true);
   }, []);
 
@@ -355,6 +376,7 @@ export default function ProgressPage() {
     });
   }, [measurements, metric, workouts, weeklyGoal, timeframe, metricGoals]);
 
+  const metricOptions = useMemo(() => metricOptionsForUnits(preferredUnits), [preferredUnits]);
   const selectedMetric = metricOptions.find((option) => option.value === metric) ?? metricOptions[0];
 
   const muscleDistribution = useMemo(() => {
@@ -764,11 +786,11 @@ export default function ProgressPage() {
                           <thead>
                             <tr className="border-b border-zinc-800 text-left text-xs uppercase tracking-wide text-zinc-400">
                               <th className="px-3 py-2">Date</th>
-                              <th className="px-3 py-2">Weight (kg)</th>
-                              <th className="px-3 py-2">Waist (cm)</th>
-                              <th className="px-3 py-2">Chest (cm)</th>
-                              <th className="px-3 py-2">Left arm (cm)</th>
-                              <th className="px-3 py-2">Right arm (cm)</th>
+                              <th className="px-3 py-2">Weight ({preferredUnits === "imperial" ? "lb" : "kg"})</th>
+                              <th className="px-3 py-2">Waist ({preferredUnits === "imperial" ? "in" : "cm"})</th>
+                              <th className="px-3 py-2">Chest ({preferredUnits === "imperial" ? "in" : "cm"})</th>
+                              <th className="px-3 py-2">Left arm ({preferredUnits === "imperial" ? "in" : "cm"})</th>
+                              <th className="px-3 py-2">Right arm ({preferredUnits === "imperial" ? "in" : "cm"})</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -875,12 +897,12 @@ export default function ProgressPage() {
                       <div className="surface-soft px-3 py-2">
                         <p className="text-xs text-zinc-400">Volume</p>
                         <p className="text-xl font-semibold text-zinc-100">
-                          {Math.round(muscleDistribution.currentSummary.volumeKg).toLocaleString()} kg
+                          {Math.round(muscleDistribution.currentSummary.volumeKg).toLocaleString()} {preferredUnits === "imperial" ? "lb" : "kg"}
                         </p>
                         <p className="text-xs text-emerald-400">
                           {formatDelta(
                             muscleDistribution.currentSummary.volumeKg - muscleDistribution.previousSummary.volumeKg,
-                            " kg"
+                            preferredUnits === "imperial" ? " lb" : " kg"
                           )}
                         </p>
                       </div>
@@ -907,7 +929,7 @@ export default function ProgressPage() {
                             <li key={entry.id} className="surface-soft flex items-center justify-between gap-3 px-3 py-2 text-sm">
                               <div className="text-zinc-200">
                                 <p className="font-medium">{entry.formattedDate ?? formatDateDDMMYYYY(entry.date)}</p>
-                                <p className="text-xs text-zinc-400">{formatBodyMeasurementSummary(entry)}</p>
+                                <p className="text-xs text-zinc-400">{formatBodyMeasurementSummary(entry, preferredUnits)}</p>
                               </div>
                               <button
                                 type="button"
@@ -1012,7 +1034,7 @@ export default function ProgressPage() {
                                           {measurementsSortedForPhotoLink.map((entry) => (
                                             <option key={entry.id} value={String(entry.id)}>
                                               {formatDateDDMMYYYY(entry.date)} -{" "}
-                                              {formatBodyMeasurementSummary(entry)}
+                                              {formatBodyMeasurementSummary(entry, preferredUnits)}
                                             </option>
                                           ))}
                                         </select>
@@ -1039,7 +1061,7 @@ export default function ProgressPage() {
                                             formatDateDDMMYYYY(photo.linkedMeasurement.date)}
                                         </p>
                                         <p className="mt-0.5 text-[13px] text-zinc-400">
-                                          {formatBodyMeasurementSummary(photo.linkedMeasurement)}
+                                          {formatBodyMeasurementSummary(photo.linkedMeasurement, preferredUnits)}
                                         </p>
                                       </div>
                                     ) : (
@@ -1072,7 +1094,7 @@ export default function ProgressPage() {
                       value={weight}
                       onChange={(event) => setWeight(event.target.value)}
                       className="field"
-                      placeholder="Weight (kg)"
+                      placeholder={`Weight (${preferredUnits === "imperial" ? "lb" : "kg"})`}
                     />
                     <input
                       type="number"
@@ -1081,7 +1103,7 @@ export default function ProgressPage() {
                       value={waist}
                       onChange={(event) => setWaist(event.target.value)}
                       className="field"
-                      placeholder="Waist (cm)"
+                      placeholder={`Waist (${preferredUnits === "imperial" ? "in" : "cm"})`}
                     />
                     <input
                       type="number"
@@ -1090,7 +1112,7 @@ export default function ProgressPage() {
                       value={chest}
                       onChange={(event) => setChest(event.target.value)}
                       className="field"
-                      placeholder="Chest (cm)"
+                      placeholder={`Chest (${preferredUnits === "imperial" ? "in" : "cm"})`}
                     />
                     <input
                       type="number"
@@ -1099,7 +1121,7 @@ export default function ProgressPage() {
                       value={leftArm}
                       onChange={(event) => setLeftArm(event.target.value)}
                       className="field"
-                      placeholder="Left arm (cm)"
+                      placeholder={`Left arm (${preferredUnits === "imperial" ? "in" : "cm"})`}
                     />
                     <input
                       type="number"
@@ -1108,7 +1130,7 @@ export default function ProgressPage() {
                       value={rightArm}
                       onChange={(event) => setRightArm(event.target.value)}
                       className="field"
-                      placeholder="Right arm (cm)"
+                      placeholder={`Right arm (${preferredUnits === "imperial" ? "in" : "cm"})`}
                     />
                     <button type="button" onClick={handleSave} disabled={isSaving} className="btn btn-primary w-full">
                       {isSaving ? "Saving..." : editingEntryId ? "Update entry" : "Save entry"}
@@ -1137,7 +1159,7 @@ export default function ProgressPage() {
                         <option value="">None</option>
                         {measurementsSortedForPhotoLink.map((entry) => (
                           <option key={entry.id} value={String(entry.id)}>
-                            {formatDateDDMMYYYY(entry.date)} - {formatBodyMeasurementSummary(entry)}
+                            {formatDateDDMMYYYY(entry.date)} - {formatBodyMeasurementSummary(entry, preferredUnits)}
                           </option>
                         ))}
                       </select>
