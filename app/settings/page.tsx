@@ -6,6 +6,15 @@ import { Sidebar } from "@/components/sidebar";
 import { getAuthUsername } from "@/lib/auth/token";
 import { APP_NAME } from "@/lib/constants";
 import {
+  completeOnboarding,
+  getOnboardingPreferences,
+  resetOnboarding,
+  subscribeOnboardingChanges,
+  type OnboardingGoal,
+  type OnboardingSplit,
+  type PreferredUnitSystem,
+} from "@/lib/onboarding-preferences";
+import {
   getDefaultWeeklyGoal,
   getWeeklyGoal,
   setWeeklyGoal,
@@ -17,20 +26,34 @@ import { toast } from "sonner";
 export default function SettingsPage() {
   const [weeklyGoal, setWeeklyGoalState] = useState<number>(getDefaultWeeklyGoal());
   const [username, setUsername] = useState<string | null>(null);
+  const [goal, setGoal] = useState<OnboardingGoal>("general_fitness");
+  const [split, setSplit] = useState<OnboardingSplit>("full_body");
+  const [preferredUnits, setPreferredUnits] = useState<PreferredUnitSystem>("metric");
+
+  const syncFromStorage = () => {
+    setWeeklyGoalState(getWeeklyGoal());
+    setUsername(getAuthUsername());
+    const preferences = getOnboardingPreferences();
+    if (preferences) {
+      setGoal(preferences.goal);
+      setSplit(preferences.split);
+      setPreferredUnits(preferences.preferredUnits);
+    }
+  };
 
   useEffect(() => {
-    queueMicrotask(() => {
-      setWeeklyGoalState(getWeeklyGoal());
-      setUsername(getAuthUsername());
-    });
+    queueMicrotask(syncFromStorage);
   }, []);
 
   useEffect(() => {
     return subscribeWeeklyGoalChanges(() => {
-      queueMicrotask(() => {
-        setWeeklyGoalState(getWeeklyGoal());
-        setUsername(getAuthUsername());
-      });
+      queueMicrotask(syncFromStorage);
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeOnboardingChanges(() => {
+      queueMicrotask(syncFromStorage);
     });
   }, []);
 
@@ -38,6 +61,21 @@ export default function SettingsPage() {
     const saved = setWeeklyGoal(value);
     setWeeklyGoalState(saved);
     toast.success(`Weekly goal saved: ${saved} workouts/week.`);
+  };
+
+  const handleSaveOnboardingPrefs = () => {
+    completeOnboarding({
+      goal,
+      split,
+      weeklyTarget: weeklyGoal,
+      preferredUnits,
+    });
+    toast.success("Onboarding preferences saved.");
+  };
+
+  const handleResetOnboarding = () => {
+    resetOnboarding();
+    toast.success("Onboarding reset. You will see setup on dashboard.");
   };
 
   return (
@@ -81,6 +119,62 @@ export default function SettingsPage() {
                 <p className="mt-3 text-xs text-zinc-500">
                   Default goal: {getDefaultWeeklyGoal()} workouts/week.
                 </p>
+              </div>
+
+              <div className="surface-card mt-4">
+                <h2 className="text-sm font-semibold text-zinc-100">Onboarding preferences</h2>
+                <p className="mt-1 text-xs text-zinc-500">Goal, split, and units used for your setup profile.</p>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium text-zinc-400">Goal</span>
+                    <select
+                      value={goal}
+                      onChange={(event) => setGoal(event.target.value as OnboardingGoal)}
+                      className="field field-select"
+                    >
+                      <option value="general_fitness">General fitness</option>
+                      <option value="muscle_gain">Build muscle</option>
+                      <option value="strength">Build strength</option>
+                      <option value="fat_loss">Lose fat</option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium text-zinc-400">Split</span>
+                    <select
+                      value={split}
+                      onChange={(event) => setSplit(event.target.value as OnboardingSplit)}
+                      className="field field-select"
+                    >
+                      <option value="full_body">Full body</option>
+                      <option value="upper_lower">Upper / lower</option>
+                      <option value="push_pull_legs">Push / pull / legs</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium text-zinc-400">Units</span>
+                    <select
+                      value={preferredUnits}
+                      onChange={(event) => setPreferredUnits(event.target.value as PreferredUnitSystem)}
+                      className="field field-select"
+                    >
+                      <option value="metric">Metric (kg, cm)</option>
+                      <option value="imperial">Imperial (lb, in)</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button type="button" onClick={handleSaveOnboardingPrefs} className="btn btn-primary">
+                    Save onboarding prefs
+                  </button>
+                  <button type="button" onClick={handleResetOnboarding} className="btn btn-secondary">
+                    Reset onboarding
+                  </button>
+                </div>
               </div>
             </section>
           </PageContainer>
