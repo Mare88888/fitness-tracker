@@ -12,7 +12,12 @@ import {
   writeExerciseCatalogCache,
 } from "@/lib/exercise-catalog-cache";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
-import { isOnboardingComplete } from "@/lib/onboarding-preferences";
+import {
+  getOnboardingPreferences,
+  isOnboardingComplete,
+  subscribeOnboardingChanges,
+  type PreferredUnitSystem,
+} from "@/lib/onboarding-preferences";
 import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preferences";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
@@ -125,6 +130,7 @@ export default function Home() {
   const [timeframe, setTimeframe] = useState<Timeframe>("30d");
   const [trendMetric, setTrendMetric] = useState<TrendMetric>("volume");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [preferredUnits, setPreferredUnits] = useState<PreferredUnitSystem>("metric");
   const [catalogMuscleByName, setCatalogMuscleByName] = useState<Record<string, string>>({});
   const [weeklyGoalTarget, setWeeklyGoalTarget] = useState<number>(() => getWeeklyGoal());
 
@@ -164,6 +170,15 @@ export default function Home() {
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const syncPreferredUnits = () => {
+      const prefs = getOnboardingPreferences();
+      setPreferredUnits(prefs?.preferredUnits ?? "metric");
+    };
+    syncPreferredUnits();
+    return subscribeOnboardingChanges(syncPreferredUnits);
   }, []);
 
   useEffect(() => {
@@ -446,6 +461,7 @@ export default function Home() {
       : analytics.adherenceScore >= 60
         ? "bg-amber-500"
         : "bg-rose-500";
+  const weightUnit = preferredUnits === "imperial" ? "lb" : "kg";
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -505,7 +521,7 @@ export default function Home() {
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Total volume</p>
                       <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-zinc-100">
                         {Math.round(analytics.totalVolume).toLocaleString()}
-                        <span className="ml-1 text-base font-medium text-zinc-500">kg</span>
+                        <span className="ml-1 text-base font-medium text-zinc-500">{weightUnit}</span>
                       </p>
                       <p className="mt-2 text-xs text-zinc-500">
                         {analytics.workoutCount} workout{analytics.workoutCount === 1 ? "" : "s"} ·{" "}
@@ -526,7 +542,7 @@ export default function Home() {
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Avg volume / workout</p>
                       <p className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-zinc-100">
                         {Math.round(analytics.avgVolumePerWorkout).toLocaleString()}
-                        <span className="ml-1 text-base font-medium text-zinc-500">kg</span>
+                        <span className="ml-1 text-base font-medium text-zinc-500">{weightUnit}</span>
                       </p>
                       <p className="mt-2 text-xs text-zinc-500">Per logged session.</p>
                     </div>
@@ -568,13 +584,13 @@ export default function Home() {
                               <p className="font-medium text-zinc-100">{item.exercise}</p>
                               <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400">
                                 <span className="rounded-md bg-zinc-800/80 px-2 py-0.5 font-medium text-zinc-300">
-                                  Last {item.basedOnWeight} kg × {item.basedOnReps}
+                                  Last {item.basedOnWeight} {weightUnit} × {item.basedOnReps}
                                 </span>
                                 <span className="text-zinc-600" aria-hidden>
                                   →
                                 </span>
                                 <span className="rounded-md border border-emerald-800/50 bg-emerald-950/30 px-2 py-0.5 font-medium text-emerald-200/95">
-                                  Next {item.suggestedWeight} kg × {item.suggestedReps}
+                                  Next {item.suggestedWeight} {weightUnit} × {item.suggestedReps}
                                 </span>
                               </div>
                             </li>
@@ -599,7 +615,7 @@ export default function Home() {
                               <p className="mt-1 text-xs text-amber-100/80">
                                 {item.sessionsWithoutPr} sessions without PR · best est. 1RM{" "}
                                 <span className="tabular-nums font-medium text-zinc-200">
-                                  {item.currentBest.toFixed(1)} kg
+                                  {item.currentBest.toFixed(1)} {weightUnit}
                                 </span>
                               </p>
                             </li>
@@ -632,10 +648,10 @@ export default function Home() {
                               <p className="font-medium text-zinc-100">{record.exercise}</p>
                               <p className="mt-1 text-xs text-zinc-400">
                                 <span className="font-medium text-emerald-300/90">
-                                  Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} kg
+                                  Est. 1RM {record.maxEstimatedOneRepMax.toFixed(1)} {weightUnit}
                                 </span>
                                 <span className="text-zinc-600"> · </span>
-                                Top set {record.maxWeight} kg
+                                Top set {record.maxWeight} {weightUnit}
                                 <span className="text-zinc-600"> · </span>
                                 {formatDateDDMMYYYY(record.achievedOn)}
                               </p>
@@ -678,7 +694,7 @@ export default function Home() {
                                   color: chartTheme.text,
                                 }}
                                 formatter={(value) => [
-                                  `${Number(value ?? 0).toLocaleString()} kg`,
+                                  `${Number(value ?? 0).toLocaleString()} ${weightUnit}`,
                                   "Session volume",
                                 ]}
                               />
@@ -771,8 +787,8 @@ export default function Home() {
                               }}
                               formatter={(value) => [
                                 trendMetric === "volume"
-                                  ? `${Number(value ?? 0).toLocaleString()} kg`
-                                  : `${Number(value ?? 0).toLocaleString()} kg`,
+                                  ? `${Number(value ?? 0).toLocaleString()} ${weightUnit}`
+                                  : `${Number(value ?? 0).toLocaleString()} ${weightUnit}`,
                                 trendMetric === "volume" ? "Day volume" : "Est. 1RM (peak)",
                               ]}
                             />
