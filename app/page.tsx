@@ -12,10 +12,12 @@ import {
   writeExerciseCatalogCache,
 } from "@/lib/exercise-catalog-cache";
 import { getExerciseCatalog } from "@/lib/services/exercise-catalog-service";
+import { isOnboardingComplete } from "@/lib/onboarding-preferences";
 import { getWeeklyGoal, subscribeWeeklyGoalChanges } from "@/lib/user-preferences";
 import { getWorkouts } from "@/lib/services/workout-service";
 import type { Workout } from "@/types/workout";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -116,7 +118,9 @@ function getStartOfWeek(date: Date): Date {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<Timeframe>("30d");
   const [trendMetric, setTrendMetric] = useState<TrendMetric>("volume");
@@ -125,6 +129,17 @@ export default function Home() {
   const [weeklyGoalTarget, setWeeklyGoalTarget] = useState<number>(() => getWeeklyGoal());
 
   useEffect(() => {
+    if (!isOnboardingComplete()) {
+      router.replace("/onboarding");
+      return;
+    }
+    setOnboardingChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!onboardingChecked) {
+      return;
+    }
     const load = async () => {
       setIsLoading(true);
       try {
@@ -138,7 +153,7 @@ export default function Home() {
       }
     };
     void load();
-  }, []);
+  }, [onboardingChecked]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -462,7 +477,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {isLoading ? (
+              {!onboardingChecked || isLoading ? (
                 <div className="mt-6 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {[0, 1, 2, 3].map((key) => (
